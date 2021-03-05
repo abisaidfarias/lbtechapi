@@ -18,6 +18,7 @@ func main() {
 	auth := server.Group("/auth")
 	{
 		auth.POST("/sign-in", authController.SignIn())
+		auth.POST("/sign-up", authController.SignUp())
 	}
 
 	log.Fatal(server.Run(":8080"))

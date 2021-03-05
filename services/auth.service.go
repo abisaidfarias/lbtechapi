@@ -113,7 +113,6 @@ func buildNewUser(credentials *viewmodels.AuthCredentials) (*models.User, error)
 
 	user := models.User{
 		Email:        "this is an email mock",
-		ID:           "1",
 		PasswordHash: "passwordHash",
 	}
 
