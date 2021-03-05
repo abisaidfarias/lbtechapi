@@ -1,4 +1,4 @@
-package models
+package viewmodels
 
 // UserResponse response to client
 type UserResponse struct {

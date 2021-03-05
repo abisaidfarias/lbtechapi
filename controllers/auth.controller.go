@@ -6,12 +6,13 @@ import (
 
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/services"
+	"github.com/abisaidfarias/lbtechapi/viewmodels"
 	"github.com/gin-gonic/gin"
 )
 
 // IAuthController controller
 type IAuthController interface {
-	SignIn(c models.AuthCredentials) models.UserResponse
+	SignIn(c viewmodels.AuthCredentials) viewmodels.UserResponse
 }
 
 // AuthController implementation of the interface
@@ -22,7 +23,7 @@ type AuthController struct {
 // SignIn signs the user in
 func (c *AuthController) SignIn() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		credentials := models.AuthCredentials{}
+		credentials := v.AuthCredentials{}
 
 		err := ctx.BindJSON(&credentials)
 

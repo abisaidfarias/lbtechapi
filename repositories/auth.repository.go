@@ -1,10 +1,10 @@
-package repository
+package repositories
 
 import (
 	"errors"
 	"time"
 
-	"github.com/abisaidfarias/lbtechapi/models"
+	"github.com/abisaidfarias/lbtechapi/viewmodels"
 	"github.com/dgrijalva/jwt-go"
 )
 
@@ -12,7 +12,7 @@ var jwtKey = []byte("my_secret_key")
 
 // IAuthRepository is the auth repository interface
 type IAuthRepository interface {
-	SignIn(*models.AuthCredentials) models.UserResponse
+	SignIn(*viewmodels.AuthCredentials) viewmodels.UserResponse
 }
 
 // AuthRepository is the auth repository implementation
@@ -26,9 +26,9 @@ type Claims struct {
 }
 
 // SignIn checks database for credentials
-func (r *AuthRepository) SignIn(creds *models.AuthCredentials) (*models.UserResponse, error) {
+func (r *AuthRepository) SignIn(creds *viewmodels.AuthCredentials) (*viewmodels.UserResponse, error) {
 
-	user := models.UserResponse{
+	user := viewmodels.UserResponse{
 		Email: "this is an email mock",
 		ID:    "1",
 	}
