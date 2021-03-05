@@ -2,12 +2,14 @@ package services
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/viewmodels"
 	"github.com/dgrijalva/jwt-go"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var jwtKey = []byte("my_secret_key")
@@ -33,6 +35,10 @@ func (s *AuthService) SignIn(credentials *viewmodels.AuthCredentials) (*viewmode
 
 	user, err := repository.GetUserByEmail(credentials)
 
+	if err != nil {
+		return nil, fmt.Errorf("%w", models.ErrorInvalidCredentials)
+	}
+
 	err = validateUserCredentials(user, credentials)
 
 	// invalid credentials
@@ -40,12 +46,7 @@ func (s *AuthService) SignIn(credentials *viewmodels.AuthCredentials) (*viewmode
 		return nil, fmt.Errorf("%w", models.ErrorInvalidCredentials)
 	}
 
-	token, err := generateJWT(user)
-
-	// error singing the token
-	if err != nil {
-		return nil, err
-	}
+	token := generateJWT(user)
 
 	// build user response
 	userResponse := viewmodels.UserResponse{
@@ -73,7 +74,7 @@ func (s *AuthService) SignUp(credentials *viewmodels.AuthCredentials) error {
 	return nil
 }
 
-func generateJWT(user *models.User) (string, error) {
+func generateJWT(user *models.User) string {
 
 	expirationTime := time.Now().Add(5 * time.Minute)
 
@@ -89,18 +90,17 @@ func generateJWT(user *models.User) (string, error) {
 	tokenString, err := token.SignedString(jwtKey)
 
 	if err != nil {
-		return "", fmt.Errorf("%f", models.ErrorUnableToSignToken)
+		log.Println(err)
 	}
 
-	return tokenString, nil
+	return tokenString
 }
 
 func validateUserCredentials(user *models.User, credentials *viewmodels.AuthCredentials) error {
 
-	// TODO hash incoming password
-	hashedPassword := credentials.Password
+	passwordMatches := compareHashAndPassword(user.PasswordHash, []byte(credentials.Password))
 
-	if user.PasswordHash != hashedPassword {
+	if !passwordMatches {
 		return fmt.Errorf("%w", models.ErrorInvalidCredentials)
 	}
 
@@ -109,12 +109,35 @@ func validateUserCredentials(user *models.User, credentials *viewmodels.AuthCred
 
 func buildNewUser(credentials *viewmodels.AuthCredentials) (*models.User, error) {
 
-	// TODO generate salt and hash password for the user
+	hashedPassword := hashPassword(credentials.Password)
 
 	user := models.User{
-		Email:        "this is an email mock",
-		PasswordHash: "passwordHash",
+		Email:        credentials.Email,
+		PasswordHash: hashedPassword,
 	}
 
 	return &user, nil
+}
+
+func hashPassword(password string) string {
+
+	passwordBytes := []byte(password)
+
+	hash, err := bcrypt.GenerateFromPassword(passwordBytes, bcrypt.DefaultCost)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return string(hash)
+}
+
+func compareHashAndPassword(hashedPassword string, incomingPassword []byte) bool {
+
+	byteHash := []byte(hashedPassword)
+	err := bcrypt.CompareHashAndPassword(byteHash, incomingPassword)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	return true
 }

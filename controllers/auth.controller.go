@@ -69,9 +69,6 @@ func (c *AuthController) SignUp() gin.HandlerFunc {
 			case errors.Is(err, models.ErrorInvalidCredentials):
 				ctx.JSON(http.StatusUnauthorized, err.Error())
 				return
-			case errors.Is(err, models.ErrorUnableToSignToken):
-				ctx.JSON(http.StatusInternalServerError, err.Error())
-				return
 			default:
 				ctx.JSON(http.StatusInternalServerError, err.Error())
 				return

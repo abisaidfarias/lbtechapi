@@ -2,10 +2,12 @@ package repositories
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/viewmodels"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // IAuthRepository is the auth repository interface
@@ -22,13 +24,19 @@ var userCollection = database.Conn().Collection("users")
 // GetUserByEmail checks database for credentials
 func (r *AuthRepository) GetUserByEmail(credentials *viewmodels.AuthCredentials) (*models.User, error) {
 
-	user := models.User{
-		Email:        "this is an email mock",
-		ID:           "1",
-		PasswordHash: "password",
+	var result models.User
+
+	filter := bson.M{
+		"email": credentials.Email,
 	}
 
-	return &user, nil
+	err := userCollection.FindOne(context.TODO(), filter).Decode(&result)
+
+	if err != nil {
+		return nil, fmt.Errorf("%w", models.ErrorInvalidCredentials)
+	}
+
+	return &result, nil
 }
 
 // SaveUSer saves the new user
@@ -41,6 +49,5 @@ func (r *AuthRepository) SaveUSer(user *models.User) error {
 		return err
 	}
 
-	// TODO change here to return user
 	return nil
 }
