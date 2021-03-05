@@ -9,6 +9,7 @@ import (
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/viewmodels"
 	"github.com/dgrijalva/jwt-go"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -29,6 +30,8 @@ type IAuthService interface {
 // AuthService is the auth service
 type AuthService struct {
 }
+
+// TODO claims struct duplicated fix on auth middleware
 
 // AuthClaims claims to be added in the json payload
 type AuthClaims struct {
@@ -81,15 +84,20 @@ func (s *AuthService) SignUp(credentials *viewmodels.AuthCredentials) error {
 
 // GetUserByID gets an user byID
 func (s *AuthService) GetUserByID(id string) (*models.User, error) {
+	// TODO fix claims no getting from header
+	oid, err := primitive.ObjectIDFromHex("60424f8a204b7a59acc75bcf")
 
-	user, err := repository.GetUserByID(id)
+	if err != nil {
+		return nil, err
+	}
+	user, err := repository.GetUserByOID(oid)
 
 	return user, err
 }
 
 func generateJWT(user *models.User) string {
-
-	expirationTime := time.Now().Add(5 * time.Minute)
+	// TODO move into config and fix time
+	expirationTime := time.Now().Add(999 * time.Minute)
 
 	claims := &AuthClaims{
 		ID: user.ID,

@@ -6,8 +6,8 @@ import (
 
 	"github.com/abisaidfarias/lbtechapi/controllers"
 	"github.com/abisaidfarias/lbtechapi/middlewares"
+	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/gin-gonic/gin"
-	gindump "github.com/tpkeeper/gin-dump"
 )
 
 var (
@@ -18,7 +18,7 @@ func main() {
 
 	server := gin.Default()
 
-	server.Use(gindump.Dump())
+	// server.Use(gindump.Dump())
 
 	auth := server.Group("/auth")
 	{
@@ -27,10 +27,29 @@ func main() {
 	}
 
 	server.Use(middlewares.AuthMiddleware())
+	server.Use(testAuthMiddleware())
 
 	server.GET("/status", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"status": "server is up"})
 	})
 
 	log.Fatal(server.Run(":8080"))
+}
+
+func testAuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		requestUser, exists := c.Get("user")
+
+		if !exists {
+			log.Printf("Unable to extract user from request context for unknown reason: %v\n", c)
+		} else {
+			user := requestUser.(*models.User)
+			log.Println(user.ID)
+			log.Println(user.Email)
+		}
+		// before request
+		c.Next()
+
+	}
 }

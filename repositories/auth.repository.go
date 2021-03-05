@@ -40,20 +40,12 @@ func (r *AuthRepository) GetUserByEmail(credentials *viewmodels.AuthCredentials)
 	return &result, nil
 }
 
-// GetUserByID checks database for credentials
-func (r *AuthRepository) GetUserByID(id string) (*models.User, error) {
+// GetUserByOID checks database for credentials
+func (r *AuthRepository) GetUserByOID(oid primitive.ObjectID) (*models.User, error) {
 
 	var result models.User
 
-	objID, err := primitive.ObjectIDFromHex(id)
-
-	if err != nil {
-		return nil, err
-	}
-
-	filter := bson.M{"_id": objID}
-
-	err = userCollection.FindOne(context.TODO(), filter).Decode(&result)
+	err := userCollection.FindOne(context.TODO(), bson.M{"_id": oid}).Decode(&result)
 
 	if err != nil {
 		// TODO this should not be "invalid credentials" should be another error, credentials is from the service
