@@ -12,7 +12,14 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var jwtKey = []byte("my_secret_key")
+var (
+	repository repositories.AuthRepository
+)
+
+// TODO move into correct package
+
+// JwtKey is the key
+var JwtKey = []byte("my_secret_key")
 
 // IAuthService auth interface
 type IAuthService interface {
@@ -23,15 +30,14 @@ type IAuthService interface {
 type AuthService struct {
 }
 
-// Claims claims to be added in the json payload
-type Claims struct {
+// AuthClaims claims to be added in the json payload
+type AuthClaims struct {
 	ID string `json:"id"`
 	jwt.StandardClaims
 }
 
 // SignIn sign the user in
 func (s *AuthService) SignIn(credentials *viewmodels.AuthCredentials) (*viewmodels.UserResponse, error) {
-	repository := repositories.AuthRepository{}
 
 	user, err := repository.GetUserByEmail(credentials)
 
@@ -60,7 +66,6 @@ func (s *AuthService) SignIn(credentials *viewmodels.AuthCredentials) (*viewmode
 
 // SignUp creates and saves the new user
 func (s *AuthService) SignUp(credentials *viewmodels.AuthCredentials) error {
-	repository := repositories.AuthRepository{}
 
 	user, err := buildNewUser(credentials)
 
@@ -74,11 +79,24 @@ func (s *AuthService) SignUp(credentials *viewmodels.AuthCredentials) error {
 	return nil
 }
 
+// GetUserByID gets an user byID
+func (s *AuthService) GetUserByID(id string) (*models.User, error) {
+
+	user, err := repository.GetUserByID(id)
+
+	// error saving the new user
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
 func generateJWT(user *models.User) string {
 
 	expirationTime := time.Now().Add(5 * time.Minute)
 
-	claims := &Claims{
+	claims := &AuthClaims{
 		ID: user.ID,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
@@ -87,7 +105,7 @@ func generateJWT(user *models.User) string {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	tokenString, err := token.SignedString(jwtKey)
+	tokenString, err := token.SignedString(JwtKey)
 
 	if err != nil {
 		log.Println(err)

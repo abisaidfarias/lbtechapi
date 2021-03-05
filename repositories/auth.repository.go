@@ -7,6 +7,7 @@ import (
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/viewmodels"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -33,6 +34,29 @@ func (r *AuthRepository) GetUserByEmail(credentials *viewmodels.AuthCredentials)
 	err := userCollection.FindOne(context.TODO(), filter).Decode(&result)
 
 	if err != nil {
+		return nil, fmt.Errorf("%w", models.ErrorInvalidCredentials)
+	}
+
+	return &result, nil
+}
+
+// GetUserByID checks database for credentials
+func (r *AuthRepository) GetUserByID(id string) (*models.User, error) {
+
+	var result models.User
+
+	objID, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	filter := bson.M{"_id": objID}
+
+	err = userCollection.FindOne(context.TODO(), filter).Decode(&result)
+
+	if err != nil {
+		// TODO this should not be "invalid credentials" should be another error, credentials is from the service
 		return nil, fmt.Errorf("%w", models.ErrorInvalidCredentials)
 	}
 
