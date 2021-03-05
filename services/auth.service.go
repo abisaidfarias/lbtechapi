@@ -57,6 +57,7 @@ func (s *AuthService) SignIn(credentials *viewmodels.AuthCredentials) (*viewmode
 	return &userResponse, nil
 }
 
+// SignUp creates and saves the new user
 func (s *AuthService) SignUp(credentials *viewmodels.AuthCredentials) error {
 	repository := repositories.AuthRepository{}
 
