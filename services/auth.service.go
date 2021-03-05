@@ -18,8 +18,8 @@ var (
 
 // TODO move into correct package
 
-// JwtKey is the key
-var JwtKey = []byte("my_secret_key")
+// JWTKey is the key
+var JWTKey = []byte("my_secret_key")
 
 // IAuthService auth interface
 type IAuthService interface {
@@ -84,12 +84,7 @@ func (s *AuthService) GetUserByID(id string) (*models.User, error) {
 
 	user, err := repository.GetUserByID(id)
 
-	// error saving the new user
-	if err != nil {
-		return nil, err
-	}
-
-	return user, nil
+	return user, err
 }
 
 func generateJWT(user *models.User) string {
@@ -105,7 +100,7 @@ func generateJWT(user *models.User) string {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	tokenString, err := token.SignedString(JwtKey)
+	tokenString, err := token.SignedString(JWTKey)
 
 	if err != nil {
 		log.Println(err)

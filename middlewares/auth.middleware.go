@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/abisaidfarias/lbtechapi/services"
 	"github.com/dgrijalva/jwt-go"
@@ -28,9 +29,24 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		token := h.jwt
 
-		claims, err := extractClaims(token)
+		idTokenHeader := strings.Split(h.jwt, "Bearer ")
 
-		user, err := authService.GetUserByID(claims.ID)
+		if len(idTokenHeader) < 2 {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Bearer is required"})
+			ctx.Abort()
+			return
+		}
+
+		claims, err := validateToken(token)
+
+		if err != nil {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			ctx.Abort()
+			return
+		}
+
+		id := claims.ID
+		user, err := authService.GetUserByID(id)
 
 		if err != nil {
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
@@ -42,14 +58,15 @@ func AuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-func extractClaims(token string) (*services.AuthClaims, error) {
-	claims := services.AuthClaims{}
-	_, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
-		return services.JwtKey, nil
+func validateToken(tokenString string) (*services.AuthClaims, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return services.JWTKey, nil
 	})
 
-	if err != nil {
-		return nil, err
+	if err == nil && token.Valid {
+		claims, _ := token.Claims.(services.AuthClaims)
+		return &claims, nil
 	}
-	return &claims, nil
+
+	return nil, err
 }
