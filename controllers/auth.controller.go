@@ -23,7 +23,7 @@ type AuthController struct {
 // SignIn signs the user in
 func (c *AuthController) SignIn() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		credentials := v.AuthCredentials{}
+		credentials := viewmodels.AuthCredentials{}
 
 		err := ctx.BindJSON(&credentials)
 
@@ -31,12 +31,15 @@ func (c *AuthController) SignIn() gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, err)
 		}
 
-		user, err := c.AuthService.SignIn(&credentials)
+		userRes, err := c.AuthService.SignIn(&credentials)
 
 		if err != nil {
 			switch {
 			case errors.Is(err, models.ErrorInvalidCredentials):
 				ctx.JSON(http.StatusUnauthorized, err.Error())
+				return
+			case errors.Is(err, models.ErrorUnableToSignToken):
+				ctx.JSON(http.StatusInternalServerError, err.Error())
 				return
 			default:
 				ctx.JSON(http.StatusInternalServerError, err.Error())
@@ -44,6 +47,38 @@ func (c *AuthController) SignIn() gin.HandlerFunc {
 			}
 		}
 
-		ctx.JSON(http.StatusOK, *user)
+		ctx.JSON(http.StatusOK, *userRes)
+	}
+}
+
+func (c *AuthController) SignUp() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		// TODO move into full register info
+		credentials := viewmodels.AuthCredentials{}
+
+		err := ctx.BindJSON(&credentials)
+
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, err)
+		}
+
+		err = c.AuthService.SignUp(&credentials)
+
+		if err != nil {
+			switch {
+			case errors.Is(err, models.ErrorInvalidCredentials):
+				ctx.JSON(http.StatusUnauthorized, err.Error())
+				return
+			case errors.Is(err, models.ErrorUnableToSignToken):
+				ctx.JSON(http.StatusInternalServerError, err.Error())
+				return
+			default:
+				ctx.JSON(http.StatusInternalServerError, err.Error())
+				return
+			}
+		}
+
+		ctx.Status(http.StatusCreated)
+
 	}
 }
