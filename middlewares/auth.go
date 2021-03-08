@@ -12,7 +12,7 @@ import (
 )
 
 type authHeader struct {
-	token string `header:"Authorization" binding:"required"`
+	IDToken string `header:"Authorization" binding:"required"`
 }
 
 var (
@@ -32,7 +32,13 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		idTokenHeader := strings.Split(h.token, "Bearer ")
+		idTokenHeader := strings.Split(h.IDToken, "Bearer ")
+
+		if len(idTokenHeader) < 1 {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Auth token is required"})
+			ctx.Abort()
+			return
+		}
 
 		if len(idTokenHeader) < 2 {
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Bearer is required in authorization token"})
