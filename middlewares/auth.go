@@ -25,7 +25,6 @@ func AuthMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		h := authHeader{}
 
-		// getting header to stract the jwt
 		if err := ctx.ShouldBindHeader(&h); err != nil {
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			ctx.Abort()
@@ -33,12 +32,6 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		idTokenHeader := strings.Split(h.Token, "Bearer ")
-
-		if len(idTokenHeader) < 1 {
-			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Auth token is required"})
-			ctx.Abort()
-			return
-		}
 
 		if len(idTokenHeader) < 2 {
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Bearer is required in authorization token"})
