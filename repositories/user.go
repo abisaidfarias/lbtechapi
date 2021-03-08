@@ -59,7 +59,6 @@ func (r *userRepository) GetByOID(oid primitive.ObjectID) (*models.User, error) 
 	var result models.User
 
 	err := userCollection.FindOne(context.TODO(), bson.M{"_id": oid}).Decode(&result)
-
 	if err != nil {
 		return nil, fmt.Errorf("%w", utils.ErrorInQuery)
 	}

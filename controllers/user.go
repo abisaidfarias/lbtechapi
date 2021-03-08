@@ -13,7 +13,7 @@ import (
 // IUserController controller
 type IUserController interface {
 	Create() gin.HandlerFunc
-	GetByOid() gin.HandlerFunc
+	GetByOID() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
@@ -63,7 +63,7 @@ func (c *userController) Create() gin.HandlerFunc {
 
 	}
 }
-func (c *userController) GetByOid() gin.HandlerFunc {
+func (c *userController) GetByOID() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var id string
 
@@ -74,7 +74,7 @@ func (c *userController) GetByOid() gin.HandlerFunc {
 			return
 		}
 
-		user, err := c.userService.GetByOID(id)
+		user, err := c.userService.GetByID(id)
 
 		if err != nil {
 			switch {

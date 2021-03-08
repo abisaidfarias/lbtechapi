@@ -2,77 +2,74 @@ package middlewares
 
 import (
 	"fmt"
-	// "net/http"
-	// "strings"
+	"net/http"
+	"strings"
 
+	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/services"
 	"github.com/dgrijalva/jwt-go"
-	// "github.com/gin-gonic/gin"
-)
-
-var (
-	authService services.IAuthService
+	"github.com/gin-gonic/gin"
 )
 
 type authHeader struct {
-	IDToken string `header:"Authorization"`
+	token string `header:"Authorization" binding:"required"`
 }
 
-// idTokenCustomClaims holds structure of jwt claims of idToken
-type idTokenCustomClaims struct {
-	ID string `json:"id"`
-	jwt.StandardClaims
-}
+var (
+	userRepository repositories.IUserRepository = repositories.NewUserRepository()
+	userService    services.IUserService        = services.NewUserService(userRepository)
+)
 
 // AuthMiddleware is the jwt middleware
-// func AuthMiddleware() gin.HandlerFunc {
-// 	return func(ctx *gin.Context) {
-// 		h := authHeader{}
+func AuthMiddleware() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		h := authHeader{}
 
-// 		// getting header to stract the jwt
-// 		if err := ctx.ShouldBindHeader(&h); err != nil {
-// 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-// 		}
+		// getting header to stract the jwt
+		if err := ctx.ShouldBindHeader(&h); err != nil {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			ctx.Abort()
+			return
+		}
 
-// 		idTokenHeader := strings.Split(h.IDToken, "Bearer ")
+		idTokenHeader := strings.Split(h.token, "Bearer ")
 
-// 		if len(idTokenHeader) < 2 {
-// 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Bearer is required"})
-// 			ctx.Abort()
-// 			return
-// 		}
+		if len(idTokenHeader) < 2 {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Bearer is required in authorization token"})
+			ctx.Abort()
+			return
+		}
 
-// 		claims, err := validateToken(idTokenHeader[1])
+		claims, err := validateToken(idTokenHeader[1])
 
-// 		if err != nil {
-// 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-// 			ctx.Abort()
-// 			return
-// 		}
+		if err != nil {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			ctx.Abort()
+			return
+		}
 
-// 		user, err := authService.GetUserByID(claims.ID)
+		user, err := userService.GetByID(claims.ID)
 
-// 		if err != nil {
-// 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-// 			ctx.Abort()
-// 			return
-// 		}
+		if err != nil {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			ctx.Abort()
+			return
+		}
 
-// 		ctx.Set("user", user)
+		ctx.Set("user", user)
 
-// 		ctx.Next()
-// 	}
-// }
+		ctx.Next()
+	}
+}
 
-func validateToken(tokenString string) (*idTokenCustomClaims, error) {
+func validateToken(tokenString string) (*services.AuthClaims, error) {
 
-	claims := &idTokenCustomClaims{}
+	claims := &services.AuthClaims{}
 
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		return services.JWTKey, nil
 	})
 
-	// For now we'll just return the error and handle logging in service level
 	if err != nil {
 		return nil, err
 	}
@@ -81,12 +78,11 @@ func validateToken(tokenString string) (*idTokenCustomClaims, error) {
 		return nil, fmt.Errorf("ID token is invalid")
 	}
 
-	claims, ok := token.Claims.(*idTokenCustomClaims)
+	claims, ok := token.Claims.(*services.AuthClaims)
 
 	if !ok {
 		return nil, fmt.Errorf("ID token valid but couldn't parse claims")
 	}
 
 	return claims, nil
-
 }

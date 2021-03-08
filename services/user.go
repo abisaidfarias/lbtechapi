@@ -15,7 +15,7 @@ import (
 // IUserService auth interface
 type IUserService interface {
 	Create(*request.UserRequest) error
-	GetByOID(id string) (*responses.UserResponse, error)
+	GetByID(id string) (*responses.UserResponse, error)
 }
 type userService struct {
 	userRepository repositories.IUserRepository
@@ -39,7 +39,7 @@ func (s *userService) Create(userRequest *request.UserRequest) error {
 }
 
 //GetByOID gets an user by ID
-func (s *userService) GetByOID(id string) (*responses.UserResponse, error) {
+func (s *userService) GetByID(id string) (*responses.UserResponse, error) {
 
 	oid, err := primitive.ObjectIDFromHex(id)
 
