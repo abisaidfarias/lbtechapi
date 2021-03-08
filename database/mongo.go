@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 
+	"github.com/abisaidfarias/lbtechapi/utils"
+	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/mgo.v2/bson"
@@ -11,8 +13,11 @@ import (
 
 //Conn on mongo
 func Conn() *mongo.Database {
+	utils.LoadConfig()
 
-	clientOpts := options.Client().ApplyURI("mongodb://lbtechbd-dev:cZ6JkSeY6qtSNO1KRhFqR3RksRtMbQjPXYc0jhDM9RRMXH1i1RxHpOmmQxi3YeRRYQmWL42TK6rr5xIWSKwoyg%3D%3D@lbtechbd-dev.mongo.cosmos.azure.com:10255/?ssl=true&retrywrites=false&maxIdleTimeMS=120000&appName=@lbtechbd-dev@")
+	uri := viper.GetString("uri")
+
+	clientOpts := options.Client().ApplyURI(uri)
 
 	client, err := mongo.Connect(context.TODO(), clientOpts)
 
@@ -27,14 +32,22 @@ func Conn() *mongo.Database {
 
 	database := client.Database("lbtechdev")
 
-	indexModel := mongo.IndexModel{
+	indexEmail := mongo.IndexModel{
 		Keys: bson.M{
 			"email": 1,
 			"dni":   1,
 		}, Options: options.Index().SetUnique(true),
 	}
 
-	database.Collection("users").Indexes().CreateOne(context.Background(), indexModel)
+	indexDni := mongo.IndexModel{
+		Keys: bson.M{
+			"email": 1,
+			"dni":   1,
+		}, Options: options.Index().SetUnique(true),
+	}
+
+	database.Collection("users").Indexes().CreateOne(context.Background(), indexEmail)
+	database.Collection("users").Indexes().CreateOne(context.Background(), indexDni)
 
 	return database
 }

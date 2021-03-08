@@ -8,7 +8,6 @@ import (
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/services"
 	"github.com/abisaidfarias/lbtechapi/utils"
-	"github.com/spf13/viper"
 
 	// "github.com/abisaidfarias/lbtechapi/middlewares"
 
@@ -27,14 +26,6 @@ var (
 )
 
 func main() {
-
-	viper.SetConfigType("yaml")
-
-	viper.SetConfigFile("./config.yaml")
-
-	if err := viper.ReadInConfig(); err != nil {
-		log.Fatal(err)
-	}
 
 	server := gin.Default()
 

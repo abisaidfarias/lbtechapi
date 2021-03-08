@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/abisaidfarias/lbtechapi/services"
@@ -31,7 +30,7 @@ func NewUserController(userService services.IUserService) IUserController {
 
 // SignUp creates a new user
 func (c *userController) Create() gin.HandlerFunc {
-	fmt.Println("test")
+
 	return func(ctx *gin.Context) {
 
 		var user request.UserRequest

@@ -10,11 +10,14 @@ import (
 	"github.com/abisaidfarias/lbtechapi/viewmodels"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/spf13/viper"
 	"golang.org/x/crypto/bcrypt"
 )
 
+var jwtStringKey = viper.GetString("token_key")
+
 // JWTKey is the key
-var JWTKey = []byte("my_secret_key")
+var JWTKey = []byte(jwtStringKey)
 
 // IAuthService auth interface
 type IAuthService interface {

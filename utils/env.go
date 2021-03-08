@@ -11,11 +11,13 @@ func LoadConfig() {
 
 	viper.SetConfigType("yaml")
 
-	viper.SetConfigFile("./config")
+	viper.SetConfigFile("./config.yaml")
 
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatal(err)
 	}
+
+	// fmt.Println(viper.ConfigFileUsed())
 
 	return
 }
