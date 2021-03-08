@@ -35,17 +35,15 @@ func Conn() *mongo.Database {
 	indexEmail := mongo.IndexModel{
 		Keys: bson.M{
 			"email": 1,
-			"dni":   1,
 		}, Options: options.Index().SetUnique(true),
 	}
 
 	indexDni := mongo.IndexModel{
 		Keys: bson.M{
-			"email": 1,
-			"dni":   1,
+			"dni": 1,
 		}, Options: options.Index().SetUnique(true),
 	}
-
+	database.Collection("users").Indexes().DropAll(context.Background())
 	database.Collection("users").Indexes().CreateOne(context.Background(), indexEmail)
 	database.Collection("users").Indexes().CreateOne(context.Background(), indexDni)
 
