@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/abisaidfarias/lbtechapi/services"
-	util "github.com/abisaidfarias/lbtechapi/util/errors"
+	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
 	"github.com/abisaidfarias/lbtechapi/viewmodels"
 	"github.com/gin-gonic/gin"
 )
@@ -43,7 +43,7 @@ func (c *authController) SignIn() gin.HandlerFunc {
 
 		if err != nil {
 			switch {
-			case errors.Is(err, util.ErrorInvalidCredentials):
+			case errors.Is(err, utils.ErrorInvalidCredentials):
 				ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 				return
 			default:

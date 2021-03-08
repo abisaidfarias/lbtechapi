@@ -1,11 +1,11 @@
-package util
+package utils
 
 import "errors"
 
 // ErrorInvalidCredentials Invalid credentials"
 var ErrorInvalidCredentials = errors.New("Invalid credentials")
 
-// DATABASE ERROR
+// DATABASE ERRORS
 
 // ErrorDatabaseContection Unable to connect to database
 var ErrorDatabaseContection = errors.New("Unable to connect to database")

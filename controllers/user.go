@@ -1,12 +1,12 @@
 package controllers
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/abisaidfarias/lbtechapi/services"
-	util "github.com/abisaidfarias/lbtechapi/util/errors"
+	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/gin-gonic/gin"
 )
@@ -37,7 +37,7 @@ func (c *userController) Create() gin.HandlerFunc {
 		var user request.UserRequest
 
 		err := ctx.ShouldBindJSON(&user)
-		
+
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -47,7 +47,7 @@ func (c *userController) Create() gin.HandlerFunc {
 
 		if err != nil {
 			switch {
-			case errors.Is(err, util.ErrorInvalidCredentials):
+			case errors.Is(err, utils.ErrorInvalidCredentials):
 				ctx.JSON(http.StatusUnauthorized, err.Error())
 				return
 			default:
@@ -75,7 +75,7 @@ func (c *userController) GetByOid() gin.HandlerFunc {
 
 		if err != nil {
 			switch {
-			case errors.Is(err, util.ErrorInvalidCredentials):
+			case errors.Is(err, utils.ErrorInvalidCredentials):
 				ctx.JSON(http.StatusUnauthorized, err.Error())
 				return
 			default:

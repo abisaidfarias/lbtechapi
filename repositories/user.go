@@ -8,7 +8,7 @@ import (
 
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/models"
-	util "github.com/abisaidfarias/lbtechapi/util/errors"
+	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -47,7 +47,7 @@ func (r *userRepository) GetByEmail(email string) (*models.User, error) {
 	err := userCollection.FindOne(context.TODO(), filter).Decode(&user)
 
 	if err != nil {
-		return nil, fmt.Errorf("%w", util.ErrorInQuery)
+		return nil, fmt.Errorf("%w", utils.ErrorInQuery)
 	}
 	return &user, nil
 }
@@ -60,7 +60,7 @@ func (r *userRepository) GetByOID(oid primitive.ObjectID) (*models.User, error) 
 	err := userCollection.FindOne(context.TODO(), bson.M{"_id": oid}).Decode(&result)
 
 	if err != nil {
-		return nil, fmt.Errorf("%w", util.ErrorInQuery)
+		return nil, fmt.Errorf("%w", utils.ErrorInQuery)
 	}
 
 	return &result, nil

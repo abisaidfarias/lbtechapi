@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/abisaidfarias/lbtechapi/repositories"
-	util "github.com/abisaidfarias/lbtechapi/util/errors"
+	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
 	"github.com/abisaidfarias/lbtechapi/viewmodels"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 	"github.com/dgrijalva/jwt-go"
@@ -43,11 +43,11 @@ func (s *authService) SignIn(credentials *viewmodels.AuthCredentials) (*response
 
 	user, err := s.userRepository.GetByEmail(credentials.Email)
 	if err != nil {
-		return nil, fmt.Errorf("%w", util.ErrorInvalidCredentials)
+		return nil, fmt.Errorf("%w", utils.ErrorInvalidCredentials)
 	}
 	err = validateUserCredentials(user.PasswordHash, credentials.Password)
 	if err != nil {
-		return nil, fmt.Errorf("%w", util.ErrorInvalidCredentials)
+		return nil, fmt.Errorf("%w", utils.ErrorInvalidCredentials)
 	}
 	token := generateJWT(user.ID.Hex())
 	return &responses.AuthResponse{
@@ -84,7 +84,7 @@ func validateUserCredentials(passwordHash string, password string) error {
 	passwordMatches := compareHashAndPassword(passwordHash, []byte(password))
 
 	if !passwordMatches {
-		return fmt.Errorf("%w", util.ErrorInvalidCredentials)
+		return fmt.Errorf("%w", utils.ErrorInvalidCredentials)
 	}
 
 	return nil
