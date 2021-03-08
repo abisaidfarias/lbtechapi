@@ -20,7 +20,7 @@ type authController struct {
 	authService services.IAuthService
 }
 
-//NewAuthController is the constructor
+// NewAuthController is the constructor
 func NewAuthController(authService services.IAuthService) IAuthController {
 	return &authController{
 		authService: authService,
