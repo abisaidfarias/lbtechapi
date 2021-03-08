@@ -14,7 +14,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var jwtStringKey = viper.GetString("token_key")
+var jwtStringKey = viper.GetString("TOKEN_KEY")
 
 // JWTKey is the key
 var JWTKey = []byte(jwtStringKey)
@@ -38,6 +38,7 @@ func NewAuthService(userRepository repositories.IUserRepository) IAuthService {
 // AuthClaims claims to be added in the json payload
 type AuthClaims struct {
 	ID string `json:"id"`
+	// TODO add companyId to authClaims
 	jwt.StandardClaims
 }
 
@@ -63,6 +64,7 @@ func (s *authService) SignIn(credentials *viewmodels.AuthCredentials) (*response
 // generateJWT create a token
 func generateJWT(userID string) string {
 
+	// TODO move this into environment variable
 	expirationTime := time.Now().Add(999 * time.Minute)
 
 	claims := &AuthClaims{

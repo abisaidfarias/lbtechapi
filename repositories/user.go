@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -75,6 +76,7 @@ func (r *userRepository) SaveUser(user *models.User) error {
 		var merr mongo.WriteException
 		merr = err.(mongo.WriteException)
 		errCode := merr.WriteErrors[0].Code
+		log.Println(err.Error())
 		if errCode == 11000 {
 			return fmt.Errorf("%w", utils.ErrorDuplicated)
 		}

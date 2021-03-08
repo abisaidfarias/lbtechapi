@@ -47,7 +47,9 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		// TODO remove database query to get user
 		user, err := userService.GetByID(claims.ID)
+		// TODO  get payload from token to gin ctx
 
 		if err != nil {
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})

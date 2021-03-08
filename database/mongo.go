@@ -15,7 +15,7 @@ import (
 func Conn() *mongo.Database {
 	utils.LoadConfig()
 
-	uri := viper.GetString("uri")
+	uri := viper.GetString("URI")
 
 	clientOpts := options.Client().ApplyURI(uri)
 
