@@ -7,10 +7,13 @@ import (
 	"github.com/abisaidfarias/lbtechapi/controllers"
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/services"
+	"github.com/abisaidfarias/lbtechapi/utils"
 
 	// "github.com/abisaidfarias/lbtechapi/middlewares"
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 )
 
 var (
@@ -28,9 +31,13 @@ func main() {
 
 	// server.Use(gindump.Dump())
 
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("passwordFormat", utils.ValidPassword)
+	}
+
 	auth := server.Group("/api/v1")
 	{
-		auth.POST("/signIn", authController.SignIn())
+		auth.POST("/sign-in", authController.SignIn())
 		auth.POST("/create", userController.Create())
 	}
 

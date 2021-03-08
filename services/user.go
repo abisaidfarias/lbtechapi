@@ -66,6 +66,7 @@ func buildNewUser(userRequest *request.UserRequest) *models.User {
 		Phone:        userRequest.Phone,
 	}
 }
+
 func buildNewUserResponse(user *models.User) *responses.UserResponse {
 
 	return &responses.UserResponse{

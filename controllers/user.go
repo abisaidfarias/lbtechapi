@@ -38,6 +38,7 @@ func (c *userController) Create() gin.HandlerFunc {
 
 		err := ctx.ShouldBindJSON(&user)
 
+		// TODO add here the correct error response from custom password validator
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
