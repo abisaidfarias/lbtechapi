@@ -2,16 +2,16 @@ package middlewares
 
 import (
 	"fmt"
-	"net/http"
-	"strings"
+	// "net/http"
+	// "strings"
 
 	"github.com/abisaidfarias/lbtechapi/services"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
+	// "github.com/gin-gonic/gin"
 )
 
 var (
-	authService services.AuthService
+	authService services.IAuthService
 )
 
 type authHeader struct {
@@ -25,44 +25,44 @@ type idTokenCustomClaims struct {
 }
 
 // AuthMiddleware is the jwt middleware
-func AuthMiddleware() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		h := authHeader{}
+// func AuthMiddleware() gin.HandlerFunc {
+// 	return func(ctx *gin.Context) {
+// 		h := authHeader{}
 
-		// getting header to stract the jwt
-		if err := ctx.ShouldBindHeader(&h); err != nil {
-			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-		}
+// 		// getting header to stract the jwt
+// 		if err := ctx.ShouldBindHeader(&h); err != nil {
+// 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+// 		}
 
-		idTokenHeader := strings.Split(h.IDToken, "Bearer ")
+// 		idTokenHeader := strings.Split(h.IDToken, "Bearer ")
 
-		if len(idTokenHeader) < 2 {
-			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Bearer is required"})
-			ctx.Abort()
-			return
-		}
+// 		if len(idTokenHeader) < 2 {
+// 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Bearer is required"})
+// 			ctx.Abort()
+// 			return
+// 		}
 
-		claims, err := validateToken(idTokenHeader[1])
+// 		claims, err := validateToken(idTokenHeader[1])
 
-		if err != nil {
-			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-			ctx.Abort()
-			return
-		}
+// 		if err != nil {
+// 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+// 			ctx.Abort()
+// 			return
+// 		}
 
-		user, err := authService.GetUserByID(claims.ID)
+// 		user, err := authService.GetUserByID(claims.ID)
 
-		if err != nil {
-			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-			ctx.Abort()
-			return
-		}
+// 		if err != nil {
+// 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+// 			ctx.Abort()
+// 			return
+// 		}
 
-		ctx.Set("user", user)
+// 		ctx.Set("user", user)
 
-		ctx.Next()
-	}
-}
+// 		ctx.Next()
+// 	}
+// }
 
 func validateToken(tokenString string) (*idTokenCustomClaims, error) {
 

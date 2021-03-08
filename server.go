@@ -5,13 +5,21 @@ import (
 	"net/http"
 
 	"github.com/abisaidfarias/lbtechapi/controllers"
-	"github.com/abisaidfarias/lbtechapi/middlewares"
+	"github.com/abisaidfarias/lbtechapi/repositories"
+	"github.com/abisaidfarias/lbtechapi/services"
+
+	// "github.com/abisaidfarias/lbtechapi/middlewares"
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/gin-gonic/gin"
 )
 
 var (
-	authController controllers.AuthController = controllers.AuthController{}
+	userRepository repositories.IUserRepository = repositories.NewUserRepository()
+	authService    services.IAuthService        = services.NewAuthService(userRepository)
+	authController controllers.IAuthController  = controllers.NewAuthController(authService)
+
+	userService    services.IUserService       = services.NewUserService(userRepository)
+	userController controllers.IUserController = controllers.NewUserController(userService)
 )
 
 func main() {
@@ -20,16 +28,16 @@ func main() {
 
 	// server.Use(gindump.Dump())
 
-	auth := server.Group("/auth")
+	auth := server.Group("/api/v1")
 	{
-		auth.POST("/sign-in", authController.SignIn())
-		auth.POST("/sign-up", authController.SignUp())
+		auth.POST("/signIn", authController.SignIn())
+		auth.POST("/create", userController.Create())
 	}
 
-	server.Use(middlewares.AuthMiddleware())
-	server.Use(testAuthMiddleware())
+	// server.Use(middlewares.AuthMiddleware())
+	// server.Use(testAuthMiddleware())
 
-	server.GET("/status", func(ctx *gin.Context) {
+	server.GET("/health", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"status": "server is up"})
 	})
 

@@ -8,7 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
-
+//Conn on mongo
 func Conn() *mongo.Database {
 	host := "localhost"
 	port := 27017
@@ -19,6 +19,7 @@ func Conn() *mongo.Database {
 	if err != nil {
 		log.Fatal(err)
 	}
+	
 
 	err = client.Ping(context.TODO(), nil)
 	if err != nil {

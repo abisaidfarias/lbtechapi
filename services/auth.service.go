@@ -5,33 +5,32 @@ import (
 	"log"
 	"time"
 
-	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/repositories"
+	util "github.com/abisaidfarias/lbtechapi/util/errors"
 	"github.com/abisaidfarias/lbtechapi/viewmodels"
+	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 	"github.com/dgrijalva/jwt-go"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
-
-var (
-	repository repositories.AuthRepository
-)
-
-// TODO move into correct package
 
 // JWTKey is the key
 var JWTKey = []byte("my_secret_key")
 
 // IAuthService auth interface
 type IAuthService interface {
-	SignIn(*viewmodels.AuthCredentials) models.User
+	SignIn(*viewmodels.AuthCredentials) (*responses.AuthResponse, error)
 }
 
-// AuthService is the auth service
-type AuthService struct {
+type authService struct {
+	userRepository repositories.IUserRepository
 }
 
-// TODO claims struct duplicated fix on auth middleware
+// NewAuthService is a constructor
+func NewAuthService(userRepository repositories.IUserRepository) IAuthService {
+	return &authService{
+		userRepository: userRepository,
+	}
+}
 
 // AuthClaims claims to be added in the json payload
 type AuthClaims struct {
@@ -40,67 +39,31 @@ type AuthClaims struct {
 }
 
 // SignIn sign the user in
-func (s *AuthService) SignIn(credentials *viewmodels.AuthCredentials) (*viewmodels.UserResponse, error) {
+func (s *authService) SignIn(credentials *viewmodels.AuthCredentials) (*responses.AuthResponse, error) {
 
-	user, err := repository.GetUserByEmail(credentials)
-
+	user, err := s.userRepository.GetByEmail(credentials.Email)
 	if err != nil {
-		return nil, fmt.Errorf("%w", models.ErrorInvalidCredentials)
+		return nil, fmt.Errorf("%w", util.ErrorInvalidCredentials)
 	}
-
-	err = validateUserCredentials(user, credentials)
-
-	// invalid credentials
+	err = validateUserCredentials(user.PasswordHash, credentials.Password)
 	if err != nil {
-		return nil, fmt.Errorf("%w", models.ErrorInvalidCredentials)
+		return nil, fmt.Errorf("%w", util.ErrorInvalidCredentials)
 	}
-
-	token := generateJWT(user)
-
-	// build user response
-	userResponse := viewmodels.UserResponse{
+	token := generateJWT(user.ID.Hex())
+	return &responses.AuthResponse{
 		ID:    user.ID,
 		Email: user.Email,
 		Token: token,
-	}
-
-	return &userResponse, nil
+	}, nil
 }
 
-// SignUp creates and saves the new user
-func (s *AuthService) SignUp(credentials *viewmodels.AuthCredentials) error {
+// generateJWT create a token
+func generateJWT(userID string) string {
 
-	user, err := buildNewUser(credentials)
-
-	err = repository.SaveUSer(user)
-
-	// error saving the new user
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// GetUserByID gets an user byID
-func (s *AuthService) GetUserByID(id string) (*models.User, error) {
-	// TODO fix claims no getting from header
-	oid, err := primitive.ObjectIDFromHex("60424f8a204b7a59acc75bcf")
-
-	if err != nil {
-		return nil, err
-	}
-	user, err := repository.GetUserByOID(oid)
-
-	return user, err
-}
-
-func generateJWT(user *models.User) string {
-	// TODO move into config and fix time
 	expirationTime := time.Now().Add(999 * time.Minute)
 
 	claims := &AuthClaims{
-		ID: user.ID,
+		ID: userID,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},
@@ -116,40 +79,15 @@ func generateJWT(user *models.User) string {
 
 	return tokenString
 }
+func validateUserCredentials(passwordHash string, password string) error {
 
-func validateUserCredentials(user *models.User, credentials *viewmodels.AuthCredentials) error {
-
-	passwordMatches := compareHashAndPassword(user.PasswordHash, []byte(credentials.Password))
+	passwordMatches := compareHashAndPassword(passwordHash, []byte(password))
 
 	if !passwordMatches {
-		return fmt.Errorf("%w", models.ErrorInvalidCredentials)
+		return fmt.Errorf("%w", util.ErrorInvalidCredentials)
 	}
 
 	return nil
-}
-
-func buildNewUser(credentials *viewmodels.AuthCredentials) (*models.User, error) {
-
-	hashedPassword := hashPassword(credentials.Password)
-
-	user := models.User{
-		Email:        credentials.Email,
-		PasswordHash: hashedPassword,
-	}
-
-	return &user, nil
-}
-
-func hashPassword(password string) string {
-
-	passwordBytes := []byte(password)
-
-	hash, err := bcrypt.GenerateFromPassword(passwordBytes, bcrypt.DefaultCost)
-	if err != nil {
-		log.Println(err)
-	}
-
-	return string(hash)
 }
 
 func compareHashAndPassword(hashedPassword string, incomingPassword []byte) bool {
