@@ -6,6 +6,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"gopkg.in/mgo.v2/bson"
 )
 
 //Conn on mongo
@@ -22,5 +23,17 @@ func Conn() *mongo.Database {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return client.Database("lbtechdev")
+
+	database := client.Database("lbtechdev")
+
+	indexModel := mongo.IndexModel{
+		Keys: bson.M{
+			"email": 1,
+			"dni":   1,
+		}, Options: options.Index().SetUnique(true),
+	}
+
+	database.Collection("users").Indexes().CreateOne(context.Background(), indexModel)
+
+	return database
 }
