@@ -54,34 +54,3 @@ func (c *authController) SignIn() gin.HandlerFunc {
 		ctx.JSON(http.StatusOK, *userRes)
 	}
 }
-
-// SignUp creates a new user
-// func (c *AuthController) SignUp() gin.HandlerFunc {
-// 	return func(ctx *gin.Context) {
-// 		// TODO move into full register view model
-// 		var credentials viewmodels.AuthCredentials
-
-// 		err := ctx.ShouldBindJSON(&credentials)
-
-// 		if err != nil {
-// 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 			return
-// 		}
-
-// 		err = c.AuthService.SignUp(&credentials)
-
-// 		if err != nil {
-// 			switch {
-// 			case errors.Is(err, models.ErrorInvalidCredentials):
-// 				ctx.JSON(http.StatusUnauthorized, err.Error())
-// 				return
-// 			default:
-// 				ctx.JSON(http.StatusInternalServerError, err.Error())
-// 				return
-// 			}
-// 		}
-
-// 		ctx.Status(http.StatusCreated)
-
-// 	}
-// }
