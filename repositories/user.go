@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/models"
@@ -72,6 +73,12 @@ func (r *userRepository) SaveUser(user *models.User) error {
 	_, err := userCollection.InsertOne(context.TODO(), user)
 
 	if err != nil {
+		var merr mongo.WriteException
+		merr = err.(mongo.WriteException)
+		errCode := merr.WriteErrors[0].Code
+		if errCode == 11000 {
+			return fmt.Errorf("%w", utils.ErrorDuplicated)
+		}
 		return err
 	}
 

@@ -48,10 +48,13 @@ func (c *userController) Create() gin.HandlerFunc {
 		if err != nil {
 			switch {
 			case errors.Is(err, utils.ErrorInvalidCredentials):
-				ctx.JSON(http.StatusUnauthorized, err.Error())
+				ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+				return
+			case errors.Is(err, utils.ErrorDuplicated):
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 				return
 			default:
-				ctx.JSON(http.StatusInternalServerError, err.Error())
+				ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
 			}
 		}
