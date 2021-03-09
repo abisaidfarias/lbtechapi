@@ -2,7 +2,6 @@ package services
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/abisaidfarias/lbtechapi/repositories"
@@ -79,7 +78,7 @@ func generateJWT(userID string) string {
 	tokenString, err := token.SignedString(JWTKey)
 
 	if err != nil {
-		log.Println(err)
+		panic(err)
 	}
 
 	return tokenString
@@ -100,7 +99,6 @@ func compareHashAndPassword(hashedPassword string, incomingPassword []byte) bool
 	byteHash := []byte(hashedPassword)
 	err := bcrypt.CompareHashAndPassword(byteHash, incomingPassword)
 	if err != nil {
-		log.Println(err)
 		return false
 	}
 	return true

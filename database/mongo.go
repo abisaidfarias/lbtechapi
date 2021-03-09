@@ -65,6 +65,6 @@ func initDB() *mongo.Database {
 	database.Collection("users").Indexes().DropAll(context.Background())
 	database.Collection("users").Indexes().CreateOne(context.Background(), indexEmail)
 	database.Collection("users").Indexes().CreateOne(context.Background(), indexDni)
-	log.Println("DATABASE CONNECTION")
+
 	return database
 }

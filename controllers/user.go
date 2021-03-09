@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/services"
 	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
@@ -15,6 +16,7 @@ import (
 type IUserController interface {
 	Create() gin.HandlerFunc
 	GetByID() gin.HandlerFunc
+	Update() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
@@ -38,7 +40,6 @@ func (c *userController) Create() gin.HandlerFunc {
 
 		err := ctx.ShouldBindJSON(&user)
 
-		// TODO add here the correct error response from custom password validator
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -48,9 +49,6 @@ func (c *userController) Create() gin.HandlerFunc {
 
 		if err != nil {
 			switch {
-			case errors.Is(err, utils.ErrorInvalidCredentials):
-				ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-				return
 			case errors.Is(err, utils.ErrorDuplicated):
 				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 				return
@@ -78,17 +76,48 @@ func (c *userController) GetByID() gin.HandlerFunc {
 
 		user, err := c.userService.GetByID(id)
 
+		// TODO check if switch is needed, which errors should we have here, think about general error handler
 		if err != nil {
 			switch {
-			case errors.Is(err, utils.ErrorInvalidCredentials):
-				ctx.JSON(http.StatusUnauthorized, err.Error())
-				return
 			default:
 				ctx.JSON(http.StatusInternalServerError, err.Error())
 				return
 			}
 		}
 		ctx.JSON(http.StatusOK, *user)
+	}
+
+}
+
+func (c *userController) Update() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		var id string
+
+		id = ctx.Param("id")
+
+		var user models.User
+
+		err := ctx.ShouldBindJSON(&user)
+
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		err = c.userService.Update(id, &user)
+
+		// TODO check if switch is needed, which errors should we have here, think about general error handler
+		if err != nil {
+			switch {
+			default:
+				ctx.JSON(http.StatusInternalServerError, err.Error())
+				return
+			}
+		}
+
+		ctx.Status(http.StatusNoContent)
+
 	}
 
 }

@@ -9,12 +9,12 @@ import (
 // User model
 type User struct {
 	ID           primitive.ObjectID `bson:"_id,omitempty"`
-	Email        string             `bson:"email"`
-	PasswordHash string             `bson:"passwordHash"`
-	Name         string             `bson:"name"`
-	LastName     string             `bson:"lastName"`
-	Phone        string             `bson:"phone"`
-	Dni          string             `bson:"dni"`
-	CreatedAt    time.Time          `bson:"created_at"`
+	Email        string             `bson:"email,omitempty"`
+	PasswordHash string             `bson:"passwordHash,omitempty"`
+	Name         string             `bson:"name,omitempty"`
+	LastName     string             `bson:"lastName,omitempty"`
+	Phone        string             `bson:"phone,omitempty"`
+	Dni          string             `bson:"dni,omitempty"`
+	CreatedAt    time.Time          `bson:"created_at,omitempty"`
 	UpdatedAt    time.Time          `bson:"updated_at,omitempty"`
 }
