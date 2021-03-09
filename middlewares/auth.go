@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/services"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -14,11 +13,6 @@ import (
 type authHeader struct {
 	Token string `header:"Authorization" binding:"required"`
 }
-
-var (
-	userRepository repositories.IUserRepository = repositories.NewUserRepository()
-	userService    services.IUserService        = services.NewUserService(userRepository)
-)
 
 // AuthMiddleware is the jwt middleware
 func AuthMiddleware() gin.HandlerFunc {
@@ -47,17 +41,9 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// TODO remove database query to get user
-		user, err := userService.GetByID(claims.ID)
-		// TODO  get payload from token to gin ctx
-
-		if err != nil {
-			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-			ctx.Abort()
-			return
-		}
-
-		ctx.Set("user", user)
+		ctx.Set("userID", claims.ID)
+		// TODO add this after company relation
+		// ctx.Set("companyID", claims.companyID)
 
 		ctx.Next()
 	}
