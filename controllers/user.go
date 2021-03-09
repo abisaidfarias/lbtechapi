@@ -17,6 +17,7 @@ type IUserController interface {
 	Create() gin.HandlerFunc
 	GetByID() gin.HandlerFunc
 	Update() gin.HandlerFunc
+	Delete() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
@@ -117,7 +118,29 @@ func (c *userController) Update() gin.HandlerFunc {
 		}
 
 		ctx.Status(http.StatusNoContent)
+	}
 
+}
+
+func (c *userController) Delete() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		var id string
+
+		id = ctx.Param("id")
+
+		err := c.userService.Delete(id)
+
+		// TODO check if switch is needed, which errors should we have here, think about general error handler
+		if err != nil {
+			switch {
+			default:
+				ctx.JSON(http.StatusInternalServerError, err.Error())
+				return
+			}
+		}
+
+		ctx.Status(http.StatusNoContent)
 	}
 
 }

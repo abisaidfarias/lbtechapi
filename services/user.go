@@ -12,8 +12,9 @@ import (
 // IUserService auth interface
 type IUserService interface {
 	Create(*request.UserRequest) error
-	GetByID(id string) (*responses.UserResponse, error)
-	Update(id string, user *models.User) error
+	GetByID(string) (*responses.UserResponse, error)
+	Update(string, *models.User) error
+	Delete(string) error
 }
 type userService struct {
 	userRepository repositories.IUserRepository
@@ -54,6 +55,16 @@ func (s *userService) GetByID(id string) (*responses.UserResponse, error) {
 func (s *userService) Update(id string, user *models.User) error {
 
 	err := s.userRepository.Update(id, user)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *userService) Delete(id string) error {
+
+	err := s.userRepository.Delete(id)
 
 	if err != nil {
 		return err

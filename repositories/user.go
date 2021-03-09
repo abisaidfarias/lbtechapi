@@ -15,10 +15,11 @@ import (
 
 // IUserRepository is the user repository interface
 type IUserRepository interface {
-	GetByID(id string) (*models.User, error)
-	GetByEmail(email string) (*models.User, error)
-	Save(user *models.User) error
-	Update(id string, user *models.User) error
+	GetByID(string) (*models.User, error)
+	GetByEmail(string) (*models.User, error)
+	Save(*models.User) error
+	Update(string, *models.User) error
+	Delete(string) error
 }
 
 type userRepository struct {
@@ -102,6 +103,19 @@ func (r *userRepository) Update(id string, user *models.User) error {
 	}
 
 	_, err = userCollection.UpdateOne(context.TODO(), bson.M{"_id": oid}, update)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Delete deletes the user
+func (r *userRepository) Delete(id string) error {
+	oid, err := primitive.ObjectIDFromHex(id)
+
+	_, err = userCollection.DeleteOne(context.TODO(), bson.M{"_id": oid})
 
 	if err != nil {
 		return err

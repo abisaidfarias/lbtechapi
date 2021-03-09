@@ -43,6 +43,7 @@ func main() {
 			users.POST("", userController.Create())
 			users.GET("/:id", userController.GetByID())
 			users.PUT("/:id", userController.Update())
+			users.DELETE("/:id", userController.Delete())
 		}
 
 		v1.GET("/health", func(ctx *gin.Context) {
