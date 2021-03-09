@@ -49,11 +49,11 @@ func (c *userController) Create() gin.HandlerFunc {
 
 		if err != nil {
 			handleErrorResponse(ctx, err)
-
+			return
 		}
 
 		ctx.Status(http.StatusCreated)
-
+		return
 	}
 }
 
@@ -72,8 +72,11 @@ func (c *userController) GetByID() gin.HandlerFunc {
 
 		if err != nil {
 			handleErrorResponse(ctx, err)
+			return
 		}
+
 		ctx.JSON(http.StatusOK, *user)
+		return
 	}
 
 }
@@ -98,9 +101,12 @@ func (c *userController) Update() gin.HandlerFunc {
 
 		if err != nil {
 			handleErrorResponse(ctx, err)
+			return
+
 		}
 
 		ctx.Status(http.StatusNoContent)
+		return
 	}
 
 }
@@ -116,9 +122,11 @@ func (c *userController) Delete() gin.HandlerFunc {
 
 		if err != nil {
 			handleErrorResponse(ctx, err)
+			return
 		}
 
 		ctx.Status(http.StatusNoContent)
+		return
 	}
 
 }

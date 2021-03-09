@@ -41,7 +41,10 @@ func (c *authController) SignIn() gin.HandlerFunc {
 
 		if err != nil {
 			handleErrorResponse(ctx, err)
+			return
 		}
+
 		ctx.JSON(http.StatusOK, *userRes)
+		return
 	}
 }
