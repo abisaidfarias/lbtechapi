@@ -35,7 +35,7 @@ func NewUserRepository() IUserRepository {
 	}
 }
 
-var userCollection = database.Conn().Collection("users")
+var userCollection = database.GetInstance().Collection("users")
 
 // GetByEmail checks database for credentials
 func (r *userRepository) GetByEmail(email string) (*models.User, error) {

@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"log"
+	"sync"
 
 	"github.com/abisaidfarias/lbtechapi/utils"
 	"github.com/spf13/viper"
@@ -11,8 +12,25 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+var lock = &sync.Mutex{}
+
+var instance *mongo.Database
+
+// GetInstance returns the unique database instance
+func GetInstance() *mongo.Database {
+	if instance == nil {
+		lock.Lock()
+		defer lock.Unlock()
+		if instance == nil {
+			instance = initDB()
+		}
+	}
+
+	return instance
+}
+
 //Conn on mongo
-func Conn() *mongo.Database {
+func initDB() *mongo.Database {
 	utils.LoadConfig()
 
 	uri := viper.GetString("URI")
@@ -47,6 +65,6 @@ func Conn() *mongo.Database {
 	database.Collection("users").Indexes().DropAll(context.Background())
 	database.Collection("users").Indexes().CreateOne(context.Background(), indexEmail)
 	database.Collection("users").Indexes().CreateOne(context.Background(), indexDni)
-
+	log.Println("DATABASE CONNECTION")
 	return database
 }
