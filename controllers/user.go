@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/abisaidfarias/lbtechapi/services"
@@ -13,7 +14,7 @@ import (
 // IUserController controller
 type IUserController interface {
 	Create() gin.HandlerFunc
-	GetByOID() gin.HandlerFunc
+	GetByID() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
@@ -63,14 +64,15 @@ func (c *userController) Create() gin.HandlerFunc {
 
 	}
 }
-func (c *userController) GetByOID() gin.HandlerFunc {
+
+func (c *userController) GetByID() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var id string
 
-		err := ctx.ShouldBindJSON(&id)
+		id = ctx.Param("id")
 
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		if id == "" {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("%w", utils.ErrorInvalidURLParams)})
 			return
 		}
 

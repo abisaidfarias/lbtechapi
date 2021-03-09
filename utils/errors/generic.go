@@ -5,6 +5,9 @@ import "errors"
 // ErrorInvalidCredentials Invalid credentials"
 var ErrorInvalidCredentials = errors.New("Invalid credentials")
 
+// ErrorInvalidURLParams invalid url params
+var ErrorInvalidURLParams = errors.New("Invalid url params")
+
 // DATABASE ERRORS
 
 // ErrorDatabaseContection Unable to connect to database

@@ -36,10 +36,14 @@ func main() {
 	v1 := server.Group("/api/v1")
 	{
 		v1.POST("/sign-in", authController.SignIn())
-
 		v1.Use(middlewares.AuthMiddleware())
 
-		v1.POST("/create", userController.Create())
+		users := v1.Group("/users")
+		{
+			users.POST("", userController.Create())
+			users.GET("/:id", userController.GetByID())
+		}
+
 		v1.GET("/health", func(ctx *gin.Context) {
 			ctx.JSON(http.StatusOK, gin.H{"status": "server is up"})
 		})

@@ -38,7 +38,7 @@ func (s *userService) Create(userRequest *request.UserRequest) error {
 	return nil
 }
 
-//GetByOID gets an user by ID
+// GetByID gets an user by ID
 func (s *userService) GetByID(id string) (*responses.UserResponse, error) {
 
 	oid, err := primitive.ObjectIDFromHex(id)
@@ -47,6 +47,7 @@ func (s *userService) GetByID(id string) (*responses.UserResponse, error) {
 		return nil, err
 	}
 	user, err := s.userRepository.GetByOID(oid)
+
 	if err != nil {
 		return nil, err
 	}
@@ -70,6 +71,7 @@ func buildNewUser(userRequest *request.UserRequest) *models.User {
 func buildNewUserResponse(user *models.User) *responses.UserResponse {
 
 	return &responses.UserResponse{
+		ID:        user.ID,
 		Email:     user.Email,
 		Name:      user.Name,
 		LastName:  user.LastName,
