@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -49,14 +48,8 @@ func (c *userController) Create() gin.HandlerFunc {
 		err = c.userService.Create(&user)
 
 		if err != nil {
-			switch {
-			case errors.Is(err, utils.ErrorDuplicated):
-				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-				return
-			default:
-				ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-				return
-			}
+			handleErrorResponse(ctx, err)
+
 		}
 
 		ctx.Status(http.StatusCreated)
@@ -77,13 +70,8 @@ func (c *userController) GetByID() gin.HandlerFunc {
 
 		user, err := c.userService.GetByID(id)
 
-		// TODO check if switch is needed, which errors should we have here, think about general error handler
 		if err != nil {
-			switch {
-			default:
-				ctx.JSON(http.StatusInternalServerError, err.Error())
-				return
-			}
+			handleErrorResponse(ctx, err)
 		}
 		ctx.JSON(http.StatusOK, *user)
 	}
@@ -108,13 +96,8 @@ func (c *userController) Update() gin.HandlerFunc {
 
 		err = c.userService.Update(id, &user)
 
-		// TODO check if switch is needed, which errors should we have here, think about general error handler
 		if err != nil {
-			switch {
-			default:
-				ctx.JSON(http.StatusInternalServerError, err.Error())
-				return
-			}
+			handleErrorResponse(ctx, err)
 		}
 
 		ctx.Status(http.StatusNoContent)
@@ -131,13 +114,8 @@ func (c *userController) Delete() gin.HandlerFunc {
 
 		err := c.userService.Delete(id)
 
-		// TODO check if switch is needed, which errors should we have here, think about general error handler
 		if err != nil {
-			switch {
-			default:
-				ctx.JSON(http.StatusInternalServerError, err.Error())
-				return
-			}
+			handleErrorResponse(ctx, err)
 		}
 
 		ctx.Status(http.StatusNoContent)
