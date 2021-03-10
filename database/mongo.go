@@ -3,9 +3,10 @@ package database
 import (
 	"context"
 	"log"
+	"os"
 
-	"github.com/abisaidfarias/lbtechapi/utils"
-	"github.com/spf13/viper"
+	"github.com/joho/godotenv"
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/mgo.v2/bson"
@@ -13,11 +14,10 @@ import (
 
 //Conn on mongo
 func Conn() *mongo.Database {
-	utils.LoadConfig()
 
-	uri := viper.GetString("URI")
-
-	clientOpts := options.Client().ApplyURI(uri)
+	godotenv.Load()
+	log.Println("MONGO", os.Getenv("MONGO_URI"))
+	clientOpts := options.Client().ApplyURI(os.Getenv("MONGO_URI"))
 
 	client, err := mongo.Connect(context.TODO(), clientOpts)
 
@@ -38,15 +38,8 @@ func Conn() *mongo.Database {
 		}, Options: options.Index().SetUnique(true),
 	}
 
-	indexDni := mongo.IndexModel{
-		Keys: bson.M{
-			"dni": 1,
-		}, Options: options.Index().SetUnique(true),
-	}
-
 	database.Collection("users").Indexes().DropAll(context.Background())
 	database.Collection("users").Indexes().CreateOne(context.Background(), indexEmail)
-	database.Collection("users").Indexes().CreateOne(context.Background(), indexDni)
 
 	return database
 }
