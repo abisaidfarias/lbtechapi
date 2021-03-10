@@ -1,9 +1,6 @@
 package services
 
 import (
-	"log"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/abisaidfarias/lbtechapi/models"
@@ -15,7 +12,9 @@ import (
 // IUserService auth interface
 type IUserService interface {
 	Create(*request.UserRequest) error
-	GetByID(id string) (*responses.UserResponse, error)
+	GetByID(string) (*responses.UserResponse, error)
+	Update(string, *models.User) error
+	Delete(string) error
 }
 type userService struct {
 	userRepository repositories.IUserRepository
@@ -30,27 +29,47 @@ func NewUserService(userRepository repositories.IUserRepository) IUserService {
 
 // Create creates and saves the new user
 func (s *userService) Create(userRequest *request.UserRequest) error {
+
 	user := buildNewUser(userRequest)
-	err := s.userRepository.SaveUser(user)
+
+	err := s.userRepository.Save(user)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// GetByID gets an user by ID
+func (s *userService) GetByID(id string) (*responses.UserResponse, error) {
+
+	user, err := s.userRepository.GetByID(id)
+
+	if err != nil {
+		return nil, err
+	}
+	return buildNewUserResponse(user), nil
+}
+
+func (s *userService) Update(id string, user *models.User) error {
+
+	err := s.userRepository.Update(id, user)
+
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-//GetByOID gets an user by ID
-func (s *userService) GetByID(id string) (*responses.UserResponse, error) {
+func (s *userService) Delete(id string) error {
 
-	oid, err := primitive.ObjectIDFromHex(id)
+	err := s.userRepository.Delete(id)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
-	user, err := s.userRepository.GetByOID(oid)
-	if err != nil {
-		return nil, err
-	}
-	return buildNewUserResponse(user), nil
+	return nil
 }
 
 func buildNewUser(userRequest *request.UserRequest) *models.User {
@@ -70,6 +89,7 @@ func buildNewUser(userRequest *request.UserRequest) *models.User {
 func buildNewUserResponse(user *models.User) *responses.UserResponse {
 
 	return &responses.UserResponse{
+		ID:        user.ID,
 		Email:     user.Email,
 		Name:      user.Name,
 		LastName:  user.LastName,
@@ -84,8 +104,9 @@ func hashPassword(password string) string {
 	passwordBytes := []byte(password)
 
 	hash, err := bcrypt.GenerateFromPassword(passwordBytes, bcrypt.DefaultCost)
+
 	if err != nil {
-		log.Println(err)
+		panic(err)
 	}
 
 	return string(hash)

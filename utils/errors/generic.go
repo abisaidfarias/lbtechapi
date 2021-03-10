@@ -5,12 +5,16 @@ import "errors"
 // ErrorInvalidCredentials Invalid credentials"
 var ErrorInvalidCredentials = errors.New("Invalid credentials")
 
+// ErrorInvalidURLParams invalid url params
+var ErrorInvalidURLParams = errors.New("Invalid url params")
+
 // DATABASE ERRORS
+
+// ErrorResourceNotFound Unable to find the resource
+var ErrorResourceNotFound = errors.New("Resource not found")
 
 // ErrorDatabaseContection Unable to connect to database
 var ErrorDatabaseContection = errors.New("Unable to connect to database")
-
-// TODO wrap error 11000
 
 // ErrorDuplicated duplicated data
 var ErrorDuplicated = errors.New("Duplicated data when creating a new document")

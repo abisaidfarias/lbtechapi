@@ -2,7 +2,6 @@ package services
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -62,7 +61,6 @@ func generateJWT(userID string) string {
 	var JWTKey = []byte(os.Getenv("SECRET_KEY"))
 	// TODO move this into environment variable
 	expirationTime := time.Now().Add(999 * time.Minute)
-	log.Println("TIEMPO", expirationTime)
 
 	claims := &AuthClaims{
 		ID: userID,
@@ -76,7 +74,7 @@ func generateJWT(userID string) string {
 	tokenString, err := token.SignedString(JWTKey)
 
 	if err != nil {
-		log.Println(err)
+		panic(err)
 	}
 
 	return tokenString
@@ -97,7 +95,6 @@ func compareHashAndPassword(hashedPassword string, incomingPassword []byte) bool
 	byteHash := []byte(hashedPassword)
 	err := bcrypt.CompareHashAndPassword(byteHash, incomingPassword)
 	if err != nil {
-		log.Println(err)
 		return false
 	}
 	return true

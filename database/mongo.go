@@ -1,19 +1,36 @@
 package database
 
 import (
+	"github.com/joho/godotenv"
+	"os"
 	"context"
 	"log"
-	"os"
-
-	"github.com/joho/godotenv"
+	"sync"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/mgo.v2/bson"
 )
 
+var lock = &sync.Mutex{}
+
+var instance *mongo.Database
+
+// GetInstance returns the unique database instance
+func GetInstance() *mongo.Database {
+	if instance == nil {
+		lock.Lock()
+		defer lock.Unlock()
+		if instance == nil {
+			instance = initDB()
+		}
+	}
+
+	return instance
+}
+
 //Conn on mongo
-func Conn() *mongo.Database {
+func initDB() *mongo.Database {
 
 	godotenv.Load()
 	log.Println("MONGO", os.Getenv("MONGO_URI"))

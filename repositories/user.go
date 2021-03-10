@@ -3,7 +3,6 @@ package repositories
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -16,9 +15,11 @@ import (
 
 // IUserRepository is the user repository interface
 type IUserRepository interface {
-	GetByEmail(email string) (*models.User, error)
-	GetByOID(oid primitive.ObjectID) (*models.User, error)
-	SaveUser(user *models.User) error
+	GetByID(string) (*models.User, error)
+	GetByEmail(string) (*models.User, error)
+	Save(*models.User) error
+	Update(string, *models.User) error
+	Delete(string) error
 }
 
 type userRepository struct {
@@ -35,7 +36,7 @@ func NewUserRepository() IUserRepository {
 	}
 }
 
-var userCollection = database.Conn().Collection("users")
+var userCollection = database.GetInstance().Collection("users")
 
 // GetByEmail checks database for credentials
 func (r *userRepository) GetByEmail(email string) (*models.User, error) {
@@ -55,11 +56,18 @@ func (r *userRepository) GetByEmail(email string) (*models.User, error) {
 }
 
 // GetByOID checks database for credentials
-func (r *userRepository) GetByOID(oid primitive.ObjectID) (*models.User, error) {
+func (r *userRepository) GetByID(id string) (*models.User, error) {
+
+	oid, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+		return nil, err
+	}
 
 	var result models.User
 
-	err := userCollection.FindOne(context.TODO(), bson.M{"_id": oid}).Decode(&result)
+	err = userCollection.FindOne(context.TODO(), bson.M{"_id": oid}).Decode(&result)
+
 	if err != nil {
 		return nil, fmt.Errorf("%w", utils.ErrorInQuery)
 	}
@@ -68,7 +76,7 @@ func (r *userRepository) GetByOID(oid primitive.ObjectID) (*models.User, error) 
 }
 
 // SaveUSer saves the new user
-func (r *userRepository) SaveUser(user *models.User) error {
+func (r *userRepository) Save(user *models.User) error {
 
 	_, err := userCollection.InsertOne(context.TODO(), user)
 
@@ -76,10 +84,40 @@ func (r *userRepository) SaveUser(user *models.User) error {
 		var merr mongo.WriteException
 		merr = err.(mongo.WriteException)
 		errCode := merr.WriteErrors[0].Code
-		log.Println(err.Error())
 		if errCode == 11000 {
 			return fmt.Errorf("%w", utils.ErrorDuplicated)
 		}
+		return err
+	}
+
+	return nil
+}
+
+// Update updates the given that
+func (r *userRepository) Update(id string, user *models.User) error {
+
+	oid, err := primitive.ObjectIDFromHex(id)
+
+	update := bson.M{
+		"$set": user,
+	}
+
+	_, err = userCollection.UpdateOne(context.TODO(), bson.M{"_id": oid}, update)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Delete deletes the user
+func (r *userRepository) Delete(id string) error {
+	oid, err := primitive.ObjectIDFromHex(id)
+
+	_, err = userCollection.DeleteOne(context.TODO(), bson.M{"_id": oid})
+
+	if err != nil {
 		return err
 	}
 

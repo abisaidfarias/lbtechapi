@@ -1,9 +1,10 @@
 package controllers
 
 import (
-	"errors"
+	"fmt"
 	"net/http"
 
+	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/services"
 	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
@@ -13,7 +14,9 @@ import (
 // IUserController controller
 type IUserController interface {
 	Create() gin.HandlerFunc
-	GetByOID() gin.HandlerFunc
+	GetByID() gin.HandlerFunc
+	Update() gin.HandlerFunc
+	Delete() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
@@ -37,7 +40,6 @@ func (c *userController) Create() gin.HandlerFunc {
 
 		err := ctx.ShouldBindJSON(&user)
 
-		// TODO add here the correct error response from custom password validator
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -46,47 +48,85 @@ func (c *userController) Create() gin.HandlerFunc {
 		err = c.userService.Create(&user)
 
 		if err != nil {
-			switch {
-			case errors.Is(err, utils.ErrorInvalidCredentials):
-				ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-				return
-			case errors.Is(err, utils.ErrorDuplicated):
-				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-				return
-			default:
-				ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-				return
-			}
+			handleErrorResponse(ctx, err)
+			return
 		}
 
 		ctx.Status(http.StatusCreated)
-
+		return
 	}
 }
-func (c *userController) GetByOID() gin.HandlerFunc {
+
+func (c *userController) GetByID() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var id string
 
-		err := ctx.ShouldBindJSON(&id)
+		id = ctx.Param("id")
 
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		if id == "" {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("%w", utils.ErrorInvalidURLParams)})
 			return
 		}
 
 		user, err := c.userService.GetByID(id)
 
 		if err != nil {
-			switch {
-			case errors.Is(err, utils.ErrorInvalidCredentials):
-				ctx.JSON(http.StatusUnauthorized, err.Error())
-				return
-			default:
-				ctx.JSON(http.StatusInternalServerError, err.Error())
-				return
-			}
+			handleErrorResponse(ctx, err)
+			return
 		}
+
 		ctx.JSON(http.StatusOK, *user)
+		return
+	}
+
+}
+
+func (c *userController) Update() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		var id string
+
+		id = ctx.Param("id")
+
+		var user models.User
+
+		err := ctx.ShouldBindJSON(&user)
+
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		err = c.userService.Update(id, &user)
+
+		if err != nil {
+			handleErrorResponse(ctx, err)
+			return
+
+		}
+
+		ctx.Status(http.StatusNoContent)
+		return
+	}
+
+}
+
+func (c *userController) Delete() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		var id string
+
+		id = ctx.Param("id")
+
+		err := c.userService.Delete(id)
+
+		if err != nil {
+			handleErrorResponse(ctx, err)
+			return
+		}
+
+		ctx.Status(http.StatusNoContent)
+		return
 	}
 
 }
