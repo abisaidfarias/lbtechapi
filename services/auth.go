@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/abisaidfarias/lbtechapi/repositories"
@@ -9,14 +10,8 @@ import (
 	"github.com/abisaidfarias/lbtechapi/viewmodels"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/spf13/viper"
 	"golang.org/x/crypto/bcrypt"
 )
-
-var jwtStringKey = viper.GetString("TOKEN_KEY")
-
-// JWTKey is the key
-var JWTKey = []byte(jwtStringKey)
 
 // IAuthService auth interface
 type IAuthService interface {
@@ -63,6 +58,7 @@ func (s *authService) SignIn(credentials *viewmodels.AuthCredentials) (*response
 // generateJWT create a token
 func generateJWT(userID string) string {
 
+	var JWTKey = []byte(os.Getenv("SECRET_KEY"))
 	// TODO move this into environment variable
 	expirationTime := time.Now().Add(999 * time.Minute)
 

@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"os"
 	"fmt"
 	"net/http"
 	"strings"
@@ -51,10 +52,11 @@ func AuthMiddleware() gin.HandlerFunc {
 
 func validateToken(tokenString string) (*services.AuthClaims, error) {
 
+	var JWTKey = []byte(os.Getenv("SECRET_KEY"))
 	claims := &services.AuthClaims{}
 
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return services.JWTKey, nil
+		return JWTKey, nil
 	})
 
 	if err != nil {

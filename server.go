@@ -26,7 +26,6 @@ var (
 )
 
 func main() {
-
 	server := gin.Default()
 	// server.Use(gindump.Dump())
 
