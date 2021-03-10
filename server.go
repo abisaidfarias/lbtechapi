@@ -1,41 +1,58 @@
 package main
 
 import (
-	"io"
+	"log"
 	"net/http"
-	"os"
 
 	"github.com/abisaidfarias/lbtechapi/controllers"
 	"github.com/abisaidfarias/lbtechapi/middlewares"
+	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/services"
+	"github.com/abisaidfarias/lbtechapi/utils"
+	"github.com/gin-contrib/cors"
+
 	"github.com/gin-gonic/gin"
-	gindump "github.com/tpkeeper/gin-dump"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 )
 
-func setupLogOutput() {
-	f, _ := os.Create("gin.log")
-	gin.DefaultWriter = io.MultiWriter(f, os.Stdout)
-}
-
 var (
-	userService    services.UserService       = services.New()
-	userController controllers.UserController = controllers.New(userService)
+	userRepository repositories.IUserRepository = repositories.NewUserRepository()
+	authService    services.IAuthService        = services.NewAuthService(userRepository)
+	authController controllers.IAuthController  = controllers.NewAuthController(authService)
+
+	userService    services.IUserService       = services.NewUserService(userRepository)
+	userController controllers.IUserController = controllers.NewUserController(userService)
 )
 
 func main() {
-	setupLogOutput()
+	server := gin.Default()
+	// server.Use(gindump.Dump())
 
-	server := gin.New()
+	server.Use(cors.Default())
 
-	server.Use(gin.Recovery(), middlewares.Logger(),
-		middlewares.BasicAuth(), gindump.Dump())
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("passwordFormat", utils.ValidPassword)
+	}
 
-	server.GET("/user", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, userController.FindAll())
-	})
-	server.POST("/user", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, userController.Save(ctx))
+	v1 := server.Group("/api/v1")
+	{
+		v1.POST("/sign-in", authController.SignIn())
+		v1.Use(middlewares.AuthMiddleware())
 
-	})
-	server.Run(":8089")
+		users := v1.Group("/users")
+		{
+			users.POST("", userController.Create())
+			users.GET("/:id", userController.GetByID())
+			users.PATCH("/:id", userController.Update())
+			users.DELETE("/:id", userController.Delete())
+		}
+
+		v1.GET("/health", func(ctx *gin.Context) {
+			ctx.JSON(http.StatusOK, gin.H{"status": "server is up"})
+		})
+
+	}
+
+	log.Fatal(server.Run(":8080"))
 }
