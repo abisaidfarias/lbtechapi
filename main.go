@@ -38,6 +38,9 @@ func main() {
 	v1 := server.Group("/api/v1")
 	{
 		v1.POST("/sign-in", authController.SignIn())
+		v1.GET("/health", func(ctx *gin.Context) {
+			ctx.JSON(http.StatusOK, gin.H{"status": "server is up"})
+		})
 		v1.Use(middlewares.AuthMiddleware())
 
 		users := v1.Group("/users")
@@ -47,11 +50,6 @@ func main() {
 			users.PATCH("/:id", userController.Update())
 			users.DELETE("/:id", userController.Delete())
 		}
-
-		v1.GET("/health", func(ctx *gin.Context) {
-			ctx.JSON(http.StatusOK, gin.H{"status": "server is up"})
-		})
-
 	}
 
 	log.Fatal(server.Run(":8080"))
