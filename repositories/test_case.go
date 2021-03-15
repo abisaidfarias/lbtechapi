@@ -24,8 +24,8 @@ type testCaseRepository struct {
 }
 
 // NewTestCategoryRepository is a constructor for the category repository
-func NewTestCaseRepository() ITestCategoryRepository {
-	return &testCategoryRepository{}
+func NewTestCaseRepository() ITestCaseRepository {
+	return &testCaseRepository{}
 }
 
 var testCaseCollection = database.GetInstance().Collection("test-cases")
