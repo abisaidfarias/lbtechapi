@@ -28,7 +28,7 @@ func NewTestCaseService(testCaseRepository repositories.ITestCaseRepository) ITe
 
 // Create creates a new test case
 func (s *testCaseService) Create(testCase *models.TestCase) error {
-
+	testCase.IsActive = true
 	err := s.testCaseRepository.Create(testCase)
 
 	if err != nil {
@@ -74,8 +74,10 @@ func (s *testCaseService) Update(id string, testCase *models.TestCase) error {
 func (s *testCaseService) Upgrade(id string, testCase *models.TestCase) error {
 
 	// updating old testCase
-	testCase.IsActive = false
-	err := s.Update(id, testCase)
+	updated := models.TestCase{
+		IsActive: false,
+	}
+	err := s.Update(id, &updated)
 	if err != nil {
 		return err
 	}
