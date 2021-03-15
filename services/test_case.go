@@ -19,7 +19,7 @@ type testCaseService struct {
 	testCaseRepository repositories.ITestCaseRepository
 }
 
-// NewTestCategoryService is a constructor
+// NewTestCaseService is a constructor
 func NewTestCaseService(testCaseRepository repositories.ITestCaseRepository) ITestCaseService {
 	return &testCaseService{
 		testCaseRepository: testCaseRepository,

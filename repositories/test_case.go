@@ -23,7 +23,7 @@ type ITestCaseRepository interface {
 type testCaseRepository struct {
 }
 
-// NewTestCategoryRepository is a constructor for the category repository
+// NewTestCaseRepository is a constructor for the case repository
 func NewTestCaseRepository() ITestCaseRepository {
 	return &testCaseRepository{}
 }
@@ -33,7 +33,7 @@ var testCaseCollection = database.GetInstance().Collection("test-cases")
 // Create a new tet case
 func (r *testCaseRepository) Create(test *models.TestCase) error {
 
-	_, err := testCategoryCollection.InsertOne(context.TODO(), test)
+	_, err := testCaseCollection.InsertOne(context.TODO(), test)
 
 	if err != nil {
 		return fmt.Errorf("%w", utils.ErrorInQuery)
@@ -47,7 +47,7 @@ func (r *testCaseRepository) Get() ([]*models.TestCase, error) {
 
 	var cases []*models.TestCase
 
-	cursor, err := testCategoryCollection.Find(context.TODO(), bson.M{})
+	cursor, err := testCaseCollection.Find(context.TODO(), bson.M{})
 
 	if err != nil {
 		return nil, fmt.Errorf("%w", utils.ErrorInQuery)
