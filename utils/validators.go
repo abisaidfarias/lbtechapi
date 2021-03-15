@@ -80,6 +80,12 @@ func verifyPassword(password string) error {
 
 // ValidTestCode validates correct code structure
 var ValidTestCaseCode validator.Func = func(fl validator.FieldLevel) bool {
+	codString := fl.Field().String()
+
+	// TOOD remove fix optional check
+	if len(codString) <= 0 {
+		return true
+	}
 
 	incomingCode := fl.Field().String()
 

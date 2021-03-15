@@ -74,10 +74,16 @@ func (s *testCaseService) Update(id string, testCase *models.TestCase) error {
 func (s *testCaseService) Upgrade(id string, testCase *models.TestCase) error {
 
 	// updating old testCase
-	updated := models.TestCase{
-		IsActive: false,
+	// TODO fix for updating without reading again from database
+	updated, err := s.GetByID(id)
+
+	if err != nil {
+		return err
 	}
-	err := s.Update(id, &updated)
+
+	updated.IsActive = false
+
+	err = s.Update(id, updated)
 	if err != nil {
 		return err
 	}
@@ -103,6 +109,14 @@ func (s *testCaseService) Delete(id string) error {
 }
 
 func updateCodeVersion(code string) string {
+	size := len(code)
+	char := []rune(code)[size-1]
+	nextVersion := nextRune(char)
+	res := code[:size-1] + string(nextVersion)
 	// TODO implement
-	return code
+	return res
+}
+
+func nextRune(r rune) rune {
+	return r + 1
 }

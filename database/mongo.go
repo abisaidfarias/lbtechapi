@@ -1,11 +1,12 @@
 package database
 
 import (
-	"github.com/joho/godotenv"
-	"os"
 	"context"
 	"log"
+	"os"
 	"sync"
+
+	"github.com/joho/godotenv"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -33,7 +34,6 @@ func GetInstance() *mongo.Database {
 func initDB() *mongo.Database {
 
 	godotenv.Load()
-	log.Println("MONGO", os.Getenv("MONGO_URI"))
 	clientOpts := options.Client().ApplyURI(os.Getenv("MONGO_URI"))
 
 	client, err := mongo.Connect(context.TODO(), clientOpts)
