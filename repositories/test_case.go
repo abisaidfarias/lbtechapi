@@ -46,7 +46,6 @@ func (r *testCaseRepository) Create(test *models.TestCase) error {
 func (r *testCaseRepository) Get() ([]*models.TestCase, error) {
 
 	var cases []*models.TestCase
-
 	cursor, err := testCaseCollection.Find(context.TODO(), bson.M{})
 
 	if err != nil {

@@ -146,7 +146,7 @@ func generateTestCase(testCase *request.TestCase) (*models.TestCase, error) {
 	return &models.TestCase{
 		Code:        testCase.Code,
 		Name:        testCase.Name,
-		CategoryID:  objID,
+		Category:    objID,
 		IsActive:    testCase.IsActive,
 		Description: testCase.Description,
 		Device:      testCase.Device,
