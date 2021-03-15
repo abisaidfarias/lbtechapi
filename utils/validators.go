@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"unicode"
 
@@ -75,4 +76,14 @@ func verifyPassword(password string) error {
 		return fmt.Errorf(errorString)
 	}
 	return nil
+}
+
+// ValidTestCode validates correct code structure
+var ValidTestCaseCode validator.Func = func(fl validator.FieldLevel) bool {
+
+	incomingCode := fl.Field().String()
+
+	var codeRegex = regexp.MustCompile(`^[A-Z]{3}\-[A-Z0-9]{2}[A-Z]$`)
+
+	return codeRegex.MatchString(incomingCode)
 }

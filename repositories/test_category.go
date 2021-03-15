@@ -46,9 +46,7 @@ func (r *testCategoryRepository) Get() ([]*models.TestCategory, error) {
 
 	var categories []*models.TestCategory
 
-	filter := bson.M{}
-
-	cursor, err := testCategoryCollection.Find(context.TODO(), filter)
+	cursor, err := testCategoryCollection.Find(context.TODO(), bson.M{})
 
 	if err != nil {
 		return nil, fmt.Errorf("%w", utils.ErrorInQuery)

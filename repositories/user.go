@@ -55,7 +55,7 @@ func (r *userRepository) GetByEmail(email string) (*models.User, error) {
 	return &user, nil
 }
 
-// GetByOID checks database for credentials
+// GetByID checks database for credentials
 func (r *userRepository) GetByID(id string) (*models.User, error) {
 
 	oid, err := primitive.ObjectIDFromHex(id)
@@ -75,7 +75,7 @@ func (r *userRepository) GetByID(id string) (*models.User, error) {
 	return &result, nil
 }
 
-// SaveUSer saves the new user
+// Save saves the new user
 func (r *userRepository) Save(user *models.User) error {
 
 	_, err := userCollection.InsertOne(context.TODO(), user)

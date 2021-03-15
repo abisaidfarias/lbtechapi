@@ -39,6 +39,10 @@ func main() {
 		v.RegisterValidation("passwordFormat", utils.ValidPassword)
 	}
 
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("testCaseCode", utils.ValidTestCaseCode)
+	}
+
 	v1 := server.Group("/api/v1")
 	{
 		v1.GET("/health", func(ctx *gin.Context) {

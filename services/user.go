@@ -99,6 +99,7 @@ func buildNewUserResponse(user *models.User) *responses.UserResponse {
 		UpdatedAt: user.UpdatedAt,
 	}
 }
+
 func hashPassword(password string) string {
 
 	passwordBytes := []byte(password)

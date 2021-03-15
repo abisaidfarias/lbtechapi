@@ -1,5 +1,6 @@
 package request
 
+// TODO REMOVE BSON, should only be handle on model
 // UserRequest response to client
 type UserRequest struct {
 	Email    string `json:"email" bson:"email" binding:"required,email"`

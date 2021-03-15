@@ -105,7 +105,7 @@ func (c *userController) Update() gin.HandlerFunc {
 
 		}
 
-		ctx.Status(http.StatusNoContent)
+		ctx.Status(http.StatusOK)
 		return
 	}
 
