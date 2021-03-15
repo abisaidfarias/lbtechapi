@@ -23,6 +23,10 @@ var (
 
 	userService    services.IUserService       = services.NewUserService(userRepository)
 	userController controllers.IUserController = controllers.NewUserController(userService)
+
+	testCategoryRepository repositories.ITestCategoryRepository = repositories.NewTestCategoryRepository()
+	testCategoryService    services.ITestCategoryService        = services.NewTestCategoryService(testCategoryRepository)
+	testCategoryController controllers.ITestCategoryController  = controllers.NewTestCategoryController(testCategoryService)
 )
 
 func main() {
@@ -37,18 +41,36 @@ func main() {
 
 	v1 := server.Group("/api/v1")
 	{
-		v1.POST("/sign-in", authController.SignIn())
 		v1.GET("/health", func(ctx *gin.Context) {
 			ctx.JSON(http.StatusOK, gin.H{"status": "server is up"})
 		})
+
+		v1.POST("/sign-in", authController.SignIn())
 		v1.Use(middlewares.AuthMiddleware())
 
 		users := v1.Group("/users")
 		{
 			users.POST("", userController.Create())
-			users.GET("/:id", userController.GetByID())
-			users.PATCH("/:id", userController.Update())
-			users.DELETE("/:id", userController.Delete())
+			users.GET(":id", userController.GetByID())
+			users.PUT(":id", userController.Update())
+			users.DELETE(":id", userController.Delete())
+		}
+
+		categories := v1.Group("/test-categories")
+		{
+			categories.POST("", testCategoryController.Create())
+			categories.GET("", testCategoryController.Get())
+		}
+
+		testCases := v1.Group("/test-cases")
+		{
+			testCases.POST("")
+			testCases.GET("")
+			testCases.GET(":id")
+			testCases.PUT(":id")
+			testCases.PUT(":id/upgrade")
+			testCases.DELETE(":id")
+
 		}
 	}
 
