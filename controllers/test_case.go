@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/services"
 	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
+	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -36,7 +37,7 @@ func NewTestCaseController(testCaseService services.ITestCaseService) ITestCaseC
 func (c *testCaseController) Create() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
-		var testCase models.TestCase
+		var testCase request.TestCase
 
 		err := ctx.ShouldBindJSON(&testCase)
 
@@ -108,7 +109,7 @@ func (c *testCaseController) Update() gin.HandlerFunc {
 
 		id = ctx.Param("id")
 
-		var testCase models.TestCase
+		var testCase request.TestCase
 
 		err := ctx.ShouldBindJSON(&testCase)
 
@@ -139,7 +140,7 @@ func (c *testCaseController) Upgrade() gin.HandlerFunc {
 
 		id = ctx.Param("id")
 
-		var testCase models.TestCase
+		var testCase request.TestCase
 
 		err := ctx.ShouldBindJSON(&testCase)
 

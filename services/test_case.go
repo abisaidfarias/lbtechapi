@@ -3,15 +3,17 @@ package services
 import (
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/repositories"
+	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // ITestCaseService is the test case service interface
 type ITestCaseService interface {
-	Create(*models.TestCase) error
+	Create(*request.TestCase) error
 	Get() ([]*models.TestCase, error)
 	GetByID(string) (*models.TestCase, error)
-	Update(string, *models.TestCase) error
-	Upgrade(string, *models.TestCase) error
+	Update(string, *request.TestCase) error
+	Upgrade(string, *request.TestCase) error
 	Delete(string) error
 }
 
@@ -27,9 +29,16 @@ func NewTestCaseService(testCaseRepository repositories.ITestCaseRepository) ITe
 }
 
 // Create creates a new test case
-func (s *testCaseService) Create(testCase *models.TestCase) error {
+func (s *testCaseService) Create(testCase *request.TestCase) error {
 	testCase.IsActive = true
-	err := s.testCaseRepository.Create(testCase)
+
+	testCaseModel, err := generateTestCase(testCase)
+
+	if err != nil {
+		return err
+	}
+
+	err = s.testCaseRepository.Create(testCaseModel)
 
 	if err != nil {
 		return err
@@ -61,7 +70,25 @@ func (s *testCaseService) GetByID(id string) (*models.TestCase, error) {
 }
 
 // Update updates a test case
-func (s *testCaseService) Update(id string, testCase *models.TestCase) error {
+func (s *testCaseService) Update(id string, testCase *request.TestCase) error {
+
+	testCaseModel, err := generateTestCase(testCase)
+
+	if err != nil {
+		return err
+	}
+
+	err = s.update(id, testCaseModel)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// TODO check this behavior
+func (s *testCaseService) update(id string, testCase *models.TestCase) error {
+
 	err := s.testCaseRepository.Update(id, testCase)
 
 	if err != nil {
@@ -71,7 +98,7 @@ func (s *testCaseService) Update(id string, testCase *models.TestCase) error {
 }
 
 // Upgrade upgrades a test case
-func (s *testCaseService) Upgrade(id string, testCase *models.TestCase) error {
+func (s *testCaseService) Upgrade(id string, testCase *request.TestCase) error {
 
 	// updating old testCase
 	// TODO fix for updating without reading again from database
@@ -83,7 +110,7 @@ func (s *testCaseService) Upgrade(id string, testCase *models.TestCase) error {
 
 	updated.IsActive = false
 
-	err = s.Update(id, updated)
+	err = s.update(id, updated)
 	if err != nil {
 		return err
 	}
@@ -108,12 +135,30 @@ func (s *testCaseService) Delete(id string) error {
 	return nil
 }
 
+func generateTestCase(testCase *request.TestCase) (*models.TestCase, error) {
+
+	objID, err := primitive.ObjectIDFromHex(testCase.CategoryID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.TestCase{
+		Code:        testCase.Code,
+		Name:        testCase.Name,
+		CategoryID:  objID,
+		IsActive:    testCase.IsActive,
+		Description: testCase.Description,
+		Device:      testCase.Device,
+		Expected:    testCase.Expected,
+	}, nil
+}
+
 func updateCodeVersion(code string) string {
 	size := len(code)
 	char := []rune(code)[size-1]
 	nextVersion := nextRune(char)
 	res := code[:size-1] + string(nextVersion)
-	// TODO implement
 	return res
 }
 
