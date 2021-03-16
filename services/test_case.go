@@ -144,13 +144,13 @@ func generateTestCase(testCase *request.TestCase) (*models.TestCase, error) {
 	}
 
 	return &models.TestCase{
-		Code:        testCase.Code,
-		Name:        testCase.Name,
-		Category:    objID,
-		IsActive:    testCase.IsActive,
-		Description: testCase.Description,
-		Device:      testCase.Device,
-		Expected:    testCase.Expected,
+		Code:         testCase.Code,
+		Name:         testCase.Name,
+		TestCategory: objID,
+		IsActive:     testCase.IsActive,
+		Description:  testCase.Description,
+		Device:       testCase.Device,
+		Expected:     testCase.Expected,
 	}, nil
 }
 
