@@ -3,12 +3,14 @@ package repositories
 import (
 	"context"
 	"fmt"
+	"go.mongodb.org/mongo-driver/mongo"
+	"log"
 
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/models"
 	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // ITestCaseRepository is the test cases repository
@@ -45,8 +47,27 @@ func (r *testCaseRepository) Create(test *models.TestCase) error {
 // Get returns a list of all test cases
 func (r *testCaseRepository) Get() ([]*models.TestCase, error) {
 
+	// mongo tutorial
+	lookupStage := bson.D{{"$lookup", bson.D{{"from", "test_category"}, {"localField", "test_category"}, {"foreignField", "_id"}, {"as", "test_category"}}}}
+	unwindStage := bson.D{{"$unwind", bson.D{{"path", "$podcast"}, {"preserveNullAndEmptyArrays", false}}}}
+
+	cursor, err := testCaseCollection.Aggregate(context.TODO(), mongo.Pipeline{lookupStage, unwindStage})
+	log.Println("Cursor:")
+	log.Println(cursor)
+	if err != nil {
+
+		panic(err)
+	}
+	var showsLoaded []bson.M
+	if err = cursor.All(context.TODO(), &showsLoaded); err != nil {
+
+		panic(err)
+	}
+	fmt.Println(showsLoaded)
+	//
+
 	var cases []*models.TestCase
-	cursor, err := testCaseCollection.Find(context.TODO(), bson.M{})
+	// cursor, err = testCaseCollection.Find(context.TODO(), bson.M{})
 
 	if err != nil {
 		return nil, fmt.Errorf("%w", utils.ErrorInQuery)

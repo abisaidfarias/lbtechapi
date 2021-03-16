@@ -41,11 +41,16 @@ func main() {
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("passwordFormat", utils.ValidPassword)
+	} else {
+		panic("error validation")
 	}
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("testCaseCode", utils.ValidTestCaseCode)
+	} else {
+		panic("error validation")
 	}
+
 
 	v1 := server.Group("/api/v1")
 	{
@@ -78,7 +83,6 @@ func main() {
 			testCases.PUT(":id", testCaseController.Update())
 			testCases.PUT(":id/upgrade", testCaseController.Upgrade())
 			testCases.DELETE(":id", testCaseController.Delete())
-
 		}
 	}
 
