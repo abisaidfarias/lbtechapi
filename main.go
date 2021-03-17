@@ -51,7 +51,6 @@ func main() {
 		panic("error validation")
 	}
 
-
 	v1 := server.Group("/api/v1")
 	{
 		v1.GET("/health", func(ctx *gin.Context) {

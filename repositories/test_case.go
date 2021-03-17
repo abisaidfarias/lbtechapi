@@ -3,21 +3,23 @@ package repositories
 import (
 	"context"
 	"fmt"
-	"go.mongodb.org/mongo-driver/mongo"
 	"log"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"gopkg.in/mgo.v2/bson"
 
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/models"
 	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/bson"
+	mgoBson "go.mongodb.org/mongo-driver/bson"
 )
 
 // ITestCaseRepository is the test cases repository
 type ITestCaseRepository interface {
 	Create(*models.TestCase) error
-	Get() ([]*models.TestCase, error)
-	GetByID(string) (*models.TestCase, error)
+	Get() ([]*bson.M, error)
+	GetByID(string) (*bson.M, error)
 	Update(string, *models.TestCase) error
 	Delete(string) error
 }
@@ -45,58 +47,42 @@ func (r *testCaseRepository) Create(test *models.TestCase) error {
 }
 
 // Get returns a list of all test cases
-func (r *testCaseRepository) Get() ([]*models.TestCase, error) {
+func (r *testCaseRepository) Get() ([]*bson.M, error) {
 
 	// mongo tutorial
-	lookupStage := bson.D{{"$lookup", bson.D{{"from", "test_category"}, {"localField", "test_category"}, {"foreignField", "_id"}, {"as", "test_category"}}}}
-	unwindStage := bson.D{{"$unwind", bson.D{{"path", "$podcast"}, {"preserveNullAndEmptyArrays", false}}}}
+	lookupStage := mgoBson.D{
+		{"$lookup", mgoBson.D{
+			{"from", "test-categories"},
+			{"localField", "test_category"},
+			{"foreignField", "_id"},
+			{"as", "test_category"},
+		}}}
+	unwindStage := mgoBson.D{{"$unwind", mgoBson.D{{"path", "$test_category"}, {"preserveNullAndEmptyArrays", false}}}}
+	matchStage := mgoBson.D{{"$match", mgoBson.D{{"is_active", true}}}}
+	cursor, err := testCaseCollection.Aggregate(context.TODO(), mongo.Pipeline{lookupStage, unwindStage, matchStage})
 
-	cursor, err := testCaseCollection.Aggregate(context.TODO(), mongo.Pipeline{lookupStage, unwindStage})
-	log.Println("Cursor:")
-	log.Println(cursor)
 	if err != nil {
 
 		panic(err)
 	}
-	var showsLoaded []bson.M
-	if err = cursor.All(context.TODO(), &showsLoaded); err != nil {
-
+	var testCases []*bson.M
+	if err = cursor.All(context.TODO(), &testCases); err != nil {
 		panic(err)
 	}
-	fmt.Println(showsLoaded)
-	//
-
-	var cases []*models.TestCase
-	// cursor, err = testCaseCollection.Find(context.TODO(), bson.M{})
-
-	if err != nil {
-		return nil, fmt.Errorf("%w", utils.ErrorInQuery)
-	}
-
-	for cursor.Next(context.TODO()) {
-		var result models.TestCase
-		err := cursor.Decode(&result)
-		if err != nil {
-			return nil, fmt.Errorf("%w", utils.ErrorInQuery)
-		}
-		cases = append(cases, &result)
-	}
-
 	cursor.Close(context.TODO())
-
-	return cases, nil
+	return testCases, nil
 }
 
-func (r *testCaseRepository) GetByID(id string) (*models.TestCase, error) {
+func (r *testCaseRepository) GetByID(id string) (*bson.M, error) {
 	oid, err := primitive.ObjectIDFromHex(id)
 
 	if err != nil {
 		return nil, err
 	}
 
-	var result models.TestCase
+	var result bson.M
 
-	err = testCaseCollection.FindOne(context.TODO(), bson.M{"_id": oid}).Decode(&result)
+	err = testCaseCollection.FindOne(context.TODO(), mgoBson.M{"_id": oid}).Decode(&result)
 
 	if err != nil {
 		return nil, fmt.Errorf("%w", utils.ErrorInQuery)
@@ -104,16 +90,15 @@ func (r *testCaseRepository) GetByID(id string) (*models.TestCase, error) {
 
 	return &result, nil
 }
-
-// Update updates the test case
 func (r *testCaseRepository) Update(id string, testCase *models.TestCase) error {
+	
 	oid, err := primitive.ObjectIDFromHex(id)
 
-	update := bson.M{
+	update := mgoBson.M{
 		"$set": testCase,
 	}
-
-	_, err = testCaseCollection.UpdateOne(context.TODO(), bson.M{"_id": oid}, update)
+	log.Println("update test", testCase)
+	_, err = testCaseCollection.UpdateOne(context.TODO(), mgoBson.M{"_id": oid}, update)
 
 	if err != nil {
 		return err
@@ -121,12 +106,10 @@ func (r *testCaseRepository) Update(id string, testCase *models.TestCase) error 
 
 	return nil
 }
-
-// Delete deletes the test case
 func (r *testCaseRepository) Delete(id string) error {
 	oid, err := primitive.ObjectIDFromHex(id)
 
-	_, err = testCaseCollection.DeleteOne(context.TODO(), bson.M{"_id": oid})
+	_, err = testCaseCollection.DeleteOne(context.TODO(), mgoBson.M{"_id": oid})
 
 	if err != nil {
 		return err
