@@ -9,7 +9,6 @@ import (
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/services"
 	"github.com/abisaidfarias/lbtechapi/utils"
-	"github.com/gin-contrib/cors"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -35,9 +34,8 @@ var (
 
 func main() {
 	server := gin.Default()
+	server.Use(middlewares.CORSMiddleware())
 	// server.Use(gindump.Dump())
-
-	server.Use(cors.Default())
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("passwordFormat", utils.ValidPassword)
