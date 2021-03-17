@@ -4,12 +4,13 @@ import (
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // ITestCategoryService is the testCategory service
 type ITestCategoryService interface {
 	Create(*request.TestCategory) (string, error)
-	Get() ([]*models.TestCategory, error)
+	Get() ([]*bson.M, error)
 }
 
 type testCategoryService struct {
@@ -38,7 +39,7 @@ func (s *testCategoryService) Create(category *request.TestCategory) (string, er
 }
 
 // Get gets a list of all categories
-func (s *testCategoryService) Get() ([]*models.TestCategory, error) {
+func (s *testCategoryService) Get() ([]*bson.M, error) {
 	result, err := s.testCategoryRepository.Get()
 
 	if err != nil {

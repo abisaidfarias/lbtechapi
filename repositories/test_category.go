@@ -7,14 +7,14 @@ import (
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/models"
 	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // ITestCateogryRepository is the category repository for test cases
 type ITestCategoryRepository interface {
 	Create(category *models.TestCategory) (*primitive.ObjectID, error)
-	Get() ([]*models.TestCategory, error)
+	Get() ([]*bson.M, error)
 }
 
 type testCategoryRepository struct {
@@ -42,9 +42,9 @@ func (r *testCategoryRepository) Create(category *models.TestCategory) (*primiti
 }
 
 // Get returns a list of all test categories
-func (r *testCategoryRepository) Get() ([]*models.TestCategory, error) {
+func (r *testCategoryRepository) Get() ([]*bson.M, error) {
 
-	var categories []*models.TestCategory
+	var categories []*bson.M
 
 	cursor, err := testCategoryCollection.Find(context.TODO(), bson.M{})
 
@@ -53,7 +53,7 @@ func (r *testCategoryRepository) Get() ([]*models.TestCategory, error) {
 	}
 
 	for cursor.Next(context.TODO()) {
-		var result models.TestCategory
+		var result bson.M
 		err := cursor.Decode(&result)
 		if err != nil {
 			return nil, fmt.Errorf("%w", utils.ErrorInQuery)
