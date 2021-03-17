@@ -50,7 +50,7 @@ func (c *testCaseController) Create() gin.HandlerFunc {
 
 		if err != nil {
 			if utils.ErrorDuplicatedData(err) {
-				ctx.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicatedTestCode.Error()})
 				return
 			}
 			ctx.Status(http.StatusInternalServerError)
@@ -127,7 +127,7 @@ func (c *testCaseController) Update() gin.HandlerFunc {
 
 		if err != nil {
 			if utils.ErrorDuplicatedData(err) {
-				ctx.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicatedTestCode.Error()})
 				return
 			}
 			handleErrorResponse(ctx, err)
@@ -162,7 +162,7 @@ func (c *testCaseController) Upgrade() gin.HandlerFunc {
 
 		if err != nil {
 			if utils.ErrorDuplicatedData(err) {
-				ctx.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicatedTestCode.Error()})
 				return
 			}
 			handleErrorResponse(ctx, err)

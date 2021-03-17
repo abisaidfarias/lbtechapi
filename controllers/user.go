@@ -48,6 +48,10 @@ func (c *userController) Create() gin.HandlerFunc {
 		err = c.userService.Create(&user)
 
 		if err != nil {
+			if utils.ErrorDuplicatedData(err) {
+				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicatedUser.Error()})
+				return
+			}
 			handleErrorResponse(ctx, err)
 			return
 		}
@@ -100,6 +104,10 @@ func (c *userController) Update() gin.HandlerFunc {
 		err = c.userService.Update(id, &user)
 
 		if err != nil {
+			if utils.ErrorDuplicatedData(err) {
+				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicatedUser.Error()})
+				return
+			}
 			handleErrorResponse(ctx, err)
 			return
 
