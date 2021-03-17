@@ -25,7 +25,7 @@ func NewTestCategoryRepository() ITestCategoryRepository {
 	return &testCategoryRepository{}
 }
 
-var testCategoryCollection = database.GetInstance().Collection("test-categories")
+var testCategoryCollection = database.GetInstance().Collection("test_categories")
 
 // Create a new category
 func (r *testCategoryRepository) Create(category *models.TestCategory) (*primitive.ObjectID, error) {

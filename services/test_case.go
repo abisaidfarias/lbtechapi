@@ -1,6 +1,8 @@
 package services
 
 import (
+	"log"
+
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/utils/functions"
 	"github.com/abisaidfarias/lbtechapi/utils/mapping"
@@ -32,7 +34,7 @@ func NewTestCaseService(testCaseRepository repositories.ITestCaseRepository) ITe
 // Create creates a new test case
 func (s *testCaseService) Create(testCaseRequest *request.TestCase) error {
 
-	testCase, err := mapping.TestRequestToTestCase(testCaseRequest)
+	testCase, err := mapping.TestRequestToTestCase(testCaseRequest,true)
 	testCase.IsActive = true
 
 	if err != nil {
@@ -73,7 +75,7 @@ func (s *testCaseService) GetByID(id string) (*bson.M, error) {
 // Update updates a test case
 func (s *testCaseService) Update(id string, testCaseRequest *request.TestCase) error {
 
-	testCase, err := mapping.TestRequestToTestCase(testCaseRequest)
+	testCase, err := mapping.TestRequestToTestCase(testCaseRequest,false)
 
 	if err != nil {
 		return err
@@ -86,17 +88,19 @@ func (s *testCaseService) Update(id string, testCaseRequest *request.TestCase) e
 }
 func (s *testCaseService) Upgrade(id string, testCaseRequest *request.TestCase) error {
 
-	testCaseRequest.IsActive = false
-	err := s.Update(id, testCaseRequest)
-	if err != nil {
-		return err
-	}
 	testCaseRequest.Code = functions.UpdateCodeVersion(testCaseRequest.Code)
-	testCaseRequest.IsActive = true
-	err = s.Create(testCaseRequest)
+	err := s.Create(testCaseRequest)
 	if err != nil {
+		log.Println("1")
 		return err
 	}
+	testCaseRequest.IsActive = false
+	err = s.Update(id, testCaseRequest)
+	if err != nil {
+		log.Println("2")
+		return err
+	}
+
 	return nil
 }
 func (s *testCaseService) Delete(id string) error {

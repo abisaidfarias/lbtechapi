@@ -54,9 +54,15 @@ func initDB() *mongo.Database {
 			"email": 1,
 		}, Options: options.Index().SetUnique(true),
 	}
+	indexCode := mongo.IndexModel{
+		Keys: bson.M{
+			"code": 1,
+		}, Options: options.Index().SetUnique(true),
+	}
 
 	database.Collection("users").Indexes().DropAll(context.Background())
 	database.Collection("users").Indexes().CreateOne(context.Background(), indexEmail)
-
+	database.Collection("test_cases").Indexes().DropAll(context.Background())
+	database.Collection("test_cases").Indexes().CreateOne(context.Background(), indexCode)
 	return database
 }

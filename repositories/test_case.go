@@ -6,13 +6,12 @@ import (
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/abisaidfarias/lbtechapi/database"
+	"github.com/abisaidfarias/lbtechapi/database/queries"
 	"github.com/abisaidfarias/lbtechapi/models"
 	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
-	mgoBson "go.mongodb.org/mongo-driver/bson"
 )
 
 // ITestCaseRepository is the test cases repository
@@ -32,34 +31,22 @@ func NewTestCaseRepository() ITestCaseRepository {
 	return &testCaseRepository{}
 }
 
-var testCaseCollection = database.GetInstance().Collection("test-cases")
+var testCaseCollection = database.GetInstance().Collection("test_cases")
 
 // Create a new tet case
 func (r *testCaseRepository) Create(test *models.TestCase) error {
 
 	_, err := testCaseCollection.InsertOne(context.TODO(), test)
-
 	if err != nil {
-		return fmt.Errorf("%w", utils.ErrorInQuery)
+		return err
 	}
-
 	return nil
 }
 
 // Get returns a list of all test cases
 func (r *testCaseRepository) Get() ([]*bson.M, error) {
 
-	// mongo tutorial
-	lookupStage := mgoBson.D{
-		{"$lookup", mgoBson.D{
-			{"from", "test-categories"},
-			{"localField", "test_category"},
-			{"foreignField", "_id"},
-			{"as", "test_category"},
-		}}}
-	unwindStage := mgoBson.D{{"$unwind", mgoBson.D{{"path", "$test_category"}, {"preserveNullAndEmptyArrays", false}}}}
-	matchStage := mgoBson.D{{"$match", mgoBson.D{{"is_active", true}}}}
-	cursor, err := testCaseCollection.Aggregate(context.TODO(), mongo.Pipeline{lookupStage, unwindStage, matchStage})
+	cursor, err := testCaseCollection.Aggregate(context.TODO(), queries.GetAll())
 
 	if err != nil {
 
@@ -82,7 +69,7 @@ func (r *testCaseRepository) GetByID(id string) (*bson.M, error) {
 
 	var result bson.M
 
-	err = testCaseCollection.FindOne(context.TODO(), mgoBson.M{"_id": oid}).Decode(&result)
+	err = testCaseCollection.FindOne(context.TODO(), queries.GetById(oid)).Decode(&result)
 
 	if err != nil {
 		return nil, fmt.Errorf("%w", utils.ErrorInQuery)
@@ -91,14 +78,13 @@ func (r *testCaseRepository) GetByID(id string) (*bson.M, error) {
 	return &result, nil
 }
 func (r *testCaseRepository) Update(id string, testCase *models.TestCase) error {
-	
+
+	log.Println("testCase", testCase)
 	oid, err := primitive.ObjectIDFromHex(id)
 
-	update := mgoBson.M{
-		"$set": testCase,
-	}
-	log.Println("update test", testCase)
-	_, err = testCaseCollection.UpdateOne(context.TODO(), mgoBson.M{"_id": oid}, update)
+	filter, update := queries.Update(testCase, oid)
+
+	_, err = testCaseCollection.UpdateOne(context.TODO(), filter, update)
 
 	if err != nil {
 		return err
@@ -109,7 +95,7 @@ func (r *testCaseRepository) Update(id string, testCase *models.TestCase) error 
 func (r *testCaseRepository) Delete(id string) error {
 	oid, err := primitive.ObjectIDFromHex(id)
 
-	_, err = testCaseCollection.DeleteOne(context.TODO(), mgoBson.M{"_id": oid})
+	_, err = testCaseCollection.DeleteOne(context.TODO(), queries.Delete(oid))
 
 	if err != nil {
 		return err

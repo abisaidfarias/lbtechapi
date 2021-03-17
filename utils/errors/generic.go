@@ -1,6 +1,10 @@
 package utils
 
-import "errors"
+import (
+	"errors"
+
+	"go.mongodb.org/mongo-driver/mongo"
+)
 
 // ErrorInvalidCredentials Invalid credentials"
 var ErrorInvalidCredentials = errors.New("Invalid credentials")
@@ -21,3 +25,13 @@ var ErrorDuplicated = errors.New("Duplicated data when creating a new document")
 
 // ErrorInQuery an error has occurred executing a query
 var ErrorInQuery = errors.New("An error has occurred executing a query")
+
+func ErrorDuplicatedData(err error) bool{
+	var merr mongo.WriteException
+	merr = err.(mongo.WriteException)
+	errCode := merr.WriteErrors[0].Code
+	if errCode == 11000 {
+		return true
+	}
+	return false
+}
