@@ -12,6 +12,5 @@ type TestCase struct {
 	TestCategory primitive.ObjectID `bson:"test_category,omitempty" json:"test_category"`
 	IsActive     bool               `bson:"is_active" json:"is_active"`
 	Description  string             `bson:"description,omitempty" json:"description"`
-	Device       string             `bson:"device,omitempty" json:"device"`
 	Expected     string             `bson:"expected,omitempty" json:"expected"`
 }

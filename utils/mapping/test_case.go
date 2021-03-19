@@ -20,7 +20,6 @@ func TestCaseRequestToTestCase(testCase *request.TestCase, isCreate bool) (*mode
 			TestCategory: objID,
 			IsActive:     testCase.IsActive,
 			Description:  testCase.Description,
-			Device:       testCase.Device,
 			Expected:     testCase.Expected,
 		}, nil
 	}
@@ -29,7 +28,6 @@ func TestCaseRequestToTestCase(testCase *request.TestCase, isCreate bool) (*mode
 		TestCategory: objID,
 		IsActive:     testCase.IsActive,
 		Description:  testCase.Description,
-		Device:       testCase.Device,
 		Expected:     testCase.Expected,
 	}, nil
 }
