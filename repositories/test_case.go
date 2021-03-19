@@ -3,7 +3,6 @@ package repositories
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"gopkg.in/mgo.v2/bson"
@@ -18,7 +17,7 @@ import (
 type ITestCaseRepository interface {
 	Create(*models.TestCase) error
 	Get() ([]*bson.M, error)
-	GetByID(string) (*bson.M, error)
+	GetById(string) (*bson.M, error)
 	Update(string, *models.TestCase) error
 	Delete(string) error
 }
@@ -34,9 +33,9 @@ func NewTestCaseRepository() ITestCaseRepository {
 var testCaseCollection = database.GetInstance().Collection("test_cases")
 
 // Create a new tet case
-func (r *testCaseRepository) Create(test *models.TestCase) error {
+func (r *testCaseRepository) Create(testCase *models.TestCase) error {
 
-	_, err := testCaseCollection.InsertOne(context.TODO(), test)
+	_, err := testCaseCollection.InsertOne(context.TODO(), testCase)
 	if err != nil {
 		return err
 	}
@@ -46,7 +45,7 @@ func (r *testCaseRepository) Create(test *models.TestCase) error {
 // Get returns a list of all test cases
 func (r *testCaseRepository) Get() ([]*bson.M, error) {
 
-	cursor, err := testCaseCollection.Aggregate(context.TODO(), queries.GetAll())
+	cursor, err := testCaseCollection.Aggregate(context.TODO(), queries.GetTestCases())
 
 	if err != nil {
 
@@ -60,7 +59,7 @@ func (r *testCaseRepository) Get() ([]*bson.M, error) {
 	return testCases, nil
 }
 
-func (r *testCaseRepository) GetByID(id string) (*bson.M, error) {
+func (r *testCaseRepository) GetById(id string) (*bson.M, error) {
 	oid, err := primitive.ObjectIDFromHex(id)
 
 	if err != nil {
@@ -69,7 +68,7 @@ func (r *testCaseRepository) GetByID(id string) (*bson.M, error) {
 
 	var result bson.M
 
-	err = testCaseCollection.FindOne(context.TODO(), queries.GetById(oid)).Decode(&result)
+	err = testCaseCollection.FindOne(context.TODO(), queries.GeTestCaseById(oid)).Decode(&result)
 
 	if err != nil {
 		return nil, fmt.Errorf("%w", utils.ErrorInQuery)
@@ -79,12 +78,15 @@ func (r *testCaseRepository) GetByID(id string) (*bson.M, error) {
 }
 func (r *testCaseRepository) Update(id string, testCase *models.TestCase) error {
 
-	log.Println("testCase", testCase)
 	oid, err := primitive.ObjectIDFromHex(id)
 
-	filter, update := queries.Update(testCase, oid)
+	filter, update := queries.UpdateTestCase(testCase, oid)
 
 	_, err = testCaseCollection.UpdateOne(context.TODO(), filter, update)
+
+	filter, update = queries.InsertTestCase(testCase.TestCategory, oid)
+
+	_, err = testCategoryCollection.UpdateOne(context.TODO(), filter, update)
 
 	if err != nil {
 		return err
@@ -95,7 +97,7 @@ func (r *testCaseRepository) Update(id string, testCase *models.TestCase) error 
 func (r *testCaseRepository) Delete(id string) error {
 	oid, err := primitive.ObjectIDFromHex(id)
 
-	_, err = testCaseCollection.DeleteOne(context.TODO(), queries.Delete(oid))
+	_, err = testCaseCollection.DeleteOne(context.TODO(), queries.DeleteTestCase(oid))
 
 	if err != nil {
 		return err

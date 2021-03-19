@@ -133,7 +133,7 @@ func (c *userController) Delete() gin.HandlerFunc {
 			return
 		}
 
-		ctx.Status(http.StatusNoContent)
+		ctx.Status(http.StatusOK)
 		return
 	}
 

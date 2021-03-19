@@ -14,7 +14,7 @@ import (
 type ITestCaseService interface {
 	Create(*request.TestCase) error
 	Get() ([]*bson.M, error)
-	GetByID(string) (*bson.M, error)
+	GetById(string) (*bson.M, error)
 	Update(string, *request.TestCase) error
 	Upgrade(string, *request.TestCase) error
 	Delete(string) error
@@ -34,7 +34,7 @@ func NewTestCaseService(testCaseRepository repositories.ITestCaseRepository) ITe
 // Create creates a new test case
 func (s *testCaseService) Create(testCaseRequest *request.TestCase) error {
 
-	testCase, err := mapping.TestRequestToTestCase(testCaseRequest,true)
+	testCase, err := mapping.TestCaseRequestToTestCase(testCaseRequest, true)
 	testCase.IsActive = true
 
 	if err != nil {
@@ -62,9 +62,9 @@ func (s *testCaseService) Get() ([]*bson.M, error) {
 }
 
 // GetById gets a case by id
-func (s *testCaseService) GetByID(id string) (*bson.M, error) {
+func (s *testCaseService) GetById(id string) (*bson.M, error) {
 
-	testCase, err := s.testCaseRepository.GetByID(id)
+	testCase, err := s.testCaseRepository.GetById(id)
 
 	if err != nil {
 		return nil, err
@@ -75,7 +75,7 @@ func (s *testCaseService) GetByID(id string) (*bson.M, error) {
 // Update updates a test case
 func (s *testCaseService) Update(id string, testCaseRequest *request.TestCase) error {
 
-	testCase, err := mapping.TestRequestToTestCase(testCaseRequest,false)
+	testCase, err := mapping.TestCaseRequestToTestCase(testCaseRequest, false)
 
 	if err != nil {
 		return err
@@ -91,13 +91,11 @@ func (s *testCaseService) Upgrade(id string, testCaseRequest *request.TestCase) 
 	testCaseRequest.Code = functions.UpdateCodeVersion(testCaseRequest.Code)
 	err := s.Create(testCaseRequest)
 	if err != nil {
-		log.Println("1")
 		return err
 	}
 	testCaseRequest.IsActive = false
 	err = s.Update(id, testCaseRequest)
 	if err != nil {
-		log.Println("2")
 		return err
 	}
 

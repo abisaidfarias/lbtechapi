@@ -11,42 +11,41 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// ITestCaseController controller
-type ITestCaseController interface {
+// ITestPlanController controller
+type ITestPlanController interface {
 	Create() gin.HandlerFunc
 	GetById() gin.HandlerFunc
 	Get() gin.HandlerFunc
 	Update() gin.HandlerFunc
-	Upgrade() gin.HandlerFunc
 	Delete() gin.HandlerFunc
 }
 
-// testCaseController implementation of the interface
-type testCaseController struct {
-	testCaseService services.ITestCaseService
+// testPlanController implementation of the interface
+type testPlanController struct {
+	testPlanService services.ITestPlanService
 }
 
 //NewUserController is the constructor
-func NewTestCaseController(testCaseService services.ITestCaseService) ITestCaseController {
-	return &testCaseController{
-		testCaseService: testCaseService,
+func NewTestPlanController(testPlanService services.ITestPlanService) ITestPlanController {
+	return &testPlanController{
+		testPlanService: testPlanService,
 	}
 }
 
-// Create creates a case
-func (c *testCaseController) Create() gin.HandlerFunc {
+// Create creates a Plan
+func (c *testPlanController) Create() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
-		var testCase request.TestCase
+		var testPlan request.TestPlan
 
-		err := ctx.ShouldBindJSON(&testCase)
+		err := ctx.ShouldBindJSON(&testPlan)
 
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		err = c.testCaseService.Create(&testCase)
+		err = c.testPlanService.Create(&testPlan)
 
 		if err != nil {
 			if utils.ErrorDuplicatedData(err) {
@@ -63,25 +62,25 @@ func (c *testCaseController) Create() gin.HandlerFunc {
 	}
 }
 
-// Get list all cases
-func (c *testCaseController) Get() gin.HandlerFunc {
+// Get list all Plans
+func (c *testPlanController) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
-		testCases, err := c.testCaseService.Get()
+		testPlans, err := c.testPlanService.Get()
 
 		if err != nil {
 			handleErrorResponse(ctx, err)
 			return
 		}
 
-		ctx.JSON(http.StatusOK, testCases)
+		ctx.JSON(http.StatusOK, testPlans)
 		return
 	}
 
 }
 
-// Create creates a case
-func (c *testCaseController) GetById() gin.HandlerFunc {
+// Create creates a Plan
+func (c *testPlanController) GetById() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 		var id string
@@ -93,20 +92,20 @@ func (c *testCaseController) GetById() gin.HandlerFunc {
 			return
 		}
 
-		testCase, err := c.testCaseService.GetById(id)
+		testPlan, err := c.testPlanService.GetById(id)
 
 		if err != nil {
 			handleErrorResponse(ctx, err)
 			return
 		}
 
-		ctx.JSON(http.StatusOK, testCase)
+		ctx.JSON(http.StatusOK, testPlan)
 		return
 	}
 }
 
-// Create creates a case
-func (c *testCaseController) Update() gin.HandlerFunc {
+// Create creates a Plan
+func (c *testPlanController) Update() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 
@@ -114,16 +113,16 @@ func (c *testCaseController) Update() gin.HandlerFunc {
 
 		id = ctx.Param("id")
 
-		var testCase request.TestCase
+		var testPlan request.TestPlan
 
-		err := ctx.ShouldBindJSON(&testCase)
+		err := ctx.ShouldBindJSON(&testPlan)
 
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		err = c.testCaseService.Update(id, &testCase)
+		err = c.testPlanService.Update(id, &testPlan)
 
 		if err != nil {
 			if utils.ErrorDuplicatedData(err) {
@@ -140,50 +139,15 @@ func (c *testCaseController) Update() gin.HandlerFunc {
 	}
 }
 
-// Create creates a case
-func (c *testCaseController) Upgrade() gin.HandlerFunc {
-
-	return func(ctx *gin.Context) {
-
-		var id string
-
-		id = ctx.Param("id")
-
-		var testCase request.TestCase
-
-		err := ctx.ShouldBindJSON(&testCase)
-
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		err = c.testCaseService.Upgrade(id, &testCase)
-
-		if err != nil {
-			if utils.ErrorDuplicatedData(err) {
-				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicatedTestCode.Error()})
-				return
-			}
-			handleErrorResponse(ctx, err)
-			return
-
-		}
-
-		ctx.Status(http.StatusOK)
-		return
-	}
-}
-
-// Create creates a case
-func (c *testCaseController) Delete() gin.HandlerFunc {
+// Create creates a Plan
+func (c *testPlanController) Delete() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 		var id string
 
 		id = ctx.Param("id")
 
-		err := c.testCaseService.Delete(id)
+		err := c.testPlanService.Delete(id)
 
 		if err != nil {
 			handleErrorResponse(ctx, err)

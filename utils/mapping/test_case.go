@@ -6,7 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func TestRequestToTestCase(testCase *request.TestCase, isCreate bool) (*models.TestCase, error) {
+func TestCaseRequestToTestCase(testCase *request.TestCase, isCreate bool) (*models.TestCase, error) {
 
 	objID, err := primitive.ObjectIDFromHex(testCase.CategoryID)
 

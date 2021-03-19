@@ -5,6 +5,7 @@ import (
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // ITestCategoryService is the testCategory service
@@ -54,5 +55,6 @@ func buildCategory(reqCategory *request.TestCategory) *models.TestCategory {
 	return &models.TestCategory{
 		Name:        reqCategory.Name,
 		Description: reqCategory.Description,
+		TestCases:   []primitive.ObjectID{},
 	}
 }

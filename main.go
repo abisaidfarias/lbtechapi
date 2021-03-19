@@ -30,6 +30,10 @@ var (
 	testCaseRepository repositories.ITestCaseRepository = repositories.NewTestCaseRepository()
 	testCaseService    services.ITestCaseService        = services.NewTestCaseService(testCaseRepository)
 	testCaseController controllers.ITestCaseController  = controllers.NewTestCaseController(testCaseService)
+
+	testPlanRepository repositories.ITestPlanRepository = repositories.NewTestPlanRepository()
+	testPlanService    services.ITestPlanService        = services.NewTestPlanService(testPlanRepository)
+	testPlanController controllers.ITestPlanController  = controllers.NewTestPlanController(testPlanService)
 )
 
 func main() {
@@ -76,10 +80,18 @@ func main() {
 		{
 			testCases.POST("", testCaseController.Create())
 			testCases.GET("", testCaseController.Get())
-			testCases.GET(":id", testCaseController.GetByID())
+			testCases.GET(":id", testCaseController.GetById())
 			testCases.PUT(":id", testCaseController.Update())
 			testCases.PUT(":id/upgrade", testCaseController.Upgrade())
 			testCases.DELETE(":id", testCaseController.Delete())
+		}
+		testPlan := v1.Group("/test-plan")
+		{
+			testPlan.POST("", testPlanController.Create())
+			testPlan.GET("", testPlanController.Get())
+			testPlan.GET(":id", testPlanController.GetById())
+			testPlan.PUT(":id", testPlanController.Update())
+			testPlan.DELETE(":id", testPlanController.Delete())
 		}
 	}
 

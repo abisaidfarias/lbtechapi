@@ -1,6 +1,5 @@
 package request
 
-// TestCase model
 type TestCase struct {
 	Code        string `json:"code,omitempty" binding:"required,testCaseCode"`
 	Name        string `json:"name" binding:"required"`
