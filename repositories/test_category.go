@@ -3,10 +3,12 @@ package repositories
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/models"
 	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
+	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -14,7 +16,7 @@ import (
 // ITestCateogryRepository is the category repository for test cases
 type ITestCategoryRepository interface {
 	Create(category *models.TestCategory) (*primitive.ObjectID, error)
-	Get() ([]*bson.M, error)
+	Get() ([]*responses.TestCategory, error)
 }
 
 type testCategoryRepository struct {
@@ -42,26 +44,27 @@ func (r *testCategoryRepository) Create(category *models.TestCategory) (*primiti
 }
 
 // Get returns a list of all test categories
-func (r *testCategoryRepository) Get() ([]*bson.M, error) {
-
-	var categories []*bson.M
+func (r *testCategoryRepository) Get() ([]*responses.TestCategory, error) {
 
 	cursor, err := testCategoryCollection.Find(context.TODO(), bson.M{})
 
 	if err != nil {
 		return nil, fmt.Errorf("%w", utils.ErrorInQuery)
 	}
-
+	var testCategories []*responses.TestCategory
 	for cursor.Next(context.TODO()) {
-		var result bson.M
+		var result responses.TestCategory
+		log.Println("result", result)
 		err := cursor.Decode(&result)
 		if err != nil {
 			return nil, fmt.Errorf("%w", utils.ErrorInQuery)
 		}
-		categories = append(categories, &result)
+		result.Name = fmt.Sprintf("%s(%d)", result.Name, len(result.TestCases))
+		result.TestCases = nil
+		testCategories = append(testCategories, &result)
 	}
 
 	cursor.Close(context.TODO())
 
-	return categories, nil
+	return testCategories, nil
 }

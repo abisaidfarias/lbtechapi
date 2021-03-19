@@ -1,8 +1,6 @@
 package services
 
 import (
-	"log"
-
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/utils/functions"
 	"github.com/abisaidfarias/lbtechapi/utils/mapping"

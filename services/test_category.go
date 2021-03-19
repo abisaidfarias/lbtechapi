@@ -1,17 +1,16 @@
 package services
 
 import (
-	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/repositories"
+	"github.com/abisaidfarias/lbtechapi/utils/mapping"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 )
 
 // ITestCategoryService is the testCategory service
 type ITestCategoryService interface {
 	Create(*request.TestCategory) (string, error)
-	Get() ([]*bson.M, error)
+	Get() ([]*responses.TestCategory, error)
 }
 
 type testCategoryService struct {
@@ -26,11 +25,13 @@ func NewTestCategoryService(testCategoryRepository repositories.ITestCategoryRep
 }
 
 // Create creates a new cateogry
-func (s *testCategoryService) Create(category *request.TestCategory) (string, error) {
+func (s *testCategoryService) Create(testCategoryRequest *request.TestCategory) (string, error) {
 
-	categoryModel := buildCategory(category)
-
-	id, err := s.testCategoryRepository.Create(categoryModel)
+	testCategory, err := mapping.TestCategoryRequestToTestCategory(testCategoryRequest)
+	if err != nil {
+		return "", err
+	}
+	id, err := s.testCategoryRepository.Create(testCategory)
 
 	if err != nil {
 		return "", err
@@ -40,7 +41,7 @@ func (s *testCategoryService) Create(category *request.TestCategory) (string, er
 }
 
 // Get gets a list of all categories
-func (s *testCategoryService) Get() ([]*bson.M, error) {
+func (s *testCategoryService) Get() ([]*responses.TestCategory, error) {
 	result, err := s.testCategoryRepository.Get()
 
 	if err != nil {
@@ -48,13 +49,4 @@ func (s *testCategoryService) Get() ([]*bson.M, error) {
 	}
 
 	return result, nil
-}
-
-func buildCategory(reqCategory *request.TestCategory) *models.TestCategory {
-
-	return &models.TestCategory{
-		Name:        reqCategory.Name,
-		Description: reqCategory.Description,
-		TestCases:   []primitive.ObjectID{},
-	}
 }
