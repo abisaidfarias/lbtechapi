@@ -60,7 +60,7 @@ func generateJWT(userID string) string {
 
 	var JWTKey = []byte(os.Getenv("SECRET_KEY"))
 	// TODO move this into environment variable
-	expirationTime := time.Now().Add(999 * time.Minute)
+	expirationTime := time.Now().Add(1000 * time.Hour)
 
 	claims := &AuthClaims{
 		ID: userID,

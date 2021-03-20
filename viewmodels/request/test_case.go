@@ -6,6 +6,6 @@ type TestCase struct {
 	CategoryID  string `json:"category_id" binding:"required"`
 	IsActive    bool   `json:"is_active"`
 	Description string `json:"description" binding:"required"`
-	Device      string `json:"device" binding:"required"`
+	Device      string `json:"device"`
 	Expected    string `json:"expected" binding:"required"`
 }
