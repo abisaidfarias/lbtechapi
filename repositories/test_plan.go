@@ -34,6 +34,7 @@ var testPlanCollection = database.GetInstance().Collection("test_plan")
 func (r *testPlanRepository) Create(testPlan *models.TestPlan) error {
 
 	_, err := testPlanCollection.InsertOne(context.TODO(), testPlan)
+
 	if err != nil {
 		return err
 	}

@@ -36,27 +36,26 @@ func NewTestPlanController(testPlanService services.ITestPlanService) ITestPlanC
 func (c *testPlanController) Create() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
-		var testPlan request.TestPlan
+		var testPlanRequest request.TestPlan
 
-		err := ctx.ShouldBindJSON(&testPlan)
+		err := ctx.ShouldBindJSON(&testPlanRequest)
 
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		err = c.testPlanService.Create(&testPlan)
+		err = c.testPlanService.Create(&testPlanRequest)
 
 		if err != nil {
 			if utils.ErrorDuplicatedData(err) {
-				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicatedTestCode.Error()})
+				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicatedTestPlan.Error()})
 				return
 			}
 			ctx.Status(http.StatusInternalServerError)
 			handleErrorResponse(ctx, err)
 			return
 		}
-
 		ctx.Status(http.StatusCreated)
 		return
 	}
@@ -126,7 +125,7 @@ func (c *testPlanController) Update() gin.HandlerFunc {
 
 		if err != nil {
 			if utils.ErrorDuplicatedData(err) {
-				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicatedTestCode.Error()})
+				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicatedTestPlan.Error()})
 				return
 			}
 			handleErrorResponse(ctx, err)
