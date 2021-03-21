@@ -64,11 +64,18 @@ func initDB() *mongo.Database {
 			"name": 1,
 		}, Options: options.Index().SetUnique(true),
 	}
+	indexTestCategoryName := mongo.IndexModel{
+		Keys: bson.M{
+			"name": 1,
+		}, Options: options.Index().SetUnique(true),
+	}
 
 	database.Collection("users").Indexes().DropAll(context.Background())
 	database.Collection("users").Indexes().CreateOne(context.Background(), indexEmail)
 	database.Collection("test_cases").Indexes().DropAll(context.Background())
 	database.Collection("test_cases").Indexes().CreateOne(context.Background(), indexCode)
+	database.Collection("test_categories").Indexes().DropAll(context.Background())
+	database.Collection("test_categories").Indexes().CreateOne(context.Background(), indexTestCategoryName)
 	database.Collection("test_plan").Indexes().DropAll(context.Background())
 	database.Collection("test_plan").Indexes().CreateOne(context.Background(), indexTestPlanName)
 	return database

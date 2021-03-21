@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"context"
-	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"gopkg.in/mgo.v2/bson"
@@ -10,7 +9,6 @@ import (
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/database/queries"
 	"github.com/abisaidfarias/lbtechapi/models"
-	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
 )
 
 // ITestCaseRepository is the test cases repository
@@ -35,7 +33,12 @@ var testCaseCollection = database.GetInstance().Collection("test_cases")
 // Create a new tet case
 func (r *testCaseRepository) Create(testCase *models.TestCase) error {
 
-	_, err := testCaseCollection.InsertOne(context.TODO(), testCase)
+	res, err := testCaseCollection.InsertOne(context.TODO(), testCase)
+	oid := res.InsertedID.(primitive.ObjectID)
+
+	filter, update := queries.InsertTestCase(testCase.TestCategory, oid)
+
+	_, err = testCategoryCollection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		return err
 	}
@@ -71,7 +74,7 @@ func (r *testCaseRepository) GetById(id string) (*bson.M, error) {
 	err = testCaseCollection.FindOne(context.TODO(), queries.GeTestCaseById(oid)).Decode(&result)
 
 	if err != nil {
-		return nil, fmt.Errorf("%w", utils.ErrorInQuery)
+		return nil, err
 	}
 
 	return &result, nil
@@ -79,14 +82,31 @@ func (r *testCaseRepository) GetById(id string) (*bson.M, error) {
 func (r *testCaseRepository) Update(id string, testCase *models.TestCase) error {
 
 	oid, err := primitive.ObjectIDFromHex(id)
-
+	if err != nil {
+		return err
+	}
+	var testCaseOld models.TestCase
+	err = testCaseCollection.FindOne(context.TODO(), queries.GeTestCaseById(oid)).Decode(&testCaseOld)
+	if err != nil {
+		return err
+	}
 	filter, update := queries.UpdateTestCase(testCase, oid)
 
 	_, err = testCaseCollection.UpdateOne(context.TODO(), filter, update)
-
+	if err != nil {
+		return err
+	}
 	filter, update = queries.InsertTestCase(testCase.TestCategory, oid)
 
 	_, err = testCategoryCollection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return err
+	}
+	if testCaseOld.TestCategory != testCase.TestCategory {
+		filter, update = queries.RemoveTestCase(testCaseOld.TestCategory, oid)
+		_, err = testCategoryCollection.UpdateOne(context.TODO(), filter, update)
+
+	}
 
 	if err != nil {
 		return err

@@ -1,9 +1,9 @@
 package middlewares
 
 import (
-	"os"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/abisaidfarias/lbtechapi/services"
@@ -41,7 +41,6 @@ func AuthMiddleware() gin.HandlerFunc {
 			ctx.Abort()
 			return
 		}
-
 		ctx.Set("userID", claims.ID)
 		// TODO add this after company relation
 		// ctx.Set("companyID", claims.companyID)

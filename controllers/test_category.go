@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/abisaidfarias/lbtechapi/services"
+	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/gin-gonic/gin"
 )
@@ -43,6 +44,11 @@ func (c *testCategoryController) Create() gin.HandlerFunc {
 		id, err := c.testCategoryService.Create(&category)
 
 		if err != nil {
+			if utils.ErrorDuplicatedData(err) {
+				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicated.Error()})
+				return
+			}
+			ctx.Status(http.StatusInternalServerError)
 			handleErrorResponse(ctx, err)
 			return
 		}

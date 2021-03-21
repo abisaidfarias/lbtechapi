@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/abisaidfarias/lbtechapi/services"
-	"github.com/abisaidfarias/lbtechapi/viewmodels"
+	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,7 +28,7 @@ func NewAuthController(authService services.IAuthService) IAuthController {
 // SignIn signs the user in
 func (c *authController) SignIn() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var credentials viewmodels.AuthCredentials
+		var credentials request.AuthCredentials
 
 		err := ctx.ShouldBindJSON(&credentials)
 

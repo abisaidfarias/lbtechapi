@@ -12,7 +12,7 @@ import (
 // IUserService auth interface
 type IUserService interface {
 	Create(*request.UserRequest) error
-	GetByID(string) (*responses.UserResponse, error)
+	GetByID(string) (*responses.User, error)
 	Update(string, *models.User) error
 	Delete(string) error
 }
@@ -42,7 +42,7 @@ func (s *userService) Create(userRequest *request.UserRequest) error {
 }
 
 // GetByID gets an user by ID
-func (s *userService) GetByID(id string) (*responses.UserResponse, error) {
+func (s *userService) GetByID(id string) (*responses.User, error) {
 
 	user, err := s.userRepository.GetByID(id)
 
@@ -86,9 +86,9 @@ func buildNewUser(userRequest *request.UserRequest) *models.User {
 	}
 }
 
-func buildNewUserResponse(user *models.User) *responses.UserResponse {
+func buildNewUserResponse(user *models.User) *responses.User {
 
-	return &responses.UserResponse{
+	return &responses.User{
 		ID:        user.ID,
 		Email:     user.Email,
 		Name:      user.Name,

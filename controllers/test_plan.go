@@ -7,6 +7,7 @@ import (
 	"github.com/abisaidfarias/lbtechapi/services"
 	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/gin-gonic/gin"
 )
@@ -37,19 +38,19 @@ func (c *testPlanController) Create() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 		var testPlanRequest request.TestPlan
-
 		err := ctx.ShouldBindJSON(&testPlanRequest)
 
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-
+		userID := ctx.MustGet("userID").(string)
+		oid, _ := primitive.ObjectIDFromHex(userID)
+		testPlanRequest.UserID = oid
 		err = c.testPlanService.Create(&testPlanRequest)
-
 		if err != nil {
 			if utils.ErrorDuplicatedData(err) {
-				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicatedTestPlan.Error()})
+				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicated.Error()})
 				return
 			}
 			ctx.Status(http.StatusInternalServerError)
@@ -90,7 +91,6 @@ func (c *testPlanController) GetById() gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("%w", utils.ErrorInvalidURLParams)})
 			return
 		}
-
 		testPlan, err := c.testPlanService.GetById(id)
 
 		if err != nil {
@@ -125,7 +125,7 @@ func (c *testPlanController) Update() gin.HandlerFunc {
 
 		if err != nil {
 			if utils.ErrorDuplicatedData(err) {
-				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicatedTestPlan.Error()})
+				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicated.Error()})
 				return
 			}
 			handleErrorResponse(ctx, err)

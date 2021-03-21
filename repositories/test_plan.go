@@ -11,11 +11,12 @@ import (
 	"github.com/abisaidfarias/lbtechapi/database/queries"
 	"github.com/abisaidfarias/lbtechapi/models"
 	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
+	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 )
 
 type ITestPlanRepository interface {
 	Create(*models.TestPlan) error
-	Get() ([]*bson.M, error)
+	Get() ([]*responses.TestPlan, error)
 	GetById(string) (*bson.M, error)
 	Update(string, *models.TestPlan) error
 	Delete(string) error
@@ -42,20 +43,29 @@ func (r *testPlanRepository) Create(testPlan *models.TestPlan) error {
 }
 
 // Get returns a list of all test cases
-func (r *testPlanRepository) Get() ([]*bson.M, error) {
+func (r *testPlanRepository) Get() ([]*responses.TestPlan, error) {
 
 	cursor, err := testPlanCollection.Aggregate(context.TODO(), queries.GetTestPlans())
-
 	if err != nil {
-
 		panic(err)
 	}
-	var testCases []*bson.M
-	if err = cursor.All(context.TODO(), &testCases); err != nil {
-		panic(err)
+	var testPlans []*responses.TestPlan
+	for cursor.Next(context.TODO()) {
+		var result responses.TestPlan
+		err := cursor.Decode(&result)
+		if err != nil {
+			return nil, err
+		}
+		result.UserName = fmt.Sprintf("%s %s", result.Users[0].Name, result.Users[0].LastName)
+		result.Users = []responses.User{}
+		result.TotalCategory = len(result.TestCategories)
+		for _, element := range result.TestCategories {
+			result.TotalTest += len(element.TestCases)
+		}
+		testPlans = append(testPlans, &result)
 	}
 	cursor.Close(context.TODO())
-	return testCases, nil
+	return testPlans, nil
 }
 
 func (r *testPlanRepository) GetById(id string) (*bson.M, error) {
@@ -78,6 +88,9 @@ func (r *testPlanRepository) GetById(id string) (*bson.M, error) {
 func (r *testPlanRepository) Update(id string, testPlan *models.TestPlan) error {
 
 	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
 
 	filter, update := queries.UpdateTestPlan(testPlan, oid)
 

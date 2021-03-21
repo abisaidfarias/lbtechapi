@@ -22,9 +22,6 @@ var ErrorDatabaseContection = errors.New("Unable to connect to database")
 
 // ErrorDuplicated duplicated data
 var ErrorDuplicated = errors.New("Duplicated data when creating a new document")
-var ErrorDuplicatedUser = errors.New("this user is duplicated, please verify the data provided ")
-var ErrorDuplicatedTestCode = errors.New("The test code is duplicated, please verify the data provided")
-var ErrorDuplicatedTestPlan = errors.New("The test plan is duplicated, please verify the data provided")
 
 // ErrorInQuery an error has occurred executing a query
 var ErrorInQuery = errors.New("An error has occurred executing a query")

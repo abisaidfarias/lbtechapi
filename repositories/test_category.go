@@ -3,11 +3,9 @@ package repositories
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/models"
-	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -35,7 +33,7 @@ func (r *testCategoryRepository) Create(category *models.TestCategory) (*primiti
 	res, err := testCategoryCollection.InsertOne(context.TODO(), category)
 
 	if err != nil {
-		return nil, fmt.Errorf("%w", utils.ErrorInQuery)
+		return nil, err
 	}
 
 	id := res.InsertedID.(primitive.ObjectID)
@@ -49,15 +47,14 @@ func (r *testCategoryRepository) Get() ([]*responses.TestCategory, error) {
 	cursor, err := testCategoryCollection.Find(context.TODO(), bson.M{})
 
 	if err != nil {
-		return nil, fmt.Errorf("%w", utils.ErrorInQuery)
+		return nil, err
 	}
 	var testCategories []*responses.TestCategory
 	for cursor.Next(context.TODO()) {
 		var result responses.TestCategory
-		log.Println("result", result)
 		err := cursor.Decode(&result)
 		if err != nil {
-			return nil, fmt.Errorf("%w", utils.ErrorInQuery)
+			return nil, err
 		}
 		result.Name = fmt.Sprintf("%s(%d)", result.Name, len(result.TestCases))
 		result.TestCases = nil

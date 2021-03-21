@@ -1,4 +1,4 @@
-package viewmodels
+package request
 
 // AuthCredentials credentials used in sign in
 type AuthCredentials struct {

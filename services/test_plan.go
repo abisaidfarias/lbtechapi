@@ -4,13 +4,14 @@ import (
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/utils/mapping"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
+	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 	"gopkg.in/mgo.v2/bson"
 )
 
 // ITestPlanService is the test Plan service interface
 type ITestPlanService interface {
 	Create(*request.TestPlan) error
-	Get() ([]*bson.M, error)
+	Get() ([]*responses.TestPlan, error)
 	GetById(string) (*bson.M, error)
 	Update(string, *request.TestPlan) error
 	Delete(string) error
@@ -47,7 +48,7 @@ func (s *testPlanService) Create(testPlanRequest *request.TestPlan) error {
 }
 
 // Get gets a list of test Plans
-func (s *testPlanService) Get() ([]*bson.M, error) {
+func (s *testPlanService) Get() ([]*responses.TestPlan, error) {
 	result, err := s.testPlanRepository.Get()
 
 	if err != nil {

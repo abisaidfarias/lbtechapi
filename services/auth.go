@@ -7,7 +7,7 @@ import (
 
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
-	"github.com/abisaidfarias/lbtechapi/viewmodels"
+	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
@@ -15,7 +15,7 @@ import (
 
 // IAuthService auth interface
 type IAuthService interface {
-	SignIn(*viewmodels.AuthCredentials) (*responses.AuthResponse, error)
+	SignIn(*request.AuthCredentials) (*responses.AuthResponse, error)
 }
 
 type authService struct {
@@ -37,7 +37,7 @@ type AuthClaims struct {
 }
 
 // SignIn sign the user in
-func (s *authService) SignIn(credentials *viewmodels.AuthCredentials) (*responses.AuthResponse, error) {
+func (s *authService) SignIn(credentials *request.AuthCredentials) (*responses.AuthResponse, error) {
 
 	user, err := s.userRepository.GetByEmail(credentials.Email)
 	if err != nil {
