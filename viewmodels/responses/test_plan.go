@@ -5,7 +5,7 @@ import (
 )
 
 type TestPlan struct {
-	ID             primitive.ObjectID `bson:"_id,omitempty"`
+	ID             primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
 	Name           string             `json:"name"  `
 	TotalCategory  int                `json:"total_category"`
 	TotalTest      int                `json:"total_test"`

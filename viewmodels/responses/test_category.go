@@ -6,8 +6,8 @@ import (
 
 // TestCategory model
 type TestCategory struct {
-	ID          primitive.ObjectID   `bson:"_id"`
-	Name        string               `json:"name"`
-	Description string               `json:"description"`
-	TestCases   []primitive.ObjectID `bson:"test_cases"`
+	ID          primitive.ObjectID   `json:"_id" bson:"_id"`
+	Name        string               `json:"name" bson:"name"`
+	Description string               `json:"description" bson:"description"`
+	TestCases   []primitive.ObjectID `json:"test_cases" bson:"test_cases"`
 }
