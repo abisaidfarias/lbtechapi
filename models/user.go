@@ -15,6 +15,7 @@ type User struct {
 	LastName     string             `bson:"lastName,omitempty"`
 	Phone        string             `bson:"phone,omitempty"`
 	Dni          string             `bson:"dni,omitempty"`
+	Profile      primitive.ObjectID `bson:"profile,omitempty"`
 	CreatedAt    time.Time          `bson:"created_at,omitempty"`
 	UpdatedAt    time.Time          `bson:"updated_at,omitempty"`
 }

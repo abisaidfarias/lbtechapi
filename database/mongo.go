@@ -69,6 +69,11 @@ func initDB() *mongo.Database {
 			"name": 1,
 		}, Options: options.Index().SetUnique(true),
 	}
+	indexProfileName := mongo.IndexModel{
+		Keys: bson.M{
+			"name": 1,
+		}, Options: options.Index().SetUnique(true),
+	}
 
 	database.Collection("users").Indexes().DropAll(context.Background())
 	database.Collection("users").Indexes().CreateOne(context.Background(), indexEmail)
@@ -78,6 +83,8 @@ func initDB() *mongo.Database {
 	database.Collection("test_categories").Indexes().CreateOne(context.Background(), indexTestCategoryName)
 	database.Collection("test_plan").Indexes().DropAll(context.Background())
 	database.Collection("test_plan").Indexes().CreateOne(context.Background(), indexTestPlanName)
+	database.Collection("profile").Indexes().DropAll(context.Background())
+	database.Collection("profile").Indexes().CreateOne(context.Background(), indexProfileName)
 	return database
 }
 func GetMongoDBClient() *mongo.Client {

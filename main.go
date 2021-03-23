@@ -34,6 +34,10 @@ var (
 	testPlanRepository repositories.ITestPlanRepository = repositories.NewTestPlanRepository()
 	testPlanService    services.ITestPlanService        = services.NewTestPlanService(testPlanRepository)
 	testPlanController controllers.ITestPlanController  = controllers.NewTestPlanController(testPlanService)
+
+	profileRepository repositories.IProfileRepository = repositories.NewProfileRepository()
+	profileService    services.IProfileService        = services.NewProfileService(profileRepository)
+	profileController controllers.IProfileController  = controllers.NewProfileController(profileService)
 )
 
 func main() {
@@ -92,6 +96,14 @@ func main() {
 			testPlan.GET(":id", testPlanController.GetById())
 			testPlan.PUT(":id", testPlanController.Update())
 			testPlan.DELETE(":id", testPlanController.Delete())
+		}
+		profile := v1.Group("/profile")
+		{
+			profile.POST("", profileController.Create())
+			profile.GET("", profileController.Get())
+			profile.GET(":id", profileController.GetById())
+			profile.PUT(":id", profileController.Update())
+			profile.DELETE(":id", profileController.Delete())
 		}
 	}
 
