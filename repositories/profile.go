@@ -19,7 +19,7 @@ type IProfileRepository interface {
 	Get() ([]*responses.Profile, error)
 	GetById(string) (*responses.Profile, error)
 	Update(string, *models.Profile) error
-	Delete(string) error
+	Delete(string) (error, bool)
 }
 
 type profileRepository struct {
@@ -29,7 +29,7 @@ func NewProfileRepository() IProfileRepository {
 	return &profileRepository{}
 }
 
-var profileCollection = database.GetInstance().Collection("profile")
+var profileCollection = database.GetInstance().Collection("profiles")
 
 // Create a new tet case
 func (r *profileRepository) Create(profile *models.Profile) error {
@@ -93,26 +93,26 @@ func (r *profileRepository) Update(id string, profile *models.Profile) error {
 
 	return nil
 }
-func (r *profileRepository) Delete(id string) error {
+func (r *profileRepository) Delete(id string) (error, bool) {
 	oid, err := primitive.ObjectIDFromHex(id)
 
 	cursor, err := userCollection.Find(context.TODO(), queries.GetUsersProfileId(id))
 	if err != nil {
-		return err
+		return err, false
 	}
 
 	var users []*responses.User
 	if err = cursor.All(context.TODO(), &users); err != nil {
-		panic(err)
+		return err, false
 	}
 	if len(users) > 0 {
-		return err
+		return nil, false
 	}
 	_, err = profileCollection.DeleteOne(context.TODO(), queries.DeleteProfile(oid))
 
 	if err != nil {
-		return err
+		return err, false
 	}
 
-	return nil
+	return nil, true
 }

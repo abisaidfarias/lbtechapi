@@ -74,6 +74,16 @@ func initDB() *mongo.Database {
 			"name": 1,
 		}, Options: options.Index().SetUnique(true),
 	}
+	indexCompanyName := mongo.IndexModel{
+		Keys: bson.M{
+			"name": 1,
+		}, Options: options.Index().SetUnique(true),
+	}
+	indexBrandName := mongo.IndexModel{
+		Keys: bson.M{
+			"name": 1,
+		}, Options: options.Index().SetUnique(true),
+	}
 
 	database.Collection("users").Indexes().DropAll(context.Background())
 	database.Collection("users").Indexes().CreateOne(context.Background(), indexEmail)
@@ -81,10 +91,14 @@ func initDB() *mongo.Database {
 	database.Collection("test_cases").Indexes().CreateOne(context.Background(), indexCode)
 	database.Collection("test_categories").Indexes().DropAll(context.Background())
 	database.Collection("test_categories").Indexes().CreateOne(context.Background(), indexTestCategoryName)
-	database.Collection("test_plan").Indexes().DropAll(context.Background())
-	database.Collection("test_plan").Indexes().CreateOne(context.Background(), indexTestPlanName)
-	database.Collection("profile").Indexes().DropAll(context.Background())
-	database.Collection("profile").Indexes().CreateOne(context.Background(), indexProfileName)
+	database.Collection("test_plans").Indexes().DropAll(context.Background())
+	database.Collection("test_plans").Indexes().CreateOne(context.Background(), indexTestPlanName)
+	database.Collection("profiles").Indexes().DropAll(context.Background())
+	database.Collection("profiles").Indexes().CreateOne(context.Background(), indexProfileName)
+	database.Collection("companies").Indexes().DropAll(context.Background())
+	database.Collection("companies").Indexes().CreateOne(context.Background(), indexCompanyName)
+	database.Collection("brands").Indexes().DropAll(context.Background())
+	database.Collection("brands").Indexes().CreateOne(context.Background(), indexBrandName)
 	return database
 }
 func GetMongoDBClient() *mongo.Client {

@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"gopkg.in/mgo.v2/bson"
 
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/database/queries"
@@ -17,7 +16,7 @@ import (
 type ITestPlanRepository interface {
 	Create(*models.TestPlan) error
 	Get() ([]*responses.TestPlan, error)
-	GetById(string) (*bson.M, error)
+	GetById(string) (*responses.TestPlan, error)
 	Update(string, *models.TestPlan) error
 	Delete(string) error
 }
@@ -29,7 +28,7 @@ func NewTestPlanRepository() ITestPlanRepository {
 	return &testPlanRepository{}
 }
 
-var testPlanCollection = database.GetInstance().Collection("test_plan")
+var testPlanCollection = database.GetInstance().Collection("test_plans")
 
 // Create a new tet case
 func (r *testPlanRepository) Create(testPlan *models.TestPlan) error {
@@ -68,14 +67,14 @@ func (r *testPlanRepository) Get() ([]*responses.TestPlan, error) {
 	return testPlans, nil
 }
 
-func (r *testPlanRepository) GetById(id string) (*bson.M, error) {
+func (r *testPlanRepository) GetById(id string) (*responses.TestPlan, error) {
 	oid, err := primitive.ObjectIDFromHex(id)
 
 	if err != nil {
 		return nil, err
 	}
 
-	var result bson.M
+	var result responses.TestPlan
 
 	err = testCaseCollection.FindOne(context.TODO(), queries.GeTestPlanById(oid)).Decode(&result)
 

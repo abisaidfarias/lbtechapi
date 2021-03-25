@@ -5,14 +5,13 @@ import (
 	"github.com/abisaidfarias/lbtechapi/utils/mapping"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // ITestPlanService is the test Plan service interface
 type ITestPlanService interface {
 	Create(*request.TestPlan) error
 	Get() ([]*responses.TestPlan, error)
-	GetById(string) (*bson.M, error)
+	GetById(string) (*responses.TestPlan, error)
 	Update(string, *request.TestPlan) error
 	Delete(string) error
 }
@@ -59,7 +58,7 @@ func (s *testPlanService) Get() ([]*responses.TestPlan, error) {
 }
 
 // GetById gets a Plan by id
-func (s *testPlanService) GetById(id string) (*bson.M, error) {
+func (s *testPlanService) GetById(id string) (*responses.TestPlan, error) {
 
 	testPlan, err := s.testPlanRepository.GetById(id)
 

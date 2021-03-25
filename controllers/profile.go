@@ -147,14 +147,18 @@ func (c *profileController) Delete() gin.HandlerFunc {
 
 		id = ctx.Param("id")
 
-		err := c.profileService.Delete(id)
-
+		err, canDelete := c.profileService.Delete(id)
 		if err != nil {
 			handleErrorResponse(ctx, err)
+			return
+		}
+		if !canDelete {
+			ctx.Status(http.StatusConflict)
 			return
 		}
 
 		ctx.Status(http.StatusOK)
 		return
+
 	}
 }

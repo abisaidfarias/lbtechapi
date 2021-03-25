@@ -1,0 +1,46 @@
+package mapping
+
+import (
+	"github.com/abisaidfarias/lbtechapi/models"
+	"github.com/abisaidfarias/lbtechapi/utils/functions"
+	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
+	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
+func UserRequestToUser(userRequest *request.UserRequest) *models.User {
+
+	hashedPassword := functions.HashPassword(userRequest.Password)
+	brands := functions.StringsToObjectIds(userRequest.Brands)
+	countries := functions.StringsToObjectIds(userRequest.Countries)
+	company, _ := primitive.ObjectIDFromHex(userRequest.Company)
+	profile, _ := primitive.ObjectIDFromHex(userRequest.Profile)
+	return &models.User{
+		Email:        userRequest.Email,
+		PasswordHash: hashedPassword,
+		Name:         userRequest.Name,
+		LastName:     userRequest.LastName,
+		Dni:          userRequest.Dni,
+		Phone:        userRequest.Phone,
+		Brands:       brands,
+		Countries:    countries,
+		Company:      company,
+		Profile:      profile,
+	}
+}
+
+func UserToUserResponse(user *models.User) *responses.User {
+
+	return &responses.User{
+		ID:        user.ID,
+		Email:     user.Email,
+		Name:      user.Name,
+		LastName:  user.LastName,
+		Dni:       user.Dni,
+		Phone:     user.Phone,
+		Profile:   user.Profile,
+		Company:   user.Company,
+		Brands:    user.Brands,
+		Countries: user.Countries,
+	}
+}

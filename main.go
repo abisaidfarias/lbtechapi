@@ -38,6 +38,18 @@ var (
 	profileRepository repositories.IProfileRepository = repositories.NewProfileRepository()
 	profileService    services.IProfileService        = services.NewProfileService(profileRepository)
 	profileController controllers.IProfileController  = controllers.NewProfileController(profileService)
+
+	companyRepository repositories.ICompanyRepository = repositories.NewCompanyRepository()
+	companyService    services.ICompanyService        = services.NewCompanyService(companyRepository)
+	companyController controllers.ICompanyController  = controllers.NewCompanyController(companyService)
+
+	brandRepository repositories.IBrandRepository = repositories.NewBrandRepository()
+	brandService    services.IBrandService        = services.NewBrandService(brandRepository)
+	brandController controllers.IBrandController  = controllers.NewBrandController(brandService)
+
+	countryRepository repositories.ICountryRepository = repositories.NewCountryRepository()
+	countryService    services.ICountryService        = services.NewCountryService(countryRepository)
+	countryController controllers.ICountryController  = controllers.NewCountryController(countryService)
 )
 
 func main() {
@@ -104,6 +116,21 @@ func main() {
 			profile.GET(":id", profileController.GetById())
 			profile.PUT(":id", profileController.Update())
 			profile.DELETE(":id", profileController.Delete())
+		}
+		company := v1.Group("/company")
+		{
+			company.POST("", companyController.Create())
+			company.GET("", companyController.Get())
+		}
+		brand := v1.Group("/brand")
+		{
+			brand.POST("", brandController.Create())
+			brand.GET("", brandController.Get())
+		}
+		country := v1.Group("/country")
+		{
+			country.POST("", countryController.Create())
+			country.GET("", countryController.Get())
 		}
 	}
 
