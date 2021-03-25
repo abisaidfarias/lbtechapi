@@ -1,10 +1,9 @@
 package services
 
 import (
-	"golang.org/x/crypto/bcrypt"
-
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/repositories"
+	"github.com/abisaidfarias/lbtechapi/utils/mapping"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 )
@@ -30,7 +29,7 @@ func NewUserService(userRepository repositories.IUserRepository) IUserService {
 // Create creates and saves the new user
 func (s *userService) Create(userRequest *request.UserRequest) error {
 
-	user := buildNewUser(userRequest)
+	user := mapping.UserRequestToUser(userRequest)
 
 	err := s.userRepository.Save(user)
 
@@ -49,7 +48,7 @@ func (s *userService) GetByID(id string) (*responses.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	return buildNewUserResponse(user), nil
+	return mapping.UserToUserResponse(user), nil
 }
 
 func (s *userService) Update(id string, user *models.User) error {
@@ -70,45 +69,4 @@ func (s *userService) Delete(id string) error {
 		return err
 	}
 	return nil
-}
-
-func buildNewUser(userRequest *request.UserRequest) *models.User {
-
-	hashedPassword := hashPassword(userRequest.Password)
-
-	return &models.User{
-		Email:        userRequest.Email,
-		PasswordHash: hashedPassword,
-		Name:         userRequest.Name,
-		LastName:     userRequest.LastName,
-		Dni:          userRequest.Dni,
-		Phone:        userRequest.Phone,
-	}
-}
-
-func buildNewUserResponse(user *models.User) *responses.User {
-
-	return &responses.User{
-		ID:        user.ID,
-		Email:     user.Email,
-		Name:      user.Name,
-		LastName:  user.LastName,
-		Dni:       user.Dni,
-		Phone:     user.Phone,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-	}
-}
-
-func hashPassword(password string) string {
-
-	passwordBytes := []byte(password)
-
-	hash, err := bcrypt.GenerateFromPassword(passwordBytes, bcrypt.DefaultCost)
-
-	if err != nil {
-		panic(err)
-	}
-
-	return string(hash)
 }

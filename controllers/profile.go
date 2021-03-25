@@ -143,18 +143,22 @@ func (c *profileController) Update() gin.HandlerFunc {
 func (c *profileController) Delete() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
-		// var id string
+		var id string
 
-		// id = ctx.Param("id")
+		id = ctx.Param("id")
 
-		err := c.profileService.Delete("605ce07b64ef2ca71379e53b")
-
+		err, canDelete := c.profileService.Delete(id)
 		if err != nil {
 			handleErrorResponse(ctx, err)
+			return
+		}
+		if !canDelete {
+			ctx.Status(http.StatusConflict)
 			return
 		}
 
 		ctx.Status(http.StatusOK)
 		return
+
 	}
 }

@@ -13,7 +13,7 @@ type IProfileService interface {
 	Get() ([]*responses.Profile, error)
 	GetById(string) (*responses.Profile, error)
 	Update(string, *request.Profile) error
-	Delete(string) error
+	Delete(string) (error, bool)
 }
 
 type profileService struct {
@@ -81,11 +81,11 @@ func (s *profileService) Update(id string, profileRequest *request.Profile) erro
 	}
 	return nil
 }
-func (s *profileService) Delete(id string) error {
-	err := s.profileRepository.Delete(id)
+func (s *profileService) Delete(id string) (error, bool) {
+	err, canDelete := s.profileRepository.Delete(id)
 
 	if err != nil {
-		return err
+		return err, canDelete
 	}
-	return nil
+	return nil, canDelete
 }

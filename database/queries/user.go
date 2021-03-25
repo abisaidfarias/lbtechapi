@@ -5,13 +5,9 @@ import (
 )
 
 func GetUsersProfileId(id string) primitive.M {
-
 	val, err := primitive.ObjectIDFromHex(id)
-
 	if err != nil {
 		panic(err)
 	}
-
 	return primitive.M{"profile": val}
-
 }

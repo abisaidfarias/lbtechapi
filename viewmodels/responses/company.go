@@ -1,4 +1,4 @@
-package models
+package responses
 
 import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -6,8 +6,8 @@ import (
 
 // Company model
 type Company struct {
-	ID      primitive.ObjectID `bson:"_id,omitempty"`
+	ID      primitive.ObjectID `bson:"_id"`
 	Email   string             `bson:"email"`
-	Name    string             `bson:"name,omitempty"`
+	Name    string             `bson:"name"`
 	Address string             `bson:"address"`
 }
