@@ -15,6 +15,7 @@ import (
 type IUserController interface {
 	Create() gin.HandlerFunc
 	GetByID() gin.HandlerFunc
+	GetByEmail() gin.HandlerFunc
 	Update() gin.HandlerFunc
 	Delete() gin.HandlerFunc
 }
@@ -73,6 +74,29 @@ func (c *userController) GetByID() gin.HandlerFunc {
 		}
 
 		user, err := c.userService.GetByID(id)
+
+		if err != nil {
+			handleErrorResponse(ctx, err)
+			return
+		}
+
+		ctx.JSON(http.StatusOK, *user)
+		return
+	}
+
+}
+func (c *userController) GetByEmail() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var id string
+
+		email := ctx.Param("email")
+
+		if id == "" {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("%w", utils.ErrorInvalidURLParams)})
+			return
+		}
+
+		user, err := c.userService.GetByEmail(email)
 
 		if err != nil {
 			handleErrorResponse(ctx, err)

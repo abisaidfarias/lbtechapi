@@ -9,7 +9,6 @@ import (
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/database/queries"
 	"github.com/abisaidfarias/lbtechapi/models"
-	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 )
 
@@ -79,7 +78,7 @@ func (r *testPlanRepository) GetById(id string) (*responses.TestPlan, error) {
 	err = testCaseCollection.FindOne(context.TODO(), queries.GeTestPlanById(oid)).Decode(&result)
 
 	if err != nil {
-		return nil, fmt.Errorf("%w", utils.ErrorInQuery)
+		return nil, err
 	}
 
 	return &result, nil

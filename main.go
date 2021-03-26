@@ -82,6 +82,7 @@ func main() {
 		{
 			users.POST("", userController.Create())
 			users.GET(":id", userController.GetByID())
+			// users.GET(":email", userController.GetByEmail())
 			users.PUT(":id", userController.Update())
 			users.DELETE(":id", userController.Delete())
 		}
