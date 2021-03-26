@@ -22,7 +22,7 @@ func NewBrandRepository() IBrandRepository {
 	return &brandRepository{}
 }
 
-var brandCollection = database.GetInstance().Collection("companies")
+var brandCollection = database.GetInstance().Collection("brands")
 
 // Create a new tet case
 func (r *brandRepository) Create(brand *models.Brand) error {

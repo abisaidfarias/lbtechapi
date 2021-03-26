@@ -12,6 +12,7 @@ import (
 type IUserService interface {
 	Create(*request.UserRequest) error
 	GetByID(string) (*responses.User, error)
+	GetByEmail(string) (*responses.User, error)
 	Update(string, *models.User) error
 	Delete(string) error
 }
@@ -31,7 +32,7 @@ func (s *userService) Create(userRequest *request.UserRequest) error {
 
 	user := mapping.UserRequestToUser(userRequest)
 
-	err := s.userRepository.Save(user)
+	err := s.userRepository.Create(user)
 
 	if err != nil {
 		return err
@@ -48,7 +49,16 @@ func (s *userService) GetByID(id string) (*responses.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	return mapping.UserToUserResponse(user), nil
+	return user, nil
+}
+func (s *userService) GetByEmail(email string) (*responses.User, error) {
+
+	user, err := s.userRepository.GetByEmail(email)
+
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
 func (s *userService) Update(id string, user *models.User) error {

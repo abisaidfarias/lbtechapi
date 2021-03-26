@@ -6,6 +6,6 @@ import (
 
 // Country model
 type Country struct {
-	ID   primitive.ObjectID `bson:"_id"`
+	ID   primitive.ObjectID `bson:"_id,omitempty"`
 	Name string             `bson:"name"`
 }

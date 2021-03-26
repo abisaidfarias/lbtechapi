@@ -2,22 +2,20 @@ package repositories
 
 import (
 	"context"
-	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/abisaidfarias/lbtechapi/database"
+	"github.com/abisaidfarias/lbtechapi/database/queries"
 	"github.com/abisaidfarias/lbtechapi/models"
-	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
-	"gopkg.in/mgo.v2/bson"
+	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 )
 
 // IUserRepository is the user repository interface
 type IUserRepository interface {
-	GetByID(string) (*models.User, error)
-	GetByEmail(string) (*models.User, error)
-	Save(*models.User) error
+	GetByID(string) (*responses.User, error)
+	GetByEmail(string) (*responses.User, error)
+	Create(*models.User) error
 	Update(string, *models.User) error
 	Delete(string) error
 }
@@ -39,24 +37,20 @@ func NewUserRepository() IUserRepository {
 var userCollection = database.GetInstance().Collection("users")
 
 // GetByEmail checks database for credentials
-func (r *userRepository) GetByEmail(email string) (*models.User, error) {
+func (r *userRepository) GetByEmail(email string) (*responses.User, error) {
 
-	var user models.User
+	var user responses.User
 
-	filter := bson.M{
-		"email": email,
-	}
-
-	err := userCollection.FindOne(context.TODO(), filter).Decode(&user)
+	err := userCollection.FindOne(context.TODO(), queries.GetUserByEmail(email)).Decode(&user)
 
 	if err != nil {
-		return nil, fmt.Errorf("%w", utils.ErrorInQuery)
+		return nil, err
 	}
 	return &user, nil
 }
 
 // GetByID checks database for credentials
-func (r *userRepository) GetByID(id string) (*models.User, error) {
+func (r *userRepository) GetByID(id string) (*responses.User, error) {
 
 	oid, err := primitive.ObjectIDFromHex(id)
 
@@ -64,29 +58,23 @@ func (r *userRepository) GetByID(id string) (*models.User, error) {
 		return nil, err
 	}
 
-	var result models.User
+	var result responses.User
 
-	err = userCollection.FindOne(context.TODO(), bson.M{"_id": oid}).Decode(&result)
+	err = userCollection.FindOne(context.TODO(), queries.GetUserById(oid)).Decode(&result)
 
 	if err != nil {
-		return nil, fmt.Errorf("%w", utils.ErrorInQuery)
+		return nil, err
 	}
 
 	return &result, nil
 }
 
 // Save saves the new user
-func (r *userRepository) Save(user *models.User) error {
+func (r *userRepository) Create(user *models.User) error {
 
 	_, err := userCollection.InsertOne(context.TODO(), user)
 
 	if err != nil {
-		var merr mongo.WriteException
-		merr = err.(mongo.WriteException)
-		errCode := merr.WriteErrors[0].Code
-		if errCode == 11000 {
-			return fmt.Errorf("%w", utils.ErrorDuplicated)
-		}
 		return err
 	}
 
@@ -98,11 +86,9 @@ func (r *userRepository) Update(id string, user *models.User) error {
 
 	oid, err := primitive.ObjectIDFromHex(id)
 
-	update := bson.M{
-		"$set": user,
-	}
+	filter, update := queries.UpdateUser(user, oid)
 
-	_, err = userCollection.UpdateOne(context.TODO(), bson.M{"_id": oid}, update)
+	_, err = userCollection.UpdateOne(context.TODO(), filter, update)
 
 	if err != nil {
 		return err
@@ -115,7 +101,7 @@ func (r *userRepository) Update(id string, user *models.User) error {
 func (r *userRepository) Delete(id string) error {
 	oid, err := primitive.ObjectIDFromHex(id)
 
-	_, err = userCollection.DeleteOne(context.TODO(), bson.M{"_id": oid})
+	_, err = userCollection.DeleteOne(context.TODO(), queries.DeleteUser(oid))
 
 	if err != nil {
 		return err

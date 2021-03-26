@@ -22,7 +22,7 @@ func NewCountryRepository() ICountryRepository {
 	return &countryRepository{}
 }
 
-var countryCollection = database.GetInstance().Collection("companies")
+var countryCollection = database.GetInstance().Collection("countries")
 
 // Create a new tet case
 func (r *countryRepository) Create(country *models.Country) error {
