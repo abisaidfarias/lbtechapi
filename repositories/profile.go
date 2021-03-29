@@ -66,7 +66,7 @@ func (r *profileRepository) GetById(id string) (*responses.Profile, error) {
 
 	var result responses.Profile
 
-	err = profileCollection.FindOne(context.TODO(), queries.GeProfileById(oid)).Decode(&result)
+	err = profileCollection.FindOne(context.TODO(), queries.GetProfileById(oid)).Decode(&result)
 
 	if err != nil {
 		return nil, err

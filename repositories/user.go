@@ -145,7 +145,7 @@ func (r *userRepository) GetProfileByID(oid primitive.ObjectID) (*responses.Prof
 		return nil, err
 	}
 	var profile *responses.Profile
-	err = profileCollection.FindOne(context.TODO(), queries.GeProfileById(user.Profile)).Decode(&profile)
+	err = profileCollection.FindOne(context.TODO(), queries.GetProfileById(user.Profile)).Decode(&profile)
 
 	return profile, nil
 }

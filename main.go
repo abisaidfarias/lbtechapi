@@ -50,6 +50,10 @@ var (
 	countryRepository repositories.ICountryRepository = repositories.NewCountryRepository()
 	countryService    services.ICountryService        = services.NewCountryService(countryRepository)
 	countryController controllers.ICountryController  = controllers.NewCountryController(countryService)
+
+	deviceRepository repositories.IDeviceRepository = repositories.NewDeviceRepository()
+	deviceService    services.IDeviceService        = services.NewDeviceService(deviceRepository)
+	deviceController controllers.IDeviceController  = controllers.NewDeviceController(deviceService)
 )
 
 func main() {
@@ -117,6 +121,14 @@ func main() {
 			profile.GET(":id", profileController.GetById())
 			profile.PUT(":id", profileController.Update())
 			profile.DELETE(":id", profileController.Delete())
+		}
+		device := v1.Group("/device")
+		{
+			device.POST("", deviceController.Create())
+			device.GET("", deviceController.Get())
+			device.GET(":id", deviceController.GetById())
+			device.PUT(":id", deviceController.Update())
+			device.DELETE(":id", deviceController.Delete())
 		}
 		company := v1.Group("/company")
 		{

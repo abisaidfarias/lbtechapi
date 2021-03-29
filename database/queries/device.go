@@ -5,20 +5,20 @@ import (
 	primitive "go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func GetProfileById(oid primitive.ObjectID) primitive.M {
+func GetDeviceById(oid primitive.ObjectID) primitive.M {
 	return primitive.M{"_id": oid}
 }
-func UpdateProfile(profile *models.Profile, oid primitive.ObjectID) (primitive.M, primitive.M) {
+func UpdateDevice(device *models.Device, oid primitive.ObjectID) (primitive.M, primitive.M) {
 
 	filter := primitive.M{
 		"_id": oid,
 	}
 	update := primitive.M{
-		"$set": profile,
+		"$set": device,
 	}
 	return filter, update
 }
-func DeleteProfile(oid primitive.ObjectID) primitive.M {
+func DeleteDevice(oid primitive.ObjectID) primitive.M {
 
 	return primitive.M{
 		"_id": oid,
