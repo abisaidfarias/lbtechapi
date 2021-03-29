@@ -15,6 +15,9 @@ import (
 type IUserRepository interface {
 	GetByID(string) (*responses.User, error)
 	GetByEmail(string) (*responses.User, error)
+	GetByCompany(primitive.ObjectID) ([]*responses.User, error)
+	GetProfileByID(primitive.ObjectID) (*responses.Profile, error)
+	Get() ([]*responses.User, error)
 	Create(*models.User) error
 	Update(string, *models.User) error
 	Delete(string) error
@@ -68,6 +71,30 @@ func (r *userRepository) GetByID(id string) (*responses.User, error) {
 
 	return &result, nil
 }
+func (r *userRepository) GetByCompany(companyID primitive.ObjectID) ([]*responses.User, error) {
+
+	var users []*responses.User = []*responses.User{}
+	cursor, err := userCollection.Find(context.TODO(), queries.GetUserByCompany(companyID))
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All(context.TODO(), &users); err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+func (r *userRepository) Get() ([]*responses.User, error) {
+
+	var users []*responses.User = []*responses.User{}
+	cursor, err := userCollection.Find(context.TODO(), primitive.M{})
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All(context.TODO(), &users); err != nil {
+		return nil, err
+	}
+	return users, nil
+}
 
 // Save saves the new user
 func (r *userRepository) Create(user *models.User) error {
@@ -108,4 +135,17 @@ func (r *userRepository) Delete(id string) error {
 	}
 
 	return nil
+}
+func (r *userRepository) GetProfileByID(oid primitive.ObjectID) (*responses.Profile, error) {
+
+	var user responses.User
+	err := userCollection.FindOne(context.TODO(), queries.GetUserById(oid)).Decode(&user)
+
+	if err != nil {
+		return nil, err
+	}
+	var profile *responses.Profile
+	err = profileCollection.FindOne(context.TODO(), queries.GeProfileById(user.Profile)).Decode(&profile)
+
+	return profile, nil
 }

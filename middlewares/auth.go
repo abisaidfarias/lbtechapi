@@ -42,8 +42,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 		ctx.Set("userID", claims.ID)
-		// TODO add this after company relation
-		// ctx.Set("companyID", claims.companyID)
+		ctx.Set("companyID", claims.CompanyID)
 
 		ctx.Next()
 	}

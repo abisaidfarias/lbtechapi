@@ -49,7 +49,7 @@ func (r *profileRepository) Get() ([]*responses.Profile, error) {
 
 		panic(err)
 	}
-	var profiles []*responses.Profile
+	var profiles []*responses.Profile = []*responses.Profile{}
 	if err = cursor.All(context.TODO(), &profiles); err != nil {
 		panic(err)
 	}

@@ -18,6 +18,8 @@ type IUserController interface {
 	GetByEmail() gin.HandlerFunc
 	Update() gin.HandlerFunc
 	Delete() gin.HandlerFunc
+	Get() gin.HandlerFunc
+	GetProfileByID() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
@@ -158,6 +160,37 @@ func (c *userController) Delete() gin.HandlerFunc {
 		}
 
 		ctx.Status(http.StatusOK)
+		return
+	}
+
+}
+func (c *userController) Get() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userID := ctx.MustGet("userID").(string)
+		users, err := c.userService.Get(userID)
+
+		if err != nil {
+			handleErrorResponse(ctx, err)
+			return
+		}
+
+		ctx.JSON(http.StatusOK, users)
+		return
+	}
+
+}
+func (c *userController) GetProfileByID() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		userID := ctx.MustGet("userID").(string)
+		profile, err := c.userService.GetProfileByID(userID)
+
+		if err != nil {
+			handleErrorResponse(ctx, err)
+			return
+		}
+
+		ctx.JSON(http.StatusOK, profile)
 		return
 	}
 

@@ -13,6 +13,7 @@ type User struct {
 	LastName     string               `bson:"lastName,omitempty"`
 	Phone        string               `bson:"phone,omitempty"`
 	Dni          string               `bson:"dni,omitempty"`
+	IsInternal   bool                 `bson:"is_internal,omitempty"`
 	Profile      primitive.ObjectID   `bson:"profile,omitempty"`
 	Company      primitive.ObjectID   `bson:"company"`
 	Brands       []primitive.ObjectID `bson:"brands"`

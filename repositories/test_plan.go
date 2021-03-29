@@ -13,7 +13,7 @@ import (
 )
 
 type ITestPlanRepository interface {
-	Create(*models.TestPlan) error
+	Create(*models.TestPlan, primitive.ObjectID) error
 	Get() ([]*responses.TestPlan, error)
 	GetById(string) (*responses.TestPlan, error)
 	Update(string, *models.TestPlan) error
@@ -30,9 +30,17 @@ func NewTestPlanRepository() ITestPlanRepository {
 var testPlanCollection = database.GetInstance().Collection("test_plans")
 
 // Create a new tet case
-func (r *testPlanRepository) Create(testPlan *models.TestPlan) error {
+func (r *testPlanRepository) Create(testPlan *models.TestPlan, userId primitive.ObjectID) error {
 
-	_, err := testPlanCollection.InsertOne(context.TODO(), testPlan)
+	var user responses.User
+
+	err := userCollection.FindOne(context.TODO(), queries.GetUserById(userId)).Decode(&user)
+	if err != nil {
+		return err
+	}
+	testPlan.UserName = fmt.Sprintf("%s %s", user.Name, user.LastName)
+
+	_, err = testPlanCollection.InsertOne(context.TODO(), testPlan)
 
 	if err != nil {
 		return err
@@ -47,15 +55,13 @@ func (r *testPlanRepository) Get() ([]*responses.TestPlan, error) {
 	if err != nil {
 		panic(err)
 	}
-	var testPlans []*responses.TestPlan
+	var testPlans []*responses.TestPlan = []*responses.TestPlan{}
 	for cursor.Next(context.TODO()) {
 		var result responses.TestPlan
 		err := cursor.Decode(&result)
 		if err != nil {
 			return nil, err
 		}
-		result.UserName = fmt.Sprintf("%s %s", result.Users[0].Name, result.Users[0].LastName)
-		result.Users = []responses.User{}
 		result.TotalCategory = len(result.TestCategories)
 		for _, element := range result.TestCategories {
 			result.TotalTest += len(element.TestCases)

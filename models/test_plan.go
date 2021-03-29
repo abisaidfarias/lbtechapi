@@ -11,5 +11,5 @@ type TestPlan struct {
 	TestCategories []primitive.ObjectID `bson:"test_categories,omitempty" json:"test_category"`
 	IsActive       bool                 `bson:"is_active" json:"is_active"`
 	Description    string               `bson:"description" json:"description"`
-	User           primitive.ObjectID   `bson:"user,omitempty"`
+	UserName       string               `bson:"username"`
 }

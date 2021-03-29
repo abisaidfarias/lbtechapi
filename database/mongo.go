@@ -90,21 +90,13 @@ func initDB() *mongo.Database {
 		}, Options: options.Index().SetUnique(true),
 	}
 
-	database.Collection("users").Indexes().DropAll(context.Background())
 	database.Collection("users").Indexes().CreateOne(context.Background(), indexEmail)
-	database.Collection("test_cases").Indexes().DropAll(context.Background())
 	database.Collection("test_cases").Indexes().CreateOne(context.Background(), indexCode)
-	database.Collection("test_categories").Indexes().DropAll(context.Background())
 	database.Collection("test_categories").Indexes().CreateOne(context.Background(), indexTestCategoryName)
-	database.Collection("test_plans").Indexes().DropAll(context.Background())
 	database.Collection("test_plans").Indexes().CreateOne(context.Background(), indexTestPlanName)
-	database.Collection("profiles").Indexes().DropAll(context.Background())
 	database.Collection("profiles").Indexes().CreateOne(context.Background(), indexProfileName)
-	database.Collection("companies").Indexes().DropAll(context.Background())
 	database.Collection("companies").Indexes().CreateOne(context.Background(), indexCompanyName)
-	database.Collection("brands").Indexes().DropAll(context.Background())
 	database.Collection("brands").Indexes().CreateOne(context.Background(), indexBrandName)
-	database.Collection("countries").Indexes().DropAll(context.Background())
 	database.Collection("countries").Indexes().CreateOne(context.Background(), indexCountryName)
 	return database
 }

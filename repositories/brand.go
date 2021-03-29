@@ -42,7 +42,7 @@ func (r *brandRepository) Get() ([]*responses.Brand, error) {
 	if err != nil {
 		panic(err)
 	}
-	var brands []*responses.Brand
+	var brands []*responses.Brand = []*responses.Brand{}
 	if err = cursor.All(context.TODO(), &brands); err != nil {
 		panic(err)
 	}

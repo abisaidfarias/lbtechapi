@@ -16,14 +16,6 @@ func GetTestPlans() []bson.M {
 				"as":           "test_categories",
 			},
 		},
-		{
-			"$lookup": bson.M{
-				"from":         "users",
-				"localField":   "user",
-				"foreignField": "_id",
-				"as":           "users",
-			},
-		},
 	}
 	return lookupStage
 }

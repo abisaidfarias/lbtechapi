@@ -81,8 +81,8 @@ func main() {
 		users := v1.Group("/users")
 		{
 			users.POST("", userController.Create())
-			users.GET(":id", userController.GetByID())
-			// users.GET(":email", userController.GetByEmail())
+			users.GET("", userController.Get())
+			users.GET("/profile", userController.GetProfileByID())
 			users.PUT(":id", userController.Update())
 			users.DELETE(":id", userController.Delete())
 		}

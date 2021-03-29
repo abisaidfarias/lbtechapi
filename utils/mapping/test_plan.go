@@ -21,6 +21,5 @@ func TestPlanRequestToTestPlan(testPlan *request.TestPlan) (*models.TestPlan, er
 		TestCategories: testCategories,
 		IsActive:       true,
 		Description:    testPlan.Description,
-		User:           testPlan.UserID,
 	}, nil
 }
