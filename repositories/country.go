@@ -42,7 +42,7 @@ func (r *countryRepository) Get() ([]*responses.Country, error) {
 	if err != nil {
 		panic(err)
 	}
-	var countries []*responses.Country
+	var countries []*responses.Country = []*responses.Country{}
 	if err = cursor.All(context.TODO(), &countries); err != nil {
 		panic(err)
 	}

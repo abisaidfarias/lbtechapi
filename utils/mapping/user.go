@@ -22,6 +22,7 @@ func UserRequestToUser(userRequest *request.UserRequest) *models.User {
 		LastName:     userRequest.LastName,
 		Dni:          userRequest.Dni,
 		Phone:        userRequest.Phone,
+		IsInternal:   userRequest.IsInternal,
 		Brands:       brands,
 		Countries:    countries,
 		Company:      company,
@@ -32,15 +33,15 @@ func UserRequestToUser(userRequest *request.UserRequest) *models.User {
 func UserToUserResponse(user *models.User) *responses.User {
 
 	return &responses.User{
-		ID:        user.ID,
-		Email:     user.Email,
-		Name:      user.Name,
-		LastName:  user.LastName,
-		Dni:       user.Dni,
-		Phone:     user.Phone,
-		Profile:   user.Profile,
-		Company:   user.Company,
-		Brands:    user.Brands,
-		Countries: user.Countries,
+		ID:         user.ID,
+		Email:      user.Email,
+		Name:       user.Name,
+		LastName:   user.LastName,
+		Dni:        user.Dni,
+		Phone:      user.Phone,
+		Company:    user.Company,
+		IsInternal: user.IsInternal,
+		Brands:     user.Brands,
+		Countries:  user.Countries,
 	}
 }

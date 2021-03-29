@@ -49,7 +49,7 @@ func (r *testCategoryRepository) Get() ([]*responses.TestCategory, error) {
 	if err != nil {
 		return nil, err
 	}
-	var testCategories []*responses.TestCategory
+	var testCategories []*responses.TestCategory = []*responses.TestCategory{}
 	for cursor.Next(context.TODO()) {
 		var result responses.TestCategory
 		err := cursor.Decode(&result)

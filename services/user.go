@@ -6,13 +6,16 @@ import (
 	"github.com/abisaidfarias/lbtechapi/utils/mapping"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // IUserService auth interface
 type IUserService interface {
 	Create(*request.UserRequest) error
 	GetByID(string) (*responses.User, error)
+	Get(string) ([]*responses.User, error)
 	GetByEmail(string) (*responses.User, error)
+	GetProfileByID(string) (*responses.Profile, error)
 	Update(string, *models.User) error
 	Delete(string) error
 }
@@ -39,6 +42,26 @@ func (s *userService) Create(userRequest *request.UserRequest) error {
 	}
 
 	return nil
+}
+func (s *userService) Get(userID string) ([]*responses.User, error) {
+
+	user, err := s.userRepository.GetByID(userID)
+
+	if err != nil {
+		return nil, err
+	}
+	if user.IsInternal {
+		users, err := s.userRepository.Get()
+		if err != nil {
+			return nil, err
+		}
+		return users, err
+	}
+	users, err := s.userRepository.GetByCompany(user.Company)
+	if err != nil {
+		return nil, err
+	}
+	return users, err
 }
 
 // GetByID gets an user by ID
@@ -79,4 +102,14 @@ func (s *userService) Delete(id string) error {
 		return err
 	}
 	return nil
+}
+func (s *userService) GetProfileByID(id string) (*responses.Profile, error) {
+
+	oid, err := primitive.ObjectIDFromHex(id)
+	profile, err := s.userRepository.GetProfileByID(oid)
+
+	if err != nil {
+		return nil, err
+	}
+	return profile, nil
 }

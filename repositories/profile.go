@@ -49,7 +49,7 @@ func (r *profileRepository) Get() ([]*responses.Profile, error) {
 
 		panic(err)
 	}
-	var profiles []*responses.Profile
+	var profiles []*responses.Profile = []*responses.Profile{}
 	if err = cursor.All(context.TODO(), &profiles); err != nil {
 		panic(err)
 	}
@@ -66,7 +66,7 @@ func (r *profileRepository) GetById(id string) (*responses.Profile, error) {
 
 	var result responses.Profile
 
-	err = profileCollection.FindOne(context.TODO(), queries.GeProfileById(oid)).Decode(&result)
+	err = profileCollection.FindOne(context.TODO(), queries.GetProfileById(oid)).Decode(&result)
 
 	if err != nil {
 		return nil, err

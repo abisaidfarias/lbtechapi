@@ -42,7 +42,7 @@ func (r *companyRepository) Get() ([]*responses.Company, error) {
 	if err != nil {
 		panic(err)
 	}
-	var companies []*responses.Company
+	var companies []*responses.Company = []*responses.Company{}
 	if err = cursor.All(context.TODO(), &companies); err != nil {
 		panic(err)
 	}

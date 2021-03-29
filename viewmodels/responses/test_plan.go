@@ -12,5 +12,4 @@ type TestPlan struct {
 	Description    string             `json:"description"`
 	UserName       string             `json:"userName"`
 	TestCategories []TestCategory     `bson:"test_categories,omitempty" json:"test_category"`
-	Users          []User             `bson:"users,omitempty" json:"users"`
 }

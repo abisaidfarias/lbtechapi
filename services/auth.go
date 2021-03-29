@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/abisaidfarias/lbtechapi/repositories"
@@ -31,8 +32,9 @@ func NewAuthService(userRepository repositories.IUserRepository) IAuthService {
 
 // AuthClaims claims to be added in the json payload
 type AuthClaims struct {
-	ID string `json:"id"`
-	// TODO add companyId to authClaims
+	ID         string `json:"id"`
+	CompanyID  string
+	IsInternal string
 	jwt.StandardClaims
 }
 
@@ -47,7 +49,7 @@ func (s *authService) SignIn(credentials *request.AuthCredentials) (*responses.A
 	if err != nil {
 		return nil, fmt.Errorf("%w", utils.ErrorInvalidCredentials)
 	}
-	token := generateJWT(user.ID.Hex())
+	token := generateJWT(user)
 	return &responses.AuthResponse{
 		ID:    user.ID,
 		Email: user.Email,
@@ -56,14 +58,16 @@ func (s *authService) SignIn(credentials *request.AuthCredentials) (*responses.A
 }
 
 // generateJWT create a token
-func generateJWT(userID string) string {
+func generateJWT(user *responses.User) string {
 
 	var JWTKey = []byte(os.Getenv("SECRET_KEY"))
 	// TODO move this into environment variable
 	expirationTime := time.Now().Add(1000 * time.Hour)
 
 	claims := &AuthClaims{
-		ID: userID,
+		ID:         user.ID.Hex(),
+		CompanyID:  user.Company.Hex(),
+		IsInternal: strconv.FormatBool(user.IsInternal),
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},

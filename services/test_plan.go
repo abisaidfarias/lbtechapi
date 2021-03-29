@@ -37,7 +37,7 @@ func (s *testPlanService) Create(testPlanRequest *request.TestPlan) error {
 		return err
 	}
 
-	err = s.testPlanRepository.Create(testPlan)
+	err = s.testPlanRepository.Create(testPlan, testPlanRequest.UserID)
 
 	if err != nil {
 		return err

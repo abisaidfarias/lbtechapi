@@ -34,6 +34,9 @@ var testCaseCollection = database.GetInstance().Collection("test_cases")
 func (r *testCaseRepository) Create(testCase *models.TestCase) error {
 
 	res, err := testCaseCollection.InsertOne(context.TODO(), testCase)
+	if err != nil {
+		return err
+	}
 	oid := res.InsertedID.(primitive.ObjectID)
 
 	filter, update := queries.InsertTestCase(testCase.TestCategory, oid)
@@ -54,7 +57,7 @@ func (r *testCaseRepository) Get() ([]*bson.M, error) {
 
 		panic(err)
 	}
-	var testCases []*bson.M
+	var testCases []*bson.M = []*bson.M{}
 	if err = cursor.All(context.TODO(), &testCases); err != nil {
 		panic(err)
 	}

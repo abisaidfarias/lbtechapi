@@ -35,3 +35,26 @@ func GetUserById(oid primitive.ObjectID) primitive.M {
 func GetUserByEmail(email string) primitive.M {
 	return primitive.M{"email": email}
 }
+func GetUserByCompany(companyId primitive.ObjectID) primitive.M {
+	return primitive.M{"company": companyId}
+}
+
+// func GetUserProfileById(oid primitive.ObjectID) []bson.D {
+// 	lookupStage := bson.D{
+// 		primitive.E{Key: "$lookup", Value: bson.D{
+// 			primitive.E{Key: "from", Value: "profiles"},
+// 			primitive.E{Key: "localField", Value: "profile"},
+// 			primitive.E{Key: "foreignField", Value: "_id"},
+// 			primitive.E{Key: "as", Value: "profile"},
+// 		}}}
+// 	// unwindStage := bson.D{
+// 	// 	primitive.E{Key: "$unwind", Value: bson.D{
+// 	// 		primitive.E{Key: "path", Value: "$profile"},
+// 	// 		primitive.E{Key: "preserveNullAndEmptyArrays", Value: false},
+// 	// 	}}}
+// 	// matchStage := bson.D{
+// 	// 	primitive.E{Key: "$match", Value: bson.D{
+// 	// 		primitive.E{Key: "_id", Value: oid},
+// 	// 	}}}
+// 	return mongo.Pipeline{lookupStage}
+// }

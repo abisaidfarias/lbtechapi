@@ -6,8 +6,8 @@ import (
 
 // Profile model
 type Profile struct {
-	ID         primitive.ObjectID `bson:"_id"`
-	Name       string             `bson:"name,omitempty"`
-	IsInternal bool               `bson:"is_internal,omitempty"`
-	Claims     []Claim            `bson:"claims,omitempty"`
+	ID         primitive.ObjectID `bson:"_id" json:"_id"`
+	Name       string             `json:"name"`
+	IsInternal bool               `json:"is_internal"`
+	Claims     []Claim            `json:"claims"`
 }
