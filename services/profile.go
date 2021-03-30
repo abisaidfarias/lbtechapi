@@ -5,12 +5,13 @@ import (
 	"github.com/abisaidfarias/lbtechapi/utils/mapping"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // IProfileService is the test case service interface
 type IProfileService interface {
 	Create(*request.Profile) error
-	Get() ([]*responses.Profile, error)
+	Get() ([]*bson.M, error)
 	GetById(string) (*responses.Profile, error)
 	Update(string, *request.Profile) error
 	Delete(string) (error, bool)
@@ -46,7 +47,7 @@ func (s *profileService) Create(profileRequest *request.Profile) error {
 }
 
 // Get gets a list of test cases
-func (s *profileService) Get() ([]*responses.Profile, error) {
+func (s *profileService) Get() ([]*bson.M, error) {
 	result, err := s.profileRepository.Get()
 
 	if err != nil {

@@ -58,7 +58,7 @@ func (s *authService) SignIn(credentials *request.AuthCredentials) (*responses.A
 }
 
 // generateJWT create a token
-func generateJWT(user *responses.User) string {
+func generateJWT(user *responses.AuthUser) string {
 
 	var JWTKey = []byte(os.Getenv("SECRET_KEY"))
 	// TODO move this into environment variable

@@ -10,7 +10,7 @@ import (
 
 // IDeviceService is the test case service interface
 type IDeviceService interface {
-	Create(*request.Device) error
+	Create(*request.Device) (*responses.Device, error)
 	Get() ([]*responses.Device, error)
 	GetById(string) (*responses.Device, error)
 	Update(string, *request.Device) error
@@ -29,17 +29,17 @@ func NewDeviceService(deviceRepository repositories.IDeviceRepository) IDeviceSe
 }
 
 // Create creates a new test case
-func (s *deviceService) Create(deviceRequest *request.Device) error {
+func (s *deviceService) Create(deviceRequest *request.Device) (*responses.Device, error) {
 
 	device := mapping.DeviceRequestToDevice(deviceRequest)
 
-	err := s.deviceRepository.Create(device)
+	deviceResponse, err := s.deviceRepository.Create(device)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return deviceResponse, nil
 }
 
 // Get gets a list of test cases

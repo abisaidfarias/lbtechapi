@@ -45,7 +45,7 @@ func (c *deviceController) Create() gin.HandlerFunc {
 			return
 		}
 
-		err = c.deviceService.Create(&device)
+		deviceResponse, err := c.deviceService.Create(&device)
 
 		if err != nil {
 			if utils.ErrorDuplicatedData(err) {
@@ -57,7 +57,7 @@ func (c *deviceController) Create() gin.HandlerFunc {
 			return
 		}
 
-		ctx.Status(http.StatusCreated)
+		ctx.JSON(http.StatusCreated, *deviceResponse)
 		return
 	}
 }

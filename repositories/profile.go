@@ -14,7 +14,7 @@ import (
 
 type IProfileRepository interface {
 	Create(*models.Profile) error
-	Get() ([]*responses.Profile, error)
+	Get() ([]*bson.M, error)
 	GetById(string) (*responses.Profile, error)
 	Update(string, *models.Profile) error
 	Delete(string) (error, bool)
@@ -41,7 +41,7 @@ func (r *profileRepository) Create(profile *models.Profile) error {
 }
 
 // Get returns a list of all test cases
-func (r *profileRepository) Get() ([]*responses.Profile, error) {
+func (r *profileRepository) Get() ([]*bson.M, error) {
 
 	cursor, err := profileCollection.Find(context.TODO(), bson.M{})
 
@@ -49,10 +49,19 @@ func (r *profileRepository) Get() ([]*responses.Profile, error) {
 
 		panic(err)
 	}
-	var profiles []*responses.Profile = []*responses.Profile{}
-	if err = cursor.All(context.TODO(), &profiles); err != nil {
-		panic(err)
+	var profiles []*bson.M = []*bson.M{}
+	for cursor.Next(context.TODO()) {
+		var result bson.M
+		err := cursor.Decode(&result)
+		if err != nil {
+			return nil, err
+		}
+		profiles = append(profiles, &result)
+
 	}
+	// if err = cursor.All(context.TODO(), &profiles); err != nil {
+	// 	panic(err)
+	// }
 	cursor.Close(context.TODO())
 	return profiles, nil
 }

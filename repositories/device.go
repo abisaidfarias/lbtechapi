@@ -9,11 +9,12 @@ import (
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/database/queries"
 	"github.com/abisaidfarias/lbtechapi/models"
+	"github.com/abisaidfarias/lbtechapi/utils/mapping"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 )
 
 type IDeviceRepository interface {
-	Create(*models.Device) error
+	Create(*models.Device) (*responses.Device, error)
 	Get() ([]*responses.Device, error)
 	GetById(string) (*responses.Device, error)
 	Update(string, *models.Device) error
@@ -30,14 +31,16 @@ func NewDeviceRepository() IDeviceRepository {
 var deviceCollection = database.GetInstance().Collection("devices")
 
 // Create a new tet case
-func (r *deviceRepository) Create(device *models.Device) error {
+func (r *deviceRepository) Create(device *models.Device) (*responses.Device, error) {
 
-	_, err := deviceCollection.InsertOne(context.TODO(), device)
-
+	res, err := deviceCollection.InsertOne(context.TODO(), device)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	id := res.InsertedID.(primitive.ObjectID)
+	device.ID = id
+	deviceResponses := mapping.DeviceToDeviceResponse(device)
+	return deviceResponses, nil
 }
 
 // Get returns a list of all test cases
