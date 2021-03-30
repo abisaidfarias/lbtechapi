@@ -18,7 +18,7 @@ func GetTestCases() []bson.D {
 	unwindStage := bson.D{
 		primitive.E{Key: "$unwind", Value: bson.D{
 			primitive.E{Key: "path", Value: "$test_category"},
-			primitive.E{Key: "preserveNullAndEmptyArrays", Value: false},
+			primitive.E{Key: "preserveNullAndEmptyArrays", Value: true},
 		}}}
 	matchStage := bson.D{
 		primitive.E{Key: "$match", Value: bson.D{
