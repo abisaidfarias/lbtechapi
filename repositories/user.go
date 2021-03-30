@@ -75,7 +75,7 @@ func (r *userRepository) GetByID(id string) (*responses.User, error) {
 func (r *userRepository) GetByCompany(companyID primitive.ObjectID) ([]*bson.M, error) {
 
 	var users []*bson.M = []*bson.M{}
-	cursor, err := userCollection.Find(context.TODO(), queries.GetUserByCompany(companyID))
+	cursor, err := userCollection.Aggregate(context.TODO(), queries.GetUserByCompany(companyID))
 	if err != nil {
 		return nil, err
 	}
@@ -86,13 +86,19 @@ func (r *userRepository) GetByCompany(companyID primitive.ObjectID) ([]*bson.M, 
 }
 func (r *userRepository) Get() ([]*bson.M, error) {
 
-	var users []*bson.M = []*bson.M{}
-	cursor, err := userCollection.Aggregate(context.TODO(), queries.GetUserProfileById())
+	cursor, err := userCollection.Aggregate(context.TODO(), queries.GetUsers())
 	if err != nil {
 		return nil, err
 	}
-	if err = cursor.All(context.TODO(), &users); err != nil {
-		return nil, err
+	var users []*bson.M = []*bson.M{}
+	for cursor.Next(context.TODO()) {
+		var user bson.M
+		err := cursor.Decode(&user)
+		if err != nil {
+			return nil, err
+		}
+		user["passwordHash"] = ""
+		users = append(users, &user)
 	}
 	return users, nil
 }

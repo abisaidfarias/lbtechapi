@@ -37,11 +37,7 @@ func GetUserById(oid primitive.ObjectID) primitive.M {
 func GetUserByEmail(email string) primitive.M {
 	return primitive.M{"email": email}
 }
-func GetUserByCompany(companyId primitive.ObjectID) primitive.M {
-	return primitive.M{"company": companyId}
-}
-
-func GetUserProfileById() []bson.D {
+func GetUserByCompany(companyId primitive.ObjectID) []bson.D {
 	lookupStage := bson.D{
 		primitive.E{Key: "$lookup", Value: bson.D{
 			primitive.E{Key: "from", Value: "profiles"},
@@ -66,9 +62,37 @@ func GetUserProfileById() []bson.D {
 			primitive.E{Key: "path", Value: "$company"},
 			primitive.E{Key: "preserveNullAndEmptyArrays", Value: false},
 		}}}
-	// matchStage := bson.D{
-	// 	primitive.E{Key: "$match", Value: bson.D{
-	// 		primitive.E{Key: "_id", Value: oid},
-	// 	}}}
-	return mongo.Pipeline{lookupStage, unwindStage,lookupStage2,unwindStage2}
+	matchStage := bson.D{
+		primitive.E{Key: "$match", Value: bson.D{
+			primitive.E{Key: "company._id", Value: companyId},
+		}}}
+	return mongo.Pipeline{lookupStage, unwindStage, lookupStage2, unwindStage2, matchStage}
+}
+
+func GetUsers() []bson.D {
+	lookupStage := bson.D{
+		primitive.E{Key: "$lookup", Value: bson.D{
+			primitive.E{Key: "from", Value: "profiles"},
+			primitive.E{Key: "localField", Value: "profile"},
+			primitive.E{Key: "foreignField", Value: "_id"},
+			primitive.E{Key: "as", Value: "profile"},
+		}}}
+	unwindStage := bson.D{
+		primitive.E{Key: "$unwind", Value: bson.D{
+			primitive.E{Key: "path", Value: "$profile"},
+			primitive.E{Key: "preserveNullAndEmptyArrays", Value: true},
+		}}}
+	lookupStage2 := bson.D{
+		primitive.E{Key: "$lookup", Value: bson.D{
+			primitive.E{Key: "from", Value: "companies"},
+			primitive.E{Key: "localField", Value: "company"},
+			primitive.E{Key: "foreignField", Value: "_id"},
+			primitive.E{Key: "as", Value: "company"},
+		}}}
+	unwindStage2 := bson.D{
+		primitive.E{Key: "$unwind", Value: bson.D{
+			primitive.E{Key: "path", Value: "$company"},
+			primitive.E{Key: "preserveNullAndEmptyArrays", Value: true},
+		}}}
+	return mongo.Pipeline{lookupStage, unwindStage, lookupStage2, unwindStage2}
 }
