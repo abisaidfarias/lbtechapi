@@ -7,11 +7,11 @@ type UserRequest struct {
 	Password   string   `json:"password" bson:"password" binding:"required,passwordFormat"`
 	Name       string   `json:"name" bson:"name" binding:"required"`
 	LastName   string   `json:"lastName" bson:"lastName" binding:"required"`
-	Phone      string   `json:"phone" bson:"phone"`
+	Phone      string   `json:"phone" bson:"phone"`	
 	Dni        string   `json:"dni" bson:"dni" binding:"required"`
 	Profile    string   `json:"profile" binding:"required"`
 	Company    string   `json:"company" binding:"required"`
-	IsInternal bool     `json:"is_internal" binding:"required"`
+	IsInternal bool     `json:"is_internal"`
 	Brands     []string `json:"brands"`
 	Countries  []string `json:"countries"`
 }
