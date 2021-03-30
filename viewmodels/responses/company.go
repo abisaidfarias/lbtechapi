@@ -6,8 +6,8 @@ import (
 
 // Company model
 type Company struct {
-	ID      primitive.ObjectID `bson:"_id"`
-	Email   string             `bson:"email"`
-	Name    string             `bson:"name"`
-	Address string             `bson:"address"`
+	ID      primitive.ObjectID `bson:"_id" json:"_id"`
+	Email   string             `bson:"email" json:"email"`
+	Name    string             `bson:"name" json:"name"`
+	Address string             `bson:"address" json:"address"`
 }
