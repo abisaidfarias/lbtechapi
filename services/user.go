@@ -14,7 +14,7 @@ type IUserService interface {
 	Create(*request.UserRequest) error
 	GetByID(string) (*responses.User, error)
 	Get(string) ([]*responses.User, error)
-	GetByEmail(string) (*responses.User, error)
+	GetByEmail(string) (*responses.AuthUser, error)
 	GetProfileByID(string) (*responses.Profile, error)
 	Update(string, *models.User) error
 	Delete(string) error
@@ -74,7 +74,7 @@ func (s *userService) GetByID(id string) (*responses.User, error) {
 	}
 	return user, nil
 }
-func (s *userService) GetByEmail(email string) (*responses.User, error) {
+func (s *userService) GetByEmail(email string) (*responses.AuthUser, error) {
 
 	user, err := s.userRepository.GetByEmail(email)
 

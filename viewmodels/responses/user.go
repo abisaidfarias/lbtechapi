@@ -6,16 +6,15 @@ import (
 
 // UserResponse response to client
 type User struct {
-	ID           primitive.ObjectID   `bson:"_id"`
-	Email        string               `bson:"email"`
-	PasswordHash string               `bson:"passwordHash"`
-	Name         string               `bson:"name"`
-	LastName     string               `bson:"lastName"`
-	Phone        string               `bson:"phone"`
-	Dni          string               `bson:"dni"`
-	Profile      primitive.ObjectID   `bson:"profile"`
-	Company      primitive.ObjectID   `bson:"company"`
-	Brands       []primitive.ObjectID `bson:"brands"`
-	Countries    []primitive.ObjectID `bson:"countries"`
-	IsInternal   bool                 `bson:"is_internal"`
+	ID         primitive.ObjectID   `bson:"_id"`
+	Email      string               `bson:"email"`
+	Name       string               `bson:"name"`
+	LastName   string               `bson:"lastName"`
+	Phone      string               `bson:"phone"`
+	Dni        string               `bson:"dni"`
+	Profile    primitive.ObjectID   `bson:"profile"`
+	Company    primitive.ObjectID   `bson:"company"`
+	Brands     []primitive.ObjectID `bson:"brands"`
+	Countries  []primitive.ObjectID `bson:"countries"`
+	IsInternal bool                 `bson:"is_internal"`
 }

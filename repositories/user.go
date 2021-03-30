@@ -14,7 +14,7 @@ import (
 // IUserRepository is the user repository interface
 type IUserRepository interface {
 	GetByID(string) (*responses.User, error)
-	GetByEmail(string) (*responses.User, error)
+	GetByEmail(string) (*responses.AuthUser, error)
 	GetByCompany(primitive.ObjectID) ([]*responses.User, error)
 	GetProfileByID(primitive.ObjectID) (*responses.Profile, error)
 	Get() ([]*responses.User, error)
@@ -40,9 +40,9 @@ func NewUserRepository() IUserRepository {
 var userCollection = database.GetInstance().Collection("users")
 
 // GetByEmail checks database for credentials
-func (r *userRepository) GetByEmail(email string) (*responses.User, error) {
+func (r *userRepository) GetByEmail(email string) (*responses.AuthUser, error) {
 
-	var user responses.User
+	var user responses.AuthUser
 
 	err := userCollection.FindOne(context.TODO(), queries.GetUserByEmail(email)).Decode(&user)
 
