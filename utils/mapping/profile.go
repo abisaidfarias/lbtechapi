@@ -1,8 +1,6 @@
 package mapping
 
 import (
-	"strconv"
-
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
@@ -17,11 +15,11 @@ func ProfileRequestToProfile(profile *request.Profile) (*models.Profile, error) 
 		claim.Allow = claimRequest.Allow
 		claims = append(claims, claim)
 	}
-	isInternal, _ := strconv.ParseBool(profile.IsInternal)
+	// isInternal, _ := strconv.ParseBool()
 	return &models.Profile{
 		Claims:     claims,
 		Name:       profile.Name,
-		IsInternal: isInternal,
+		IsInternal: profile.IsInternal,
 	}, nil
 }
 

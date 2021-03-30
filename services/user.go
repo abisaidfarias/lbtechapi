@@ -7,13 +7,14 @@ import (
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // IUserService auth interface
 type IUserService interface {
 	Create(*request.UserRequest) error
 	GetByID(string) (*responses.User, error)
-	Get(string) ([]*responses.User, error)
+	Get(string) ([]*bson.M, error)
 	GetByEmail(string) (*responses.AuthUser, error)
 	GetProfileByID(string) (*responses.Profile, error)
 	Update(string, *models.User) error
@@ -43,7 +44,7 @@ func (s *userService) Create(userRequest *request.UserRequest) error {
 
 	return nil
 }
-func (s *userService) Get(userID string) ([]*responses.User, error) {
+func (s *userService) Get(userID string) ([]*bson.M, error) {
 
 	user, err := s.userRepository.GetByID(userID)
 

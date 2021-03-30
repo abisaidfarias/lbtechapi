@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"gopkg.in/mgo.v2/bson"
 
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/database/queries"
@@ -15,9 +16,9 @@ import (
 type IUserRepository interface {
 	GetByID(string) (*responses.User, error)
 	GetByEmail(string) (*responses.AuthUser, error)
-	GetByCompany(primitive.ObjectID) ([]*responses.User, error)
+	GetByCompany(primitive.ObjectID) ([]*bson.M, error)
 	GetProfileByID(primitive.ObjectID) (*responses.Profile, error)
-	Get() ([]*responses.User, error)
+	Get() ([]*bson.M, error)
 	Create(*models.User) error
 	Update(string, *models.User) error
 	Delete(string) error
@@ -71,9 +72,9 @@ func (r *userRepository) GetByID(id string) (*responses.User, error) {
 
 	return &result, nil
 }
-func (r *userRepository) GetByCompany(companyID primitive.ObjectID) ([]*responses.User, error) {
+func (r *userRepository) GetByCompany(companyID primitive.ObjectID) ([]*bson.M, error) {
 
-	var users []*responses.User = []*responses.User{}
+	var users []*bson.M = []*bson.M{}
 	cursor, err := userCollection.Find(context.TODO(), queries.GetUserByCompany(companyID))
 	if err != nil {
 		return nil, err
@@ -83,10 +84,10 @@ func (r *userRepository) GetByCompany(companyID primitive.ObjectID) ([]*response
 	}
 	return users, nil
 }
-func (r *userRepository) Get() ([]*responses.User, error) {
+func (r *userRepository) Get() ([]*bson.M, error) {
 
-	var users []*responses.User = []*responses.User{}
-	cursor, err := userCollection.Find(context.TODO(), primitive.M{})
+	var users []*bson.M = []*bson.M{}
+	cursor, err := userCollection.Aggregate(context.TODO(), queries.GetUserProfileById())
 	if err != nil {
 		return nil, err
 	}
