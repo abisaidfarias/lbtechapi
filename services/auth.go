@@ -50,10 +50,20 @@ func (s *authService) SignIn(credentials *request.AuthCredentials) (*responses.A
 		return nil, fmt.Errorf("%w", utils.ErrorInvalidCredentials)
 	}
 	token := generateJWT(user)
+
+	profile, err := s.userRepository.GetProfileByID(user.ID)
+
+	if err != nil {
+		return nil, fmt.Errorf("%w", utils.ErrorInQuery)
+	}
+
 	return &responses.AuthResponse{
-		ID:    user.ID,
-		Email: user.Email,
-		Token: token,
+		ID:       user.ID,
+		Email:    user.Email,
+		Profile:  *profile,
+		Token:    token,
+		Name:     user.Name,
+		LastName: user.LastName,
 	}, nil
 }
 
