@@ -11,7 +11,7 @@ import (
 // IProfileService is the test case service interface
 type IProfileService interface {
 	Create(*request.Profile) error
-	Get() ([]*bson.M, error)
+	Get(string) ([]*bson.M, error)
 	GetById(string) (*responses.Profile, error)
 	Update(string, *request.Profile) error
 	Delete(string) (error, bool)
@@ -19,20 +19,28 @@ type IProfileService interface {
 
 type profileService struct {
 	profileRepository repositories.IProfileRepository
+	userRepository    repositories.IUserRepository
 }
 
 // NewProfileService is a constructor
-func NewProfileService(profileRepository repositories.IProfileRepository) IProfileService {
+func NewProfileService(profileRepository repositories.IProfileRepository,
+	userRepository repositories.IUserRepository) IProfileService {
 	return &profileService{
 		profileRepository: profileRepository,
+		userRepository:    userRepository,
 	}
 }
 
 // Create creates a new test case
 func (s *profileService) Create(profileRequest *request.Profile) error {
 
-	profile, err := mapping.ProfileRequestToProfile(profileRequest)
+	user, err := s.userRepository.GetByID(profileRequest.UserID)
 
+	if err != nil {
+		return err
+	}
+	profile, err := mapping.ProfileRequestToProfile(profileRequest)
+	profile.Company = user.Company
 	if err != nil {
 		return err
 	}
@@ -47,14 +55,27 @@ func (s *profileService) Create(profileRequest *request.Profile) error {
 }
 
 // Get gets a list of test cases
-func (s *profileService) Get() ([]*bson.M, error) {
-	result, err := s.profileRepository.Get()
+func (s *profileService) Get(userID string) ([]*bson.M, error) {
+	user, err := s.userRepository.GetByID(userID)
+
+	if err != nil {
+		return nil, err
+	}
+	if user.IsInternal {
+		profiles, err := s.profileRepository.Get()
+		if err != nil {
+			return nil, err
+		}
+		return profiles, err
+	}
+
+	profiles, err := s.profileRepository.GetByCompany(user.Company)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return result, nil
+	return profiles, nil
 }
 
 // GetById gets a case by id

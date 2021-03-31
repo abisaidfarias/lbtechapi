@@ -10,4 +10,5 @@ type Profile struct {
 	Name       string             `bson:"name,omitempty"`
 	Claims     []Claim            `bson:"claims,omitempty"`
 	IsInternal bool               `bson:"is_internal" json:"is_internal"`
+	Company    primitive.ObjectID `bson:"company,omitempty" json:"company"`
 }

@@ -36,7 +36,7 @@ var (
 	testPlanController controllers.ITestPlanController  = controllers.NewTestPlanController(testPlanService)
 
 	profileRepository repositories.IProfileRepository = repositories.NewProfileRepository()
-	profileService    services.IProfileService        = services.NewProfileService(profileRepository)
+	profileService    services.IProfileService        = services.NewProfileService(profileRepository, userRepository)
 	profileController controllers.IProfileController  = controllers.NewProfileController(profileService)
 
 	companyRepository repositories.ICompanyRepository = repositories.NewCompanyRepository()

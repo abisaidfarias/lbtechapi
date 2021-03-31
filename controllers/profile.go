@@ -44,7 +44,8 @@ func (c *profileController) Create() gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-
+		userID := ctx.MustGet("userID").(string)
+		profile.UserID = userID
 		err = c.profileService.Create(&profile)
 
 		if err != nil {
@@ -66,7 +67,8 @@ func (c *profileController) Create() gin.HandlerFunc {
 func (c *profileController) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
-		profiles, err := c.profileService.Get()
+		userID := ctx.MustGet("userID").(string)
+		profiles, err := c.profileService.Get(userID)
 
 		if err != nil {
 			handleErrorResponse(ctx, err)

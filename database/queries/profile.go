@@ -24,3 +24,6 @@ func DeleteProfile(oid primitive.ObjectID) primitive.M {
 		"_id": oid,
 	}
 }
+func GetProfileByCompany(oid primitive.ObjectID) primitive.M {
+	return primitive.M{"company": oid}
+}

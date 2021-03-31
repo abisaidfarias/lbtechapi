@@ -16,6 +16,7 @@ type IProfileRepository interface {
 	Create(*models.Profile) error
 	Get() ([]*bson.M, error)
 	GetById(string) (*responses.Profile, error)
+	GetByCompany(primitive.ObjectID) ([]*bson.M, error)
 	Update(string, *models.Profile) error
 	Delete(string) (error, bool)
 }
@@ -59,9 +60,6 @@ func (r *profileRepository) Get() ([]*bson.M, error) {
 		profiles = append(profiles, &result)
 
 	}
-	// if err = cursor.All(context.TODO(), &profiles); err != nil {
-	// 	panic(err)
-	// }
 	cursor.Close(context.TODO())
 	return profiles, nil
 }
@@ -122,4 +120,25 @@ func (r *profileRepository) Delete(id string) (error, bool) {
 	}
 
 	return nil, true
+}
+func (r *profileRepository) GetByCompany(companyID primitive.ObjectID) ([]*bson.M, error) {
+
+	cursor, err := profileCollection.Find(context.TODO(), queries.GetProfileByCompany(companyID))
+
+	if err != nil {
+
+		panic(err)
+	}
+	var profiles []*bson.M = []*bson.M{}
+	for cursor.Next(context.TODO()) {
+		var result bson.M
+		err := cursor.Decode(&result)
+		if err != nil {
+			return nil, err
+		}
+		profiles = append(profiles, &result)
+
+	}
+	cursor.Close(context.TODO())
+	return profiles, nil
 }
