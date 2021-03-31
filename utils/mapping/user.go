@@ -13,6 +13,7 @@ func UserRequestToUser(userRequest *request.UserRequest) *models.User {
 	hashedPassword := functions.HashPassword(userRequest.Password)
 	brands := functions.StringsToObjectIds(userRequest.Brands)
 	countries := functions.StringsToObjectIds(userRequest.Countries)
+	clients := functions.StringsToObjectIds(userRequest.Clients)
 	company, _ := primitive.ObjectIDFromHex(userRequest.Company)
 	profile, _ := primitive.ObjectIDFromHex(userRequest.Profile)
 	return &models.User{
@@ -27,6 +28,7 @@ func UserRequestToUser(userRequest *request.UserRequest) *models.User {
 		Countries:    countries,
 		Company:      company,
 		Profile:      profile,
+		Clients:      clients,
 	}
 }
 
@@ -43,5 +45,6 @@ func UserToUserResponse(user *models.User) *responses.User {
 		IsInternal: user.IsInternal,
 		Brands:     user.Brands,
 		Countries:  user.Countries,
+		Clients:    user.Clients,
 	}
 }

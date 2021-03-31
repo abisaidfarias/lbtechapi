@@ -18,4 +18,5 @@ type User struct {
 	Company      primitive.ObjectID   `bson:"company"`
 	Brands       []primitive.ObjectID `bson:"brands"`
 	Countries    []primitive.ObjectID `bson:"countries"`
+	Clients      []primitive.ObjectID `bson:"clients"`
 }

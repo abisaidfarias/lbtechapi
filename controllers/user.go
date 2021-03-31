@@ -47,7 +47,8 @@ func (c *userController) Create() gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-
+		userID := ctx.MustGet("userID").(string)
+		user.UserID = userID
 		err = c.userService.Create(&user)
 
 		if err != nil {

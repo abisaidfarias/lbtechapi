@@ -34,9 +34,18 @@ func NewUserService(userRepository repositories.IUserRepository) IUserService {
 // Create creates and saves the new user
 func (s *userService) Create(userRequest *request.UserRequest) error {
 
+	userLogged, err := s.userRepository.GetByID(userRequest.UserID)
+
+	if err != nil {
+		return err
+	}
+	if userRequest.IsInternal {
+		userRequest.Company = userLogged.Company.Hex()
+	}
+
 	user := mapping.UserRequestToUser(userRequest)
 
-	err := s.userRepository.Create(user)
+	err = s.userRepository.Create(user)
 
 	if err != nil {
 		return err
