@@ -52,12 +52,16 @@ func (r *deviceRepository) Get() ([]*responses.Device, error) {
 
 		panic(err)
 	}
-	var devices []*responses.Device = []*responses.Device{}
+	var devices []*models.Device = []*models.Device{}
 	if err = cursor.All(context.TODO(), &devices); err != nil {
 		panic(err)
 	}
+	var devicesRes []*responses.Device = []*responses.Device{}
+	for _, v := range devices {
+		devicesRes = append(devicesRes, mapping.DeviceToDeviceResponse(v))
+	}
 	cursor.Close(context.TODO())
-	return devices, nil
+	return devicesRes, nil
 }
 
 func (r *deviceRepository) GetById(id string) (*responses.Device, error) {
