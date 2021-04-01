@@ -2,10 +2,10 @@ package request
 
 // Profile model
 type Device struct {
-	Type                   int    `json:"type,omitempty" binding:"required"`
+	Type                   string `json:"type,omitempty" binding:"required"`
 	Brand                  string `json:"brand,omitempty" binding:"required"`
-	CommercialModel        bool   `json:"commercial_model,omitempty" binding:"required"`
-	TechnicalModel         bool   `json:"technical_model,omitempty" binding:"required"`
+	CommercialModel        string `json:"commercial_model,omitempty" binding:"required"`
+	TechnicalModel         string `json:"technical_model,omitempty" binding:"required"`
 	DisplayType            string `json:"display_type"`
 	DisplaySize            string `json:"display_size"`
 	DisplayResolution      string `json:"display_resolution"`

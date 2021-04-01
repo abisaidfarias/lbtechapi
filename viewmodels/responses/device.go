@@ -5,10 +5,10 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 // Profile model
 type Device struct {
 	ID                     primitive.ObjectID `bson:"_id" json:"_id"`
-	Type                   int                `json:"type,omitempty" binding:"required"`
-	Brand                  string             `json:"brand,omitempty" binding:"required"`
-	CommercialModel        bool               `json:"commercial_model,omitempty" binding:"required"`
-	TechnicalModel         bool               `json:"technical_model,omitempty" binding:"required"`
+	Type                   string             `json:"type,omitempty"`
+	Brand                  string             `json:"brand,omitempty"`
+	CommercialModel        string             `json:"commercial_model"`
+	TechnicalModel         string             `json:"technical_model"`
 	DisplayType            string             `json:"display_type"`
 	DisplaySize            string             `json:"display_size"`
 	DisplayResolution      string             `json:"display_resolution"`

@@ -59,7 +59,7 @@ func DeviceRequestToDevice(device *request.Device) *models.Device {
 func DeviceToDeviceResponse(device *models.Device) *responses.Device {
 
 	return &responses.Device{
-
+		ID:                     device.ID,
 		Type:                   device.Type,
 		Brand:                  device.Brand,
 		CommercialModel:        device.CommercialModel,

@@ -7,10 +7,10 @@ import (
 // Profile model
 type Device struct {
 	ID                     primitive.ObjectID `bson:"_id,omitempty"`
-	Type                   int                `bson:"type,omitempty"`
+	Type                   string             `bson:"type,omitempty"`
 	Brand                  string             `bson:"brand,omitempty"`
-	CommercialModel        bool               `bson:"commercial_model,omitempty"`
-	TechnicalModel         bool               `bson:"technical_model,omitempty"`
+	CommercialModel        string             `bson:"commercial_model,omitempty"`
+	TechnicalModel         string             `bson:"technical_model,omitempty"`
 	DisplayType            string             `bson:"display_type"`
 	DisplaySize            string             `bson:"display_size"`
 	DisplayResolution      string             `bson:"display_resolution"`
