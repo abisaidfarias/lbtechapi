@@ -54,6 +54,9 @@ var (
 	deviceRepository repositories.IDeviceRepository = repositories.NewDeviceRepository()
 	deviceService    services.IDeviceService        = services.NewDeviceService(deviceRepository)
 	deviceController controllers.IDeviceController  = controllers.NewDeviceController(deviceService)
+
+	storageService    services.IStorageService       = services.NewStorageService()
+	storageController controllers.IStorageController = controllers.NewStorageController(storageService)
 )
 
 func main() {
@@ -144,6 +147,10 @@ func main() {
 		{
 			country.POST("", countryController.Create())
 			country.GET("", countryController.Get())
+		}
+		storage := v1.Group("/upload")
+		{
+			storage.POST("/images", storageController.UploadImage())
 		}
 	}
 
