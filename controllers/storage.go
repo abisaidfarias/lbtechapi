@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"log"
+	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 
@@ -34,13 +34,23 @@ func (c *storageController) UploadImage() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 
-		log.Println("llego")
 		var form Form
-
-		_ = ctx.ShouldBind(&form)
-		log.Println("llego 2")
-
-		ctx.String(http.StatusOK, "Files uploaded")
+		err := ctx.ShouldBind(&form)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		fileContent, _ := form.File.Open()
+		byteContainer, err := ioutil.ReadAll(fileContent)
+		if err != nil {
+			return
+		}
+		url, err := c.storageService.UploadImage(byteContainer)
+		if err != nil {
+			handleErrorResponse(ctx, err)
+			return
+		}
+		ctx.JSON(http.StatusCreated, gin.H{"url": url})
 		return
 	}
 }

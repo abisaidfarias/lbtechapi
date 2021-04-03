@@ -52,4 +52,5 @@ type Device struct {
 	NetworkVowifi          bool               `bson:"network_vowifi"`
 	NetworkVilte           bool               `bson:"network_vilte"`
 	Network5g              bool               `bson:"network_5g"`
+	ImageUrl               string             `bson:"image_url"`
 }

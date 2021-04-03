@@ -2,6 +2,8 @@ package functions
 
 import (
 	"fmt"
+	"math/rand"
+	"strconv"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -54,4 +56,8 @@ func GetBlobName() string {
 	uuid, _ := uuid.NewV4()
 
 	return fmt.Sprintf("%s-%v.jpg", t.Format("20060102"), uuid)
+}
+func RandomImageString() string {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return fmt.Sprintf("%s%s", strconv.Itoa(r.Int()), ".jpg")
 }

@@ -54,6 +54,7 @@ func DeviceRequestToDevice(device *request.Device) *models.Device {
 		NetworkVowifi:          device.NetworkVowifi,
 		NetworkVilte:           device.NetworkVilte,
 		Network5g:              device.Network5g,
+		ImageUrl:               device.ImageUrl,
 	}
 }
 func DeviceToDeviceResponse(device *models.Device) *responses.Device {
@@ -105,5 +106,6 @@ func DeviceToDeviceResponse(device *models.Device) *responses.Device {
 		NetworkVowifi:          device.NetworkVowifi,
 		NetworkVilte:           device.NetworkVilte,
 		Network5g:              device.Network5g,
+		ImageUrl:               device.ImageUrl,
 	}
 }

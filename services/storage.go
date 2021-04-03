@@ -3,9 +3,12 @@ package services
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"net/url"
+	"os"
 
 	"github.com/Azure/azure-storage-blob-go/azblob"
+	"github.com/abisaidfarias/lbtechapi/utils"
 	"github.com/abisaidfarias/lbtechapi/utils/functions"
 )
 
@@ -21,29 +24,39 @@ func NewStorageService() IStorageService {
 	return &storageService{}
 }
 
-// Create creates a new cateogry
-func (s *storageService) UploadImage(file []byte) (string, error) {
+func (s *storageService) UploadImage(filesf []byte) (string, error) {
 
-	azrKey, accountName, endPoint, container := functions.GetAccountInfo()           // This is our account info method
-	u, _ := url.Parse(fmt.Sprint(endPoint, container, "/", functions.GetBlobName())) // This uses our Blob Name Generator to create individual blob urls
-	credential, errC := azblob.NewSharedKeyCredential(accountName, azrKey)           // Finally we create the credentials object required by the uploader
-	if errC != nil {
-		return "", errC
+	accountKey, accountName, _, _ := functions.GetAccountInfo()
+	credential, err := azblob.NewSharedKeyCredential(accountName, accountKey)
+	if err != nil {
+		return "", err
 	}
+	p := azblob.NewPipeline(credential, azblob.PipelineOptions{})
+	containerName := utils.ImageContainer
+	pathUrl, _ := url.Parse(
+		fmt.Sprintf(utils.BaseUrlAzureBlob, accountName, containerName))
 
-	// Another Azure Specific object, which combines our generated URL and credentials
-	blockBlobUrl := azblob.NewBlockBlobURL(*u, azblob.NewPipeline(credential, azblob.PipelineOptions{}))
+	containerURL := azblob.NewContainerURL(*pathUrl, p)
 
-	ctx := context.Background() // We create an empty context (https://golang.org/pkg/context/#Background)
+	ctx := context.Background()
 
-	// Provide any needed options to UploadToBlockBlobOptions (https://godoc.org/github.com/Azure/azure-storage-blob-go/azblob#UploadToBlockBlobOptions)
-	o := azblob.UploadToBlockBlobOptions{
-		BlobHTTPHeaders: azblob.BlobHTTPHeaders{
-			ContentType: "image/jpg", //  Add any needed headers here
-		},
+	fileName := functions.RandomImageString()
+	err = ioutil.WriteFile(fileName, filesf, 0700)
+	if err != nil {
+		return "", err
 	}
-
-	// Combine all the pieces and perform the upload using UploadBufferToBlockBlob (https://godoc.org/github.com/Azure/azure-storage-blob-go/azblob#UploadBufferToBlockBlob)
-	_, errU := azblob.UploadBufferToBlockBlob(ctx, file, blockBlobUrl, o)
-	return blockBlobUrl.String(), errU
+	blobURL := containerURL.NewBlockBlobURL(fileName)
+	file, err := os.Open(fileName)
+	if err != nil {
+		return "", err
+	}
+	_, err = azblob.UploadFileToBlockBlob(ctx, file, blobURL, azblob.UploadToBlockBlobOptions{
+		BlockSize:   4 * 1024 * 1024,
+		Parallelism: 16})
+	if err != nil {
+		return "", err
+	}
+	file.Close()
+	os.Remove(fileName)
+	return fmt.Sprintf("%s/%s", pathUrl, fileName), nil
 }

@@ -50,4 +50,5 @@ type Device struct {
 	NetworkVowifi          bool               `json:"network_vowifi"`
 	NetworkVilte           bool               `json:"network_vilte"`
 	Network5g              bool               `json:"network_5g"`
+	ImageUrl               string             `json:"image_url"`
 }
