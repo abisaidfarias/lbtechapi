@@ -28,7 +28,7 @@ var (
 	testCategoryController controllers.ITestCategoryController  = controllers.NewTestCategoryController(testCategoryService)
 
 	testCaseRepository repositories.ITestCaseRepository = repositories.NewTestCaseRepository()
-	testCaseService    services.ITestCaseService        = services.NewTestCaseService(testCaseRepository)
+	testCaseService    services.ITestCaseService        = services.NewTestCaseService(testCaseRepository, testCategoryService)
 	testCaseController controllers.ITestCaseController  = controllers.NewTestCaseController(testCaseService)
 
 	testPlanRepository repositories.ITestPlanRepository = repositories.NewTestPlanRepository()
@@ -107,6 +107,7 @@ func main() {
 		testCases := v1.Group("/test-cases")
 		{
 			testCases.POST("", testCaseController.Create())
+			testCases.POST("fileUpload", testCaseController.FileUpload())
 			testCases.GET("", testCaseController.Get())
 			testCases.GET(":id", testCaseController.GetById())
 			testCases.PUT(":id", testCaseController.Update())

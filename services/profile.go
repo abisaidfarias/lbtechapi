@@ -66,7 +66,7 @@ func (s *profileService) Get(userID string) ([]*bson.M, error) {
 		if err != nil {
 			return nil, err
 		}
-		return profiles, err
+		return profiles, nil
 	}
 
 	profiles, err := s.profileRepository.GetByCompany(user.Company)

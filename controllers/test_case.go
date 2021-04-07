@@ -7,7 +7,6 @@ import (
 	"github.com/abisaidfarias/lbtechapi/services"
 	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,6 +18,7 @@ type ITestCaseController interface {
 	Update() gin.HandlerFunc
 	Upgrade() gin.HandlerFunc
 	Delete() gin.HandlerFunc
+	FileUpload() gin.HandlerFunc
 }
 
 // testCaseController implementation of the interface
@@ -192,5 +192,17 @@ func (c *testCaseController) Delete() gin.HandlerFunc {
 
 		ctx.Status(http.StatusOK)
 		return
+	}
+}
+
+func (c *testCaseController) FileUpload() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		fileHeader, err := ctx.FormFile("file")
+		if err != nil {
+			ctx.String(400, "file format error")
+			return
+		}
+		res := c.testCaseService.ProcessFile(fileHeader)
+		ctx.JSON(http.StatusOK, res)
 	}
 }
