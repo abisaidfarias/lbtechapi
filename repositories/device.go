@@ -49,12 +49,11 @@ func (r *deviceRepository) Get() ([]*responses.Device, error) {
 	cursor, err := deviceCollection.Find(context.TODO(), bson.M{})
 
 	if err != nil {
-
-		panic(err)
+		return nil,err
 	}
 	var devices []*models.Device = []*models.Device{}
 	if err = cursor.All(context.TODO(), &devices); err != nil {
-		panic(err)
+		return nil,err
 	}
 	var devicesRes []*responses.Device = []*responses.Device{}
 	for _, v := range devices {

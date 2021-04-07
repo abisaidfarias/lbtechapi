@@ -6,6 +6,10 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/abisaidfarias/lbtechapi/models"
+	"github.com/abisaidfarias/lbtechapi/utils/enums"
+	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
+	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 	validator "github.com/go-playground/validator/v10"
 )
 
@@ -92,4 +96,41 @@ var ValidTestCaseCode validator.Func = func(fl validator.FieldLevel) bool {
 	var codeRegex = regexp.MustCompile(`^[A-Z]{3}\-[A-Z0-9]{2}[A-Z]$`)
 
 	return codeRegex.MatchString(incomingCode)
+}
+
+func ValidateHomologationRequest(homologation *responses.Homologation,
+	homologationRequest *request.Homologation) (bool, *models.CustomError) {
+	if homologation == nil {
+		if homologationRequest.Type != enums.HomologationType_value["INITIAL"] {
+			var customeErr models.CustomError
+			customeErr.Code = HomologationMustBeInitialCode
+			customeErr.Err = HomologationMustBeInitial
+			return false, &customeErr
+		}
+		return true, nil
+	}
+	if homologation.Status == enums.HomologationStatus_value["IN_PROGRESS"] {
+		var customeErr models.CustomError
+		customeErr.Code = HomologationExistCode
+		customeErr.Err = HomologationExist
+		return false, &customeErr
+	}
+	if homologation.Status == enums.HomologationStatus_value["APPROVED"] {
+		if homologationRequest.Type != enums.HomologationType_value["MAINTENANCE"] {
+			var customeErr models.CustomError
+			customeErr.Code = HomologationMustBeMaintenanceCode
+			customeErr.Err = HomologationMustBeMaintenance
+			return false, &customeErr
+		}
+	}
+	if homologation.Status == enums.HomologationStatus_value["REJECTED"] {
+		if homologationRequest.Type != enums.HomologationType_value["REGRETION"] {
+			var customeErr models.CustomError
+			customeErr.Code = HomologationMustBeMaintenanceCode
+			customeErr.Err = HomologationMustBeMaintenance
+			return false, &customeErr
+		}
+	}
+	return true, nil
+
 }

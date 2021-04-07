@@ -1,26 +1,31 @@
 package queries
 
 import (
+	"go.mongodb.org/mongo-driver/bson"
 	primitive "go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func InsertTestCase(oid primitive.ObjectID, oidTestCase primitive.ObjectID) (primitive.M, primitive.M) {
+func GetCategoriesByIds(categoriesId []primitive.ObjectID) []bson.D {
 
-	filter := primitive.M{
-		"_id": oid,
+	lookupStage := bson.D{
+		primitive.E{Key: "$lookup", Value: bson.D{
+			primitive.E{Key: "from", Value: "test_cases"},
+			primitive.E{Key: "localField", Value: "test_cases"},
+			primitive.E{Key: "foreignField", Value: "_id"},
+			primitive.E{Key: "as", Value: "test_cases"},
+		}}}
+	// matchStage := bson.D{
+	// 	primitive.E{Key: "$match", Value: bson.D{
+	// 		primitive.E{Key: "_id", Value: categoriesId},
+	// 	}}}
+	matchStage := bson.D{
+		primitive.E{Key: "$match", Value: bson.D{
+			primitive.E{Key: "_id", Value: bson.D{
+				primitive.E{Key: "$in", Value: categoriesId},
+			}}},
+		},
 	}
-	update := primitive.M{
-		"$addToSet": primitive.M{"test_cases": oidTestCase},
-	}
-	return filter, update
-}
-func RemoveTestCase(oid primitive.ObjectID, oidTestCase primitive.ObjectID) (primitive.M, primitive.M) {
+	return mongo.Pipeline{lookupStage, matchStage}
 
-	filter := primitive.M{
-		"_id": oid,
-	}
-	update := primitive.M{
-		"$pull": primitive.M{"test_cases": oidTestCase},
-	}
-	return filter, update
 }

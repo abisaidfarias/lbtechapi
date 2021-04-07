@@ -53,7 +53,7 @@ func (r *testPlanRepository) Get() ([]*responses.TestPlan, error) {
 
 	cursor, err := testPlanCollection.Aggregate(context.TODO(), queries.GetTestPlans())
 	if err != nil {
-		panic(err)
+		return nil,err
 	}
 	var testPlans []*responses.TestPlan = []*responses.TestPlan{}
 	for cursor.Next(context.TODO()) {

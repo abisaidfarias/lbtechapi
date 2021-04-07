@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/Azure/azure-storage-blob-go v0.13.0
+	github.com/aws/aws-sdk-go v1.34.28
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-playground/validator/v10 v10.4.1

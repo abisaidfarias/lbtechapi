@@ -57,6 +57,10 @@ var (
 
 	storageService    services.IStorageService       = services.NewStorageService()
 	storageController controllers.IStorageController = controllers.NewStorageController(storageService)
+
+	homologationRepository repositories.IHomologationRepository = repositories.NewHomologationRepository()
+	homologationService    services.IHomologationService        = services.NewHomologationService(homologationRepository, testCategoryRepository)
+	homologationController controllers.IHomologationController  = controllers.NewHomologationController(homologationService)
 )
 
 func main() {
@@ -151,6 +155,10 @@ func main() {
 		storage := v1.Group("/upload")
 		{
 			storage.POST("/images", storageController.UploadImage())
+		}
+		homologation := v1.Group("/homologation")
+		{
+			homologation.POST("", homologationController.Create())
 		}
 	}
 

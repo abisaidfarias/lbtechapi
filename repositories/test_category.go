@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/abisaidfarias/lbtechapi/database"
+	"github.com/abisaidfarias/lbtechapi/database/queries"
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 	"go.mongodb.org/mongo-driver/bson"
@@ -15,6 +16,7 @@ import (
 type ITestCategoryRepository interface {
 	Create(category *models.TestCategory) (*primitive.ObjectID, error)
 	Get() ([]*responses.TestCategory, error)
+	GetByIds([]primitive.ObjectID) ([]*responses.TestCategoryExpanded, error)
 }
 
 type testCategoryRepository struct {
@@ -64,4 +66,27 @@ func (r *testCategoryRepository) Get() ([]*responses.TestCategory, error) {
 	cursor.Close(context.TODO())
 
 	return testCategories, nil
+}
+func (r *testCategoryRepository) GetByIds(categoriesId []primitive.ObjectID) ([]*responses.TestCategoryExpanded, error) {
+
+	cursor, err := testCategoryCollection.Aggregate(context.TODO(), queries.GetCategoriesByIds(categoriesId))
+
+	if err != nil {
+		return nil, err
+	}
+	var testCategories []*responses.TestCategoryExpanded = []*responses.TestCategoryExpanded{}
+	for cursor.Next(context.TODO()) {
+		var result responses.TestCategoryExpanded
+		var result2 bson.D
+		err := cursor.Decode(&result)
+		err = cursor.Decode(&result2)
+		
+		if err != nil {
+			return nil, err
+		}
+		testCategories = append(testCategories, &result)
+	}
+
+	return testCategories, nil
+
 }

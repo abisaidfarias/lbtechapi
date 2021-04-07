@@ -22,7 +22,7 @@ func GetTestCases() []bson.D {
 		}}}
 	matchStage := bson.D{
 		primitive.E{Key: "$match", Value: bson.D{
-			primitive.E{Key: "is_active", Value: true},
+			primitive.E{Key: "_id", Value: true},
 		}}}
 	return mongo.Pipeline{lookupStage, unwindStage, matchStage}
 }
@@ -44,4 +44,24 @@ func DeleteTestCase(oid primitive.ObjectID) primitive.M {
 	return primitive.M{
 		"_id": oid,
 	}
+}
+func InsertTestCase(oid primitive.ObjectID, oidTestCase primitive.ObjectID) (primitive.M, primitive.M) {
+
+	filter := primitive.M{
+		"_id": oid,
+	}
+	update := primitive.M{
+		"$addToSet": primitive.M{"test_cases": oidTestCase},
+	}
+	return filter, update
+}
+func RemoveTestCase(oid primitive.ObjectID, oidTestCase primitive.ObjectID) (primitive.M, primitive.M) {
+
+	filter := primitive.M{
+		"_id": oid,
+	}
+	update := primitive.M{
+		"$pull": primitive.M{"test_cases": oidTestCase},
+	}
+	return filter, update
 }
