@@ -11,6 +11,7 @@ import (
 type ITestCategoryService interface {
 	Create(*request.TestCategory) (string, error)
 	Get() ([]*responses.TestCategory, error)
+	GetSimple() ([]*responses.TestCategory, error)
 }
 
 type testCategoryService struct {
@@ -43,6 +44,17 @@ func (s *testCategoryService) Create(testCategoryRequest *request.TestCategory) 
 // Get gets a list of all categories
 func (s *testCategoryService) Get() ([]*responses.TestCategory, error) {
 	result, err := s.testCategoryRepository.Get()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// Get gets a list of all categories
+func (s *testCategoryService) GetSimple() ([]*responses.TestCategory, error) {
+	result, err := s.testCategoryRepository.GetSimple()
 
 	if err != nil {
 		return nil, err

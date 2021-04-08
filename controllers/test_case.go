@@ -202,7 +202,13 @@ func (c *testCaseController) FileUpload() gin.HandlerFunc {
 			ctx.String(400, "file format error")
 			return
 		}
-		res := c.testCaseService.ProcessFile(fileHeader)
+		res, err := c.testCaseService.ProcessFile(fileHeader)
+
+		if err != nil {
+			handleErrorResponse(ctx, err)
+			return
+		}
+
 		ctx.JSON(http.StatusOK, res)
 	}
 }
