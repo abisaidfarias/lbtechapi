@@ -209,6 +209,6 @@ func (c *testCaseController) FileUpload() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusOK, res)
+		ctx.JSON(http.StatusCreated, res)
 	}
 }
