@@ -85,7 +85,7 @@ func (s *homologationService) Get(userID string) ([]*responses.HomologationExpan
 		}
 		return homologations, nil
 	} else {
-		homologations, err := s.homologationRepository.GetByInternal(user.Clients,
+		homologations, err := s.homologationRepository.GetByExternal(user.Company,
 			user.Brands, user.Countries)
 		if err != nil {
 			return nil, err

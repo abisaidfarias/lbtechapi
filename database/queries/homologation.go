@@ -13,8 +13,9 @@ func GetHomologationValidations(deviceId primitive.ObjectID,
 		"country": countryId, "status": enums.HomologationStatus_value["IN_PROGRESS"]}
 
 }
-func GetHomologationsInternal(companies []primitive.ObjectID,
-	brands []primitive.ObjectID, countries []primitive.ObjectID) []bson.D {
+func GetHomologations(companies []primitive.ObjectID,
+	brands []primitive.ObjectID, countries []primitive.ObjectID,
+	isInternal bool,companyID primitive.ObjectID) []bson.D {
 
 	lookupStageDevice := bson.D{
 		primitive.E{Key: "$lookup", Value: bson.D{
@@ -79,11 +80,15 @@ func GetHomologationsInternal(companies []primitive.ObjectID,
 	var matchStage bson.D
 	var objectStage bson.D
 	var hasStage bool
-	if len(companies) > 0 {
+	if len(companies)> 0 && isInternal==true {
 
 		var companyStage bson.D
 		companyStage = append(companyStage, primitive.E{Key: "$in", Value: companies})
 		objectStage = append(objectStage, primitive.E{Key: "company._id", Value: companyStage})
+		hasStage = true
+	}
+	if !isInternal{
+		objectStage = append(objectStage, primitive.E{Key: "company._id", Value: companyID})
 		hasStage = true
 	}
 	if len(brands) > 0 {

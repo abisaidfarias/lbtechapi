@@ -54,10 +54,6 @@ func (r *deviceRepository) Get() ([]*responses.DeviceExpanded, error) {
 	if err = cursor.All(context.TODO(), &devices); err != nil {
 		return nil, err
 	}
-	// var devicesRes []*responses.Device = []*responses.Device{}
-	// for _, v := range devices {
-	// 	devicesRes = append(devicesRes, mapping.DeviceToDeviceResponse(v))
-	// }
 	cursor.Close(context.TODO())
 	return devices, nil
 }

@@ -19,7 +19,8 @@ type IHomologationRepository interface {
 		primitive.ObjectID, primitive.ObjectID) (*responses.Homologation, error)
 	GetByInternal([]primitive.ObjectID, []primitive.ObjectID,
 		[]primitive.ObjectID) ([]*responses.HomologationExpanded, error)
-	//GetByExternal(primitive.ObjectID, []primitive.ObjectID, []primitive.ObjectID) ([]*responses.Homologation, error)
+	GetByExternal(primitive.ObjectID, []primitive.ObjectID,
+		[]primitive.ObjectID) ([]*responses.HomologationExpanded, error)
 }
 
 type homologationRepository struct {
@@ -76,7 +77,7 @@ func (r *homologationRepository) GetByInternal(companies []primitive.ObjectID,
 	devices []primitive.ObjectID, countries []primitive.ObjectID) ([]*responses.HomologationExpanded, error) {
 
 	cursor, err := homologationCollection.Aggregate(context.TODO(),
-		queries.GetHomologationsInternal(companies, devices, countries))
+		queries.GetHomologations(companies, devices, countries, true, primitive.ObjectID{}))
 	if err != nil {
 		return nil, err
 	}
@@ -91,20 +92,24 @@ func (r *homologationRepository) GetByInternal(companies []primitive.ObjectID,
 	}
 
 	return homologations, nil
-
 }
+func (r *homologationRepository) GetByExternal(companyID primitive.ObjectID,
+	devices []primitive.ObjectID, countries []primitive.ObjectID) ([]*responses.HomologationExpanded, error) {
 
-// func (r *homologationRepository) GetByExternal(deviceId primitive.ObjectID,
-// 	countryId primitive.ObjectID, companyId primitive.ObjectID) (*responses.Homologation, error) {
+	cursor, err := homologationCollection.Aggregate(context.TODO(),
+		queries.GetHomologations([]primitive.ObjectID{}, devices, countries, false, companyID))
+	if err != nil {
+		return nil, err
+	}
+	var homologations []*responses.HomologationExpanded = []*responses.HomologationExpanded{}
+	for cursor.Next(context.TODO()) {
+		var homologation responses.HomologationExpanded
+		err := cursor.Decode(&homologation)
+		if err != nil {
+			return nil, err
+		}
+		homologations = append(homologations, &homologation)
+	}
 
-// 	var homologation *responses.Homologation
-// 	err := homologationCollection.FindOne(context.TODO(),
-// 		queries.GetHomologationValidations(deviceId, countryId, companyId)).Decode(&homologation)
-
-// 	switch err {
-// 	case mongo.ErrNoDocuments:
-// 		return homologation, nil
-// 	default:
-// 		return homologation, err
-// 	}
-// }
+	return homologations, nil
+}
