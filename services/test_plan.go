@@ -10,8 +10,8 @@ import (
 // ITestPlanService is the test Plan service interface
 type ITestPlanService interface {
 	Create(*request.TestPlan) error
-	Get() ([]*responses.TestPlan, error)
-	GetById(string) (*responses.TestPlan, error)
+	Get() ([]*responses.TestPlanExpanded, error)
+	GetById(string) (*responses.TestPlanExpanded, error)
 	Update(string, *request.TestPlan) error
 	Delete(string) error
 }
@@ -47,7 +47,7 @@ func (s *testPlanService) Create(testPlanRequest *request.TestPlan) error {
 }
 
 // Get gets a list of test Plans
-func (s *testPlanService) Get() ([]*responses.TestPlan, error) {
+func (s *testPlanService) Get() ([]*responses.TestPlanExpanded, error) {
 	result, err := s.testPlanRepository.Get()
 
 	if err != nil {
@@ -58,7 +58,7 @@ func (s *testPlanService) Get() ([]*responses.TestPlan, error) {
 }
 
 // GetById gets a Plan by id
-func (s *testPlanService) GetById(id string) (*responses.TestPlan, error) {
+func (s *testPlanService) GetById(id string) (*responses.TestPlanExpanded, error) {
 
 	testPlan, err := s.testPlanRepository.GetById(id)
 

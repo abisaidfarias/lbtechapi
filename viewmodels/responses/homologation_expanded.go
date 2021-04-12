@@ -12,12 +12,13 @@ type HomologationExpanded struct {
 	Company          Company            `bson:"company" json:"company"`
 	Device           Device             `bson:"device" json:"device"`
 	Country          Country            `bson:"country" json:"country"`
+	TestPlan         TestPlan           `bson:"test_plan" json:"test_plan"`
+	Brand            Brand              `bson:"brand" json:"brand"`
 	SoftwareVersion  string             `json:"software_version"`
 	HardwareVersion  string             `json:"hardware_version"`
 	Type             int                `json:"type"`
 	TestCategories   []TestCategory     `bson:"test_categories" json:"test_categories"`
 	CurrentPhase     int                `json:"phase"`
-	IsPhaseCompleted bool               `json:"is_phase_completed"`
 	PlanningDate     time.Time          `json:"planning_date"`
 	SampleStartDate  time.Time          `json:"sample_start_date"`
 	SampleEndDate    time.Time          `json:"sample_end_date"`
@@ -27,5 +28,5 @@ type HomologationExpanded struct {
 	UnderEndDate     time.Time          `json:"under_end_date"`
 	CompletedDate    time.Time          `json:"completed_date"`
 	IsCustomTestPlan bool               `json:"is_custom_test_plan"`
-	Status           int                `bson:"status"`
+	Status           int                `bson:"status" json:"status"`
 }

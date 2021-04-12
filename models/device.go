@@ -8,7 +8,7 @@ import (
 type Device struct {
 	ID                     primitive.ObjectID `bson:"_id,omitempty"`
 	Type                   string             `bson:"type,omitempty"`
-	Brand                  string             `bson:"brand,omitempty"`
+	Brand                  primitive.ObjectID `bson:"brand,omitempty"`
 	CommercialModel        string             `bson:"commercial_model,omitempty"`
 	TechnicalModel         string             `bson:"technical_model,omitempty"`
 	DisplayType            string             `bson:"display_type"`

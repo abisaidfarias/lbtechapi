@@ -10,3 +10,10 @@ var HomologationType_value = map[string]int{
 	"MAINTENANCE": 1,
 	"REGRETION":   2,
 }
+var HomologationPhase_value = map[string]int{
+	"PLANNING":         0,
+	"SAMPLE_RECEPTION": 1,
+	"TEST":             2,
+	"UNDER_EVALUATION": 3,
+	"COMPLETE":         4,
+}

@@ -5,11 +5,11 @@ import (
 )
 
 type TestPlan struct {
-	ID             primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
-	Name           string             `json:"name"  `
-	TotalCategory  int                `json:"total_category"`
-	TotalTest      int                `json:"total_test"`
-	Description    string             `json:"description"`
-	UserName       string             `json:"userName"`
-	TestCategories []TestCategory     `bson:"test_categories,omitempty" json:"test_category"`
+	ID             primitive.ObjectID   `json:"_id" bson:"_id,omitempty"`
+	Name           string               `json:"name"  `
+	TotalCategory  int                  `json:"total_category"`
+	TotalTest      int                  `json:"total_test"`
+	Description    string               `json:"description"`
+	UserName       string               `json:"userName"`
+	TestCategories []primitive.ObjectID `bson:"test_categories,omitempty" json:"test_categories"`
 }

@@ -15,10 +15,6 @@ func GetCategoriesByIds(categoriesId []primitive.ObjectID) []bson.D {
 			primitive.E{Key: "foreignField", Value: "_id"},
 			primitive.E{Key: "as", Value: "test_cases"},
 		}}}
-	// matchStage := bson.D{
-	// 	primitive.E{Key: "$match", Value: bson.D{
-	// 		primitive.E{Key: "_id", Value: categoriesId},
-	// 	}}}
 	matchStage := bson.D{
 		primitive.E{Key: "$match", Value: bson.D{
 			primitive.E{Key: "_id", Value: bson.D{

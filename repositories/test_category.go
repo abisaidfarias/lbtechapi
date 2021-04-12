@@ -77,10 +77,8 @@ func (r *testCategoryRepository) GetByIds(categoriesId []primitive.ObjectID) ([]
 	var testCategories []*responses.TestCategoryExpanded = []*responses.TestCategoryExpanded{}
 	for cursor.Next(context.TODO()) {
 		var result responses.TestCategoryExpanded
-		var result2 bson.D
 		err := cursor.Decode(&result)
-		err = cursor.Decode(&result2)
-		
+
 		if err != nil {
 			return nil, err
 		}

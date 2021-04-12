@@ -14,8 +14,8 @@ import (
 
 type ITestPlanRepository interface {
 	Create(*models.TestPlan, primitive.ObjectID) error
-	Get() ([]*responses.TestPlan, error)
-	GetById(string) (*responses.TestPlan, error)
+	Get() ([]*responses.TestPlanExpanded, error)
+	GetById(string) (*responses.TestPlanExpanded, error)
 	Update(string, *models.TestPlan) error
 	Delete(string) error
 }
@@ -49,15 +49,15 @@ func (r *testPlanRepository) Create(testPlan *models.TestPlan, userId primitive.
 }
 
 // Get returns a list of all test cases
-func (r *testPlanRepository) Get() ([]*responses.TestPlan, error) {
+func (r *testPlanRepository) Get() ([]*responses.TestPlanExpanded, error) {
 
 	cursor, err := testPlanCollection.Aggregate(context.TODO(), queries.GetTestPlans())
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	var testPlans []*responses.TestPlan = []*responses.TestPlan{}
+	var testPlans []*responses.TestPlanExpanded = []*responses.TestPlanExpanded{}
 	for cursor.Next(context.TODO()) {
-		var result responses.TestPlan
+		var result responses.TestPlanExpanded
 		err := cursor.Decode(&result)
 		if err != nil {
 			return nil, err
@@ -72,14 +72,14 @@ func (r *testPlanRepository) Get() ([]*responses.TestPlan, error) {
 	return testPlans, nil
 }
 
-func (r *testPlanRepository) GetById(id string) (*responses.TestPlan, error) {
+func (r *testPlanRepository) GetById(id string) (*responses.TestPlanExpanded, error) {
 	oid, err := primitive.ObjectIDFromHex(id)
 
 	if err != nil {
 		return nil, err
 	}
 
-	var result responses.TestPlan
+	var result responses.TestPlanExpanded
 
 	err = testCaseCollection.FindOne(context.TODO(), queries.GeTestPlanById(oid)).Decode(&result)
 

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/abisaidfarias/lbtechapi/database"
@@ -62,15 +63,16 @@ func (r *userRepository) GetByID(id string) (*responses.User, error) {
 		return nil, err
 	}
 
-	var result responses.User
+	var user responses.User
 
-	err = userCollection.FindOne(context.TODO(), queries.GetUserById(oid)).Decode(&result)
+	err = userCollection.FindOne(context.TODO(), queries.GetUserById(oid)).Decode(&user)
 
-	if err != nil {
-		return nil, err
+	switch err {
+	case mongo.ErrNoDocuments:
+		return &user, err
+	default:
+		return &user, nil
 	}
-
-	return &result, nil
 }
 func (r *userRepository) GetByCompany(companyID primitive.ObjectID) ([]*bson.M, error) {
 

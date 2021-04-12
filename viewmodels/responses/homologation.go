@@ -12,12 +12,12 @@ type Homologation struct {
 	Company          primitive.ObjectID `bson:"company" json:"company"`
 	Device           primitive.ObjectID `bson:"device" json:"device"`
 	Country          primitive.ObjectID `bson:"country" json:"country"`
+	TestPlan         primitive.ObjectID `bson:"test_plan" json:"test_plan"`
 	SoftwareVersion  string             `json:"software_version"`
 	HardwareVersion  string             `json:"hardware_version"`
 	Type             int                `json:"type"`
 	TestCategories   []TestCategory     `bson:"test_categories" json:"test_categories"`
 	CurrentPhase     int                `json:"phase"`
-	IsPhaseCompleted bool               `json:"is_phase_completed"`
 	PlanningDate     time.Time          `json:"planning_date"`
 	SampleStartDate  time.Time          `json:"sample_start_date"`
 	SampleEndDate    time.Time          `json:"sample_end_date"`

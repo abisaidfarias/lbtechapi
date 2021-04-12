@@ -9,6 +9,7 @@ type Homologation struct {
 	Company          string    `bson:"company" json:"company" binding:"required"`
 	Device           string    `bson:"device" json:"device" binding:"required"`
 	Country          string    `bson:"country" json:"country" binding:"required"`
+	Brand            string    `bson:"brand" json:"brand"`
 	SoftwareVersion  string    `json:"software_version"`
 	HardwareVersion  string    `json:"hardware_version"`
 	Type             int       `json:"type"`
@@ -23,4 +24,5 @@ type Homologation struct {
 	UnderEndDate     time.Time `json:"under_end_date"`
 	CompletedDate    time.Time `json:"completed_date"`
 	IsCustomTestPlan bool      `json:"is_custom_test_plan"`
+	TestPlan         string    `bson:"test_plan" json:"test_plan"`
 }

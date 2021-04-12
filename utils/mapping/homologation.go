@@ -11,8 +11,9 @@ import (
 )
 
 func HomologationRequestToHomologation(homologation *request.Homologation,
-	testCategories []*responses.TestCategoryExpanded, companyId primitive.ObjectID,
-	deviceId primitive.ObjectID, countryId primitive.ObjectID) *models.Homologation {
+	testCategories []*responses.TestCategoryExpanded, companyID primitive.ObjectID,
+	deviceID primitive.ObjectID, countryID primitive.ObjectID,
+	testPlanID primitive.ObjectID, brandID primitive.ObjectID) *models.Homologation {
 
 	var testResults []models.TestResult
 	for _, testCategory := range testCategories {
@@ -32,9 +33,9 @@ func HomologationRequestToHomologation(homologation *request.Homologation,
 	}
 
 	return &models.Homologation{
-		Company:          companyId,
-		Device:           deviceId,
-		Country:          countryId,
+		Company:          companyID,
+		Device:           deviceID,
+		Country:          countryID,
 		SoftwareVersion:  homologation.SoftwareVersion,
 		HardwareVersion:  homologation.HardwareVersion,
 		Type:             homologation.Type,
@@ -51,5 +52,7 @@ func HomologationRequestToHomologation(homologation *request.Homologation,
 		Status:           enums.HomologationStatus_value["IN_PROGRESS"],
 		CreatedDate:      time.Now(),
 		TestResults:      testResults,
+		TestPlan:         testPlanID,
+		Brand:            brandID,
 	}
 }

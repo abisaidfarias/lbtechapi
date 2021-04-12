@@ -38,26 +38,26 @@ func GetUserByEmail(email string) primitive.M {
 	return primitive.M{"email": email}
 }
 func GetUserByCompany(companyId primitive.ObjectID) []bson.D {
-	lookupStage := bson.D{
+	lookupStageProfile := bson.D{
 		primitive.E{Key: "$lookup", Value: bson.D{
 			primitive.E{Key: "from", Value: "profiles"},
 			primitive.E{Key: "localField", Value: "profile"},
 			primitive.E{Key: "foreignField", Value: "_id"},
 			primitive.E{Key: "as", Value: "profile"},
 		}}}
-	unwindStage := bson.D{
+	unwindStageProfile := bson.D{
 		primitive.E{Key: "$unwind", Value: bson.D{
 			primitive.E{Key: "path", Value: "$profile"},
 			primitive.E{Key: "preserveNullAndEmptyArrays", Value: false},
 		}}}
-	lookupStage2 := bson.D{
+	lookupStageCompany := bson.D{
 		primitive.E{Key: "$lookup", Value: bson.D{
 			primitive.E{Key: "from", Value: "companies"},
 			primitive.E{Key: "localField", Value: "company"},
 			primitive.E{Key: "foreignField", Value: "_id"},
 			primitive.E{Key: "as", Value: "company"},
 		}}}
-	unwindStage2 := bson.D{
+	unwindStageCompany := bson.D{
 		primitive.E{Key: "$unwind", Value: bson.D{
 			primitive.E{Key: "path", Value: "$company"},
 			primitive.E{Key: "preserveNullAndEmptyArrays", Value: false},
@@ -66,7 +66,8 @@ func GetUserByCompany(companyId primitive.ObjectID) []bson.D {
 		primitive.E{Key: "$match", Value: bson.D{
 			primitive.E{Key: "company._id", Value: companyId},
 		}}}
-	return mongo.Pipeline{lookupStage, unwindStage, lookupStage2, unwindStage2, matchStage}
+	return mongo.Pipeline{lookupStageProfile, unwindStageProfile,
+		lookupStageCompany, unwindStageCompany, matchStage}
 }
 
 func GetUsers() []bson.D {

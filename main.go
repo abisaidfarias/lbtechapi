@@ -59,7 +59,7 @@ var (
 	storageController controllers.IStorageController = controllers.NewStorageController(storageService)
 
 	homologationRepository repositories.IHomologationRepository = repositories.NewHomologationRepository()
-	homologationService    services.IHomologationService        = services.NewHomologationService(homologationRepository, testCategoryRepository)
+	homologationService    services.IHomologationService        = services.NewHomologationService(homologationRepository, testCategoryRepository, userRepository)
 	homologationController controllers.IHomologationController  = controllers.NewHomologationController(homologationService)
 )
 
@@ -159,6 +159,7 @@ func main() {
 		homologation := v1.Group("/homologation")
 		{
 			homologation.POST("", homologationController.Create())
+			homologation.GET("", homologationController.Get())
 		}
 	}
 

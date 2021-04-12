@@ -4,13 +4,15 @@ import (
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func DeviceRequestToDevice(device *request.Device) *models.Device {
 
+	objID, _ := primitive.ObjectIDFromHex(device.Brand)
 	return &models.Device{
 		Type:                   device.Type,
-		Brand:                  device.Brand,
+		Brand:                  objID,
 		CommercialModel:        device.CommercialModel,
 		TechnicalModel:         device.TechnicalModel,
 		DisplayType:            device.DisplayType,
@@ -62,7 +64,7 @@ func DeviceToDeviceResponse(device *models.Device) *responses.Device {
 	return &responses.Device{
 		ID:                     device.ID,
 		Type:                   device.Type,
-		Brand:                  device.Brand,
+		Brand:                  device.Brand.Hex(),
 		CommercialModel:        device.CommercialModel,
 		TechnicalModel:         device.TechnicalModel,
 		DisplayType:            device.DisplayType,

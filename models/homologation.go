@@ -12,6 +12,7 @@ type Homologation struct {
 	Company          primitive.ObjectID `bson:"company,omitempty"`
 	Device           primitive.ObjectID `bson:"device,omitempty"`
 	Country          primitive.ObjectID `bson:"country,omitempty"`
+	Brand            primitive.ObjectID `bson:"brand,omitempty"`
 	SoftwareVersion  string             `bson:"software_version,omitempty"`
 	HardwareVersion  string             `bson:"hardware_version,omitempty"`
 	Type             int                `bson:"type,omitempty"`
@@ -28,4 +29,5 @@ type Homologation struct {
 	IsCustomTestPlan bool               `bson:"is_custom_test_plan"`
 	CreatedDate      time.Time          `bson:"created_date"`
 	Status           int                `bson:"status"`
+	TestPlan         primitive.ObjectID `bson:"test_plan,omitempty"`
 }
