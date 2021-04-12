@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/abisaidfarias/lbtechapi/database"
@@ -11,7 +12,7 @@ import (
 )
 
 type IBrandRepository interface {
-	Create(*models.Brand) error
+	Create(*models.Brand) (*primitive.ObjectID, error)
 	Get() ([]*responses.Brand, error)
 }
 
@@ -25,14 +26,16 @@ func NewBrandRepository() IBrandRepository {
 var brandCollection = database.GetInstance().Collection("brands")
 
 // Create a new tet case
-func (r *brandRepository) Create(brand *models.Brand) error {
+func (r *brandRepository) Create(brand *models.Brand) (*primitive.ObjectID, error) {
 
-	_, err := brandCollection.InsertOne(context.TODO(), brand)
+	res, err := brandCollection.InsertOne(context.TODO(), brand)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	id := res.InsertedID.(primitive.ObjectID)
+	return &id, nil
 }
 
 // Get returns a list of all test cases
