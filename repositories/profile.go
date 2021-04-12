@@ -47,7 +47,6 @@ func (r *profileRepository) Get() ([]*bson.M, error) {
 	cursor, err := profileCollection.Find(context.TODO(), bson.M{})
 
 	if err != nil {
-
 		panic(err)
 	}
 	var profiles []*bson.M = []*bson.M{}

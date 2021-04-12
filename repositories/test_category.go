@@ -16,6 +16,7 @@ import (
 type ITestCategoryRepository interface {
 	Create(category *models.TestCategory) (*primitive.ObjectID, error)
 	Get() ([]*responses.TestCategory, error)
+	GetSimple() ([]*responses.TestCategory, error)
 	GetByIds([]primitive.ObjectID) ([]*responses.TestCategoryExpanded, error)
 }
 
@@ -67,6 +68,30 @@ func (r *testCategoryRepository) Get() ([]*responses.TestCategory, error) {
 
 	return testCategories, nil
 }
+
+// Get returns a list of all test categories with simple name
+func (r *testCategoryRepository) GetSimple() ([]*responses.TestCategory, error) {
+
+	cursor, err := testCategoryCollection.Find(context.TODO(), bson.M{})
+
+	if err != nil {
+		return nil, err
+	}
+	var testCategories []*responses.TestCategory = []*responses.TestCategory{}
+	for cursor.Next(context.TODO()) {
+		var result responses.TestCategory
+		err := cursor.Decode(&result)
+		if err != nil {
+			return nil, err
+		}
+		testCategories = append(testCategories, &result)
+	}
+
+	cursor.Close(context.TODO())
+
+	return testCategories, nil
+}
+
 func (r *testCategoryRepository) GetByIds(categoriesId []primitive.ObjectID) ([]*responses.TestCategoryExpanded, error) {
 
 	cursor, err := testCategoryCollection.Aggregate(context.TODO(), queries.GetCategoriesByIds(categoriesId))

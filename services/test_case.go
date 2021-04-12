@@ -1,10 +1,17 @@
 package services
 
 import (
+	"bufio"
+	"encoding/csv"
+	"io"
+	"mime/multipart"
+
 	"github.com/abisaidfarias/lbtechapi/repositories"
+	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
 	"github.com/abisaidfarias/lbtechapi/utils/functions"
 	"github.com/abisaidfarias/lbtechapi/utils/mapping"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
+	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -16,16 +23,19 @@ type ITestCaseService interface {
 	Update(string, *request.TestCase) error
 	Upgrade(string, *request.TestCase) error
 	Delete(string) error
+	ProcessFile(file *multipart.FileHeader) (*responses.TestCaseFileUpload, error)
 }
 
 type testCaseService struct {
-	testCaseRepository repositories.ITestCaseRepository
+	testCaseRepository  repositories.ITestCaseRepository
+	testCategoryService ITestCategoryService
 }
 
 // NewTestCaseService is a constructor
-func NewTestCaseService(testCaseRepository repositories.ITestCaseRepository) ITestCaseService {
+func NewTestCaseService(testCaseRepository repositories.ITestCaseRepository, testCategoryService ITestCategoryService) ITestCaseService {
 	return &testCaseService{
-		testCaseRepository: testCaseRepository,
+		testCaseRepository:  testCaseRepository,
+		testCategoryService: testCategoryService,
 	}
 }
 
@@ -99,11 +109,102 @@ func (s *testCaseService) Upgrade(id string, testCaseRequest *request.TestCase) 
 
 	return nil
 }
+
 func (s *testCaseService) Delete(id string) error {
 	err := s.testCaseRepository.Delete(id)
 
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (s *testCaseService) ProcessFile(fileHeader *multipart.FileHeader) (*responses.TestCaseFileUpload, error) {
+
+	file, err := fileHeader.Open()
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer file.Close()
+
+	response := responses.TestCaseFileUpload{}
+	errors := []int{}
+	lineIndex := 1
+
+	categories, err := s.testCategoryService.GetSimple()
+
+	if err != nil {
+		return nil, err
+	}
+
+	catMap := functions.GenerateCategoryMap(categories)
+
+	reader := csv.NewReader(bufio.NewReader(file))
+
+	for {
+
+		line, err := reader.Read()
+
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			// unable to read line
+			errors = append(errors, lineIndex)
+		} else {
+
+			err := s.ProcessLine(line, catMap)
+
+			if err != nil {
+				// error with line data
+				errors = append(errors, lineIndex)
+			}
+		}
+
+		lineIndex++
+	}
+
+	response.InvalidRows = errors
+	response.TotalRows = lineIndex - len(errors) - 1
+
+	return &response, nil
+}
+
+func (s *testCaseService) ProcessLine(line []string, catMap map[string]string) error {
+
+	if len(line) != 5 {
+		// invalid csv columns length
+		return utils.ErrorInvalidLineFormat
+	}
+
+	if line[4] == "" {
+		// category is empty
+		return utils.ErrorInvalidLineFormat
+	}
+
+	catId, ok := catMap[line[4]]
+
+	if !ok {
+		// category does not exist
+		return utils.ErrorInvalidLineFormat
+	}
+
+	testCase := functions.GenerateTestCaseFromLine(line, catId)
+
+	if testCase == nil {
+		// failed to build test case from line
+		return utils.ErrorInvalidLineFormat
+	}
+
+	err := s.testCaseRepository.Upsert(testCase.Code, testCase)
+
+	if err != nil {
+		// failed to upsert the test case
+		return err
+	}
+
 	return nil
 }

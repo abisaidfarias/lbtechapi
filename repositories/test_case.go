@@ -2,8 +2,10 @@ package repositories
 
 import (
 	"context"
+	"log"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/abisaidfarias/lbtechapi/database"
@@ -17,6 +19,7 @@ type ITestCaseRepository interface {
 	Get() ([]*bson.M, error)
 	GetById(string) (*bson.M, error)
 	Update(string, *models.TestCase) error
+	Upsert(string, *models.TestCase) error
 	Delete(string) error
 }
 
@@ -123,6 +126,27 @@ func (r *testCaseRepository) Delete(id string) error {
 	_, err = testCaseCollection.DeleteOne(context.TODO(), queries.DeleteTestCase(oid))
 
 	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *testCaseRepository) Upsert(code string, testCase *models.TestCase) error {
+
+	opts := options.Update().SetUpsert(true)
+
+	filter := primitive.M{
+		"code": code,
+	}
+
+	update := primitive.M{
+		"$set": testCase,
+	}
+	_, err := testCaseCollection.UpdateOne(context.TODO(), filter, update, opts)
+
+	if err != nil {
+		log.Fatal(err)
 		return err
 	}
 

@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/abisaidfarias/lbtechapi/models"
+	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 	"github.com/gofrs/uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
@@ -60,4 +62,36 @@ func GetBlobName() string {
 func RandomImageString() string {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	return fmt.Sprintf("%s%s", strconv.Itoa(r.Int()), ".jpg")
+}
+
+// test cases
+
+func GenerateCategoryMap(categories []*responses.TestCategory) map[string]string {
+	m := make(map[string]string)
+
+	for _, v := range categories {
+		m[v.Name] = v.ID.Hex()
+	}
+
+	return m
+}
+
+func GenerateTestCaseFromLine(line []string, catId string) *models.TestCase {
+
+	var testCase models.TestCase = models.TestCase{}
+
+	objID, err := primitive.ObjectIDFromHex(catId)
+
+	if err != nil {
+		return nil
+	}
+
+	testCase.Code = line[0]
+	testCase.Description = line[1]
+	testCase.Expected = line[2]
+	testCase.Name = line[3]
+	testCase.TestCategory = objID
+	testCase.IsActive = true
+
+	return &testCase
 }
