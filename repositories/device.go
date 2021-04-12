@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"gopkg.in/mgo.v2/bson"
 
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/database/queries"
@@ -15,7 +14,7 @@ import (
 
 type IDeviceRepository interface {
 	Create(*models.Device) (*responses.Device, error)
-	Get() ([]*responses.Device, error)
+	Get() ([]*responses.DeviceExpanded, error)
 	GetById(string) (*responses.Device, error)
 	Update(string, *models.Device) error
 	Delete(primitive.ObjectID) error
@@ -44,23 +43,23 @@ func (r *deviceRepository) Create(device *models.Device) (*responses.Device, err
 }
 
 // Get returns a list of all test cases
-func (r *deviceRepository) Get() ([]*responses.Device, error) {
+func (r *deviceRepository) Get() ([]*responses.DeviceExpanded, error) {
 
-	cursor, err := deviceCollection.Find(context.TODO(), bson.M{})
+	cursor, err := deviceCollection.Aggregate(context.TODO(), queries.GetDevicesExpanded())
 
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	var devices []*models.Device = []*models.Device{}
+	var devices []*responses.DeviceExpanded = []*responses.DeviceExpanded{}
 	if err = cursor.All(context.TODO(), &devices); err != nil {
-		return nil,err
+		return nil, err
 	}
-	var devicesRes []*responses.Device = []*responses.Device{}
-	for _, v := range devices {
-		devicesRes = append(devicesRes, mapping.DeviceToDeviceResponse(v))
-	}
+	// var devicesRes []*responses.Device = []*responses.Device{}
+	// for _, v := range devices {
+	// 	devicesRes = append(devicesRes, mapping.DeviceToDeviceResponse(v))
+	// }
 	cursor.Close(context.TODO())
-	return devicesRes, nil
+	return devices, nil
 }
 
 func (r *deviceRepository) GetById(id string) (*responses.Device, error) {
@@ -72,7 +71,8 @@ func (r *deviceRepository) GetById(id string) (*responses.Device, error) {
 
 	var result responses.Device
 
-	err = deviceCollection.FindOne(context.TODO(), queries.GetDeviceById(oid)).Decode(&result)
+	err = deviceCollection.FindOne(context.TODO(),
+		queries.GetDeviceById(oid)).Decode(&result)
 
 	if err != nil {
 		return nil, err
