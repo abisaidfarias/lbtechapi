@@ -41,7 +41,7 @@ func (c *brandController) Create() gin.HandlerFunc {
 			return
 		}
 
-		err = c.brandService.Create(&brand)
+		id, err := c.brandService.Create(&brand)
 
 		if err != nil {
 			if utils.ErrorDuplicatedData(err) {
@@ -53,8 +53,7 @@ func (c *brandController) Create() gin.HandlerFunc {
 			return
 		}
 
-		ctx.Status(http.StatusCreated)
-		return
+		ctx.JSON(http.StatusCreated, gin.H{"id": id})
 	}
 }
 

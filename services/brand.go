@@ -9,7 +9,7 @@ import (
 
 // IBrandService is the brand service
 type IBrandService interface {
-	Create(*request.Brand) error
+	Create(*request.Brand) (string, error)
 	Get() ([]*responses.Brand, error)
 }
 
@@ -25,19 +25,20 @@ func NewBrandService(brandRepository repositories.IBrandRepository) IBrandServic
 }
 
 // Create creates a new cateogry
-func (s *brandService) Create(brandRequest *request.Brand) error {
+func (s *brandService) Create(brandRequest *request.Brand) (string, error) {
 
 	brand, err := mapping.BrandRequestToBrand(brandRequest)
 	if err != nil {
-		return err
+		return "", err
 	}
-	err = s.brandRepository.Create(brand)
+
+	id, err := s.brandRepository.Create(brand)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return id.Hex(), nil
 }
 
 // Get gets a list of all categories
