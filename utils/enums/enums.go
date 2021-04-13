@@ -17,3 +17,4 @@ var HomologationPhase_value = map[string]int{
 	"UNDER_EVALUATION": 3,
 	"COMPLETE":         4,
 }
+

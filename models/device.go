@@ -41,10 +41,10 @@ type Device struct {
 	SensorAccelerometer    string             `bson:"sensor_accelerometer"`
 	SensorGyroscope        string             `bson:"sensor_gyroscope"`
 	SensorHall             string             `bson:"sensor_hall"`
-	BandGsm                string             `bson:"band_gsm"`
-	BandWcdma              string             `bson:"band_wcdma"`
-	BandLte                string             `bson:"band_lte"`
-	Band5g                 string             `bson:"band_5g"`
+	BandGsm                []string           `bson:"band_gsm"`
+	BandWcdma              []string           `bson:"band_wcdma"`
+	BandLte                []string           `bson:"band_lte"`
+	Band5g                 []string           `bson:"band_5g"`
 	NetworkGsm             bool               `bson:"network_gsm"`
 	NetworkWcdma           bool               `bson:"network_wcdma"`
 	NetworkLte             bool               `bson:"network_lte"`
