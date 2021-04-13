@@ -17,7 +17,7 @@ type Homologation struct {
 	HardwareVersion  string             `json:"hardware_version"`
 	Type             int                `json:"type"`
 	TestCategories   []TestCategory     `bson:"test_categories" json:"test_categories"`
-	CurrentPhase     int                `json:"phase"`
+	CurrentPhase     int                `json:"current_phase"`
 	PlanningDate     time.Time          `json:"planning_date"`
 	SampleStartDate  time.Time          `json:"sample_start_date"`
 	SampleEndDate    time.Time          `json:"sample_end_date"`

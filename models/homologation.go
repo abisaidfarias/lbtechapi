@@ -17,7 +17,7 @@ type Homologation struct {
 	HardwareVersion  string             `bson:"hardware_version,omitempty"`
 	Type             int                `bson:"type,omitempty"`
 	TestResults      []TestResult       `bson:"test_results,omitempty"`
-	CurrentPhase     int                `bson:"phase,omitempty"`
+	CurrentPhase     int                `bson:"current_phase,omitempty"`
 	PlanningDate     time.Time          `bson:"planning_date"`
 	SampleStartDate  time.Time          `bson:"sample_start_date"`
 	SampleEndDate    time.Time          `bson:"sample_end_date"`
