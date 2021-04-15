@@ -22,7 +22,7 @@ func GetTestCases() []bson.D {
 		}}}
 	matchStage := bson.D{
 		primitive.E{Key: "$match", Value: bson.D{
-			primitive.E{Key: "_id", Value: true},
+			primitive.E{Key: "is_active", Value: true},
 		}}}
 	return mongo.Pipeline{lookupStage, unwindStage, matchStage}
 }

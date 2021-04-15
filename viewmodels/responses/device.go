@@ -5,50 +5,50 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 // Profile model
 type Device struct {
 	ID                     primitive.ObjectID `bson:"_id" json:"_id"`
-	Type                   string             `json:"type,omitempty"`
-	Brand                  string             `json:"brand,omitempty"`
-	CommercialModel        string             `json:"commercial_model"`
-	TechnicalModel         string             `json:"technical_model"`
-	DisplayType            string             `json:"display_type"`
-	DisplaySize            string             `json:"display_size"`
-	DisplayResolution      string             `json:"display_resolution"`
-	PlatformOs             string             `json:"platform_os"`
-	PlatformVersion        string             `json:"platform_version"`
-	PlatformChipsetBrand   string             `json:"platform_chipset_brand"`
-	PlatformChipsetModel   string             `json:"platform_chipset_model"`
-	PlatformCpu            string             `json:"platform_cpu"`
-	MemoryRom              string             `json:"memory_rom"`
-	MemoryRam              string             `json:"memory_ram"`
-	MemoryExtended         string             `json:"memory_extended"`
-	MemoryCpu              string             `json:"memory_cpu"`
-	MemoryType             string             `json:"memory_type"`
-	CameraFront            string             `json:"camera_front"`
-	CameraBack             string             `json:"camera_back"`
-	CommunicationWlan      string             `json:"communication_wlan"`
-	CommunicationGps       string             `json:"communication_gps"`
-	CommunicationNfc       string             `json:"communication_nfc"`
-	CommunicationRadio     string             `json:"communication_radio"`
-	CommunicationUsb       string             `json:"communication_usb"`
-	CommunicationBluetooth string             `json:"communication_blutooth"`
-	BatteryType            string             `json:"battery_type"`
-	BatteryCapacity        string             `json:"battery_capacity"`
-	BatteryState           string             `json:"battery_state"`
-	SensorFingerprint      string             `json:"sensor_fingerprint"`
-	SensorProximity        string             `json:"sensor_proximity"`
-	SensorAmbientLight     string             `json:"sensor_ambient_light"`
-	SensorAccelerometer    string             `json:"sensor_accelerometer"`
-	SensorGyroscope        string             `json:"sensor_gyroscope"`
-	SensorHall             string             `json:"sensor_hall"`
+	Type                   string             `bson:"type" json:"type"`
+	Brand                  string             `bson:"brand" json:"brand"`
+	CommercialModel        string             `bson:"commercial_model" json:"commercial_model"`
+	TechnicalModel         string             `bson:"technical_model" json:"technical_model"`
+	DisplayType            string             `bson:"display_type" json:"display_type"`
+	DisplaySize            string             `bson:"display_size" json:"display_size"`
+	DisplayResolution      string             `bson:"display_resolution" json:"display_resolution"`
+	PlatformOs             string             `bson:"platform_os" json:"platform_os"`
+	PlatformVersion        string             `bson:"platform_version" json:"platform_version"`
+	PlatformChipsetBrand   string             `bson:"platform_chipset_brand" json:"platform_chipset_brand"`
+	PlatformChipsetModel   string             `bson:"platform_chipset_model" json:"platform_chipset_model"`
+	PlatformCpu            string             `bson:"platform_cpu" json:"platform_cpu"`
+	MemoryRom              string             `bson:"memory_rom" json:"memory_rom"`
+	MemoryRam              string             `bson:"memory_ram" json:"memory_ram"`
+	MemoryExtended         string             `bson:"memory_extended" json:"memory_extended"`
+	MemoryCpu              string             `bson:"memory_cpu" json:"memory_cpu"`
+	MemoryType             string             `bson:"memory_type" json:"memory_type"`
+	CameraFront            string             `bson:"camera_front" json:"camera_front"`
+	CameraBack             string             `bson:"camera_back" json:"camera_back"`
+	CommunicationWlan      string             `bson:"communication_wlan" json:"communication_wlan"`
+	CommunicationGps       string             `bson:"communication_gps" json:"communication_gps"`
+	CommunicationNfc       string             `bson:"communication_nfc" json:"communication_nfc"`
+	CommunicationRadio     string             `bson:"communication_radio" json:"communication_radio"`
+	CommunicationUsb       string             `bson:"communication_usb" json:"communication_usb"`
+	CommunicationBluetooth string             `bson:"communication_blutooth" json:"communication_blutooth"`
+	BatteryType            string             `bson:"battery_type" json:"battery_type"`
+	BatteryCapacity        string             `bson:"battery_capacity" json:"battery_capacity"`
+	BatteryState           string             `bson:"battery_state" json:"battery_state"`
+	SensorFingerprint      string             `bson:"sensor_fingerprint" json:"sensor_fingerprint"`
+	SensorProximity        string             `bson:"sensor_proximity" json:"sensor_proximity"`
+	SensorAmbientLight     string             `bson:"sensor_ambient_light" json:"sensor_ambient_light"`
+	SensorAccelerometer    string             `bson:"sensor_accelerometer" json:"sensor_accelerometer"`
+	SensorGyroscope        string             `bson:"sensor_gyroscope" json:"sensor_gyroscope"`
+	SensorHall             string             `bson:"sensor_hall" json:"sensor_hall"`
 	BandGsm                []string           `bson:"band_gsm" json:"band_gsm"`
 	BandWcdma              []string           `bson:"band_wcdma" json:"band_wcdma"`
 	BandLte                []string           `bson:"band_lte" json:"band_lte"`
 	Band5g                 []string           `bson:"band_5g" json:"band_5g"`
-	NetworkGsm             bool               `json:"network_gsm"`
-	NetworkWcdma           bool               `json:"network_wcdma"`
-	NetworkLte             bool               `json:"network_lte"`
-	NetworkVolte           bool               `json:"network_volte"`
-	NetworkVowifi          bool               `json:"network_vowifi"`
-	NetworkVilte           bool               `json:"network_vilte"`
-	Network5g              bool               `json:"network_5g"`
-	ImageUrl               string             `json:"image_url"`
+	NetworkGsm             bool               `bson:"network_gsm" json:"network_gsm"`
+	NetworkWcdma           bool               `bson:"network_wcdma" json:"network_wcdma"`
+	NetworkLte             bool               `bson:"network_lte" json:"network_lte"`
+	NetworkVolte           bool               `bson:"network_volte" json:"network_volte"`
+	NetworkVowifi          bool               `bson:"network_vowifi" json:"network_vowifi"`
+	NetworkVilte           bool               `bson:"network_vilte" json:"network_vilte"`
+	Network5g              bool               `bson:"network_5g" json:"network_5g"`
+	ImageUrl               string             `bson:"image_url" json:"image_url"`
 }

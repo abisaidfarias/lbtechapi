@@ -5,8 +5,8 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 // Profile model
 type DeviceExpanded struct {
 	ID                     primitive.ObjectID `bson:"_id" json:"_id"`
-	Type                   string             `json:"type,omitempty"`
-	Brand                  Brand              `json:"brand"`
+	Type                   string             `bson:"type" json:"type"`
+	Brand                  Brand              `bson:"brand" json:"brand"`
 	CommercialModel        string             `bson:"commercial_model" json:"commercial_model"`
 	TechnicalModel         string             `bson:"technical_model" json:"technical_model"`
 	DisplayType            string             `bson:"display_type" json:"display_type"`
