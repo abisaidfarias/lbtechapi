@@ -95,3 +95,30 @@ func GenerateTestCaseFromLine(line []string, catId string) *models.TestCase {
 
 	return &testCase
 }
+
+func SetHomologationDatesToNull(homologation *responses.HomologationExpanded) {
+	if homologation.PlanningDate.IsZero() {
+		homologation.PlanningDate = nil
+	}
+	if homologation.SampleStartDate.IsZero() {
+		homologation.SampleStartDate = nil
+	}
+	if homologation.SampleEndDate.IsZero() {
+		homologation.SampleEndDate = nil
+	}
+	if homologation.TestStartDate.IsZero() {
+		homologation.TestStartDate = nil
+	}
+	if homologation.TestEndDate.IsZero() {
+		homologation.TestEndDate = nil
+	}
+	if homologation.UnderStartDate.IsZero() {
+		homologation.UnderStartDate = nil
+	}
+	if homologation.UnderEndDate.IsZero() {
+		homologation.UnderEndDate = nil
+	}
+	if homologation.CompletedDate.IsZero() {
+		homologation.CompletedDate = nil
+	}
+}

@@ -10,6 +10,7 @@ import (
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/database/queries"
 	"github.com/abisaidfarias/lbtechapi/models"
+	"github.com/abisaidfarias/lbtechapi/utils/functions"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 )
 
@@ -83,12 +84,13 @@ func (r *homologationRepository) GetByInternal(companies []primitive.ObjectID,
 	}
 	var homologations []*responses.HomologationExpanded = []*responses.HomologationExpanded{}
 	for cursor.Next(context.TODO()) {
-		var homologation responses.HomologationExpanded
+		var homologation *responses.HomologationExpanded
 		err := cursor.Decode(&homologation)
 		if err != nil {
 			return nil, err
 		}
-		homologations = append(homologations, &homologation)
+		functions.SetHomologationDatesToNull(homologation)
+		homologations = append(homologations, homologation)
 	}
 
 	return homologations, nil
