@@ -4,6 +4,7 @@ import (
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/utils"
+	"github.com/abisaidfarias/lbtechapi/utils/enums"
 	"github.com/abisaidfarias/lbtechapi/utils/functions"
 	"github.com/abisaidfarias/lbtechapi/utils/mapping"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
@@ -15,6 +16,7 @@ import (
 type IHomologationService interface {
 	Create(*request.Homologation) (*models.CustomError, error)
 	Get(string) ([]*responses.HomologationExpanded, error)
+	GetReport(string) (*responses.HomologationReport, error)
 }
 
 type homologationService struct {
@@ -92,5 +94,34 @@ func (s *homologationService) Get(userID string) ([]*responses.HomologationExpan
 		}
 		return homologations, nil
 	}
+
+}
+func (s *homologationService) GetReport(id string) (*responses.HomologationReport, error) {
+
+	homologationID, _ := primitive.ObjectIDFromHex(id)
+	homologation, err := s.homologationRepository.GetByID(homologationID)
+
+	if err != nil {
+		return nil, err
+	}
+	categoriesGrouped := make(map[string]responses.CategoryResult)
+
+	for _, t := range homologation.TestResults {
+
+		value, _ := categoriesGrouped[t.TestCategory.Name]
+		if t.Result == enums.TestResult_value["FAIL"] {
+			value.Fail++
+		} else if t.Result == enums.TestResult_value["PASS"] {
+			value.Pass++
+		} else if t.Result == enums.TestResult_value["NA"] {
+			value.Pass++
+		} else {
+			value.NoRun++
+		}
+		categoriesGrouped[t.TestCategory.Name] = value
+	}
+	var homologationReport responses.HomologationReport
+	homologationReport.Categories = categoriesGrouped
+	return &homologationReport, nil
 
 }

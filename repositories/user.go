@@ -23,6 +23,7 @@ type IUserRepository interface {
 	Create(*models.User) error
 	Update(string, *models.User) error
 	Delete(string) error
+	ChangePassword(string, string) error
 }
 
 type userRepository struct {
@@ -157,4 +158,16 @@ func (r *userRepository) GetProfileByID(oid primitive.ObjectID) (*responses.Prof
 	err = profileCollection.FindOne(context.TODO(), queries.GetProfileById(user.Profile)).Decode(&profile)
 
 	return profile, nil
+}
+func (r *userRepository) ChangePassword(hashPassword string, email string) error {
+
+	filter, update := queries.ChangePassword(email, hashPassword)
+
+	err := userCollection.FindOneAndUpdate(context.TODO(), filter, update)
+
+	if err.Err() != nil {
+		return err.Err()
+	}
+
+	return nil
 }

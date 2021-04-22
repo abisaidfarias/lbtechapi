@@ -1,8 +1,12 @@
 package services
 
 import (
+	"fmt"
+
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/repositories"
+	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
+	"github.com/abisaidfarias/lbtechapi/utils/functions"
 	"github.com/abisaidfarias/lbtechapi/utils/mapping"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
@@ -12,13 +16,14 @@ import (
 
 // IUserService auth interface
 type IUserService interface {
-	Create(*request.UserRequest) error
+	Create(*request.User) error
 	GetByID(string) (*responses.User, error)
 	Get(string) ([]*bson.M, error)
 	GetByEmail(string) (*responses.AuthUser, error)
 	GetProfileByID(string) (*responses.Profile, error)
 	Update(string, *models.User) error
 	Delete(string) error
+	ChangePassword(string, request.ChangePassword) error
 }
 type userService struct {
 	userRepository repositories.IUserRepository
@@ -32,7 +37,7 @@ func NewUserService(userRepository repositories.IUserRepository) IUserService {
 }
 
 // Create creates and saves the new user
-func (s *userService) Create(userRequest *request.UserRequest) error {
+func (s *userService) Create(userRequest *request.User) error {
 
 	userLogged, err := s.userRepository.GetByID(userRequest.UserID)
 
@@ -122,4 +127,26 @@ func (s *userService) GetProfileByID(id string) (*responses.Profile, error) {
 		return nil, err
 	}
 	return profile, nil
+}
+func (s *userService) ChangePassword(email string, changePassword request.ChangePassword) error {
+
+	user, err := s.userRepository.GetByEmail(email)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		return fmt.Errorf("%w", utils.ErrorResourceNotFound)
+	}
+	err = functions.ValidateUserCredentials(user.PasswordHash, changePassword.OldPassword)
+	if err != nil {
+		return fmt.Errorf("%w", utils.ErrorInvalidCredentials)
+	}
+	hashedPassword := functions.HashPassword(changePassword.NewPassword)
+
+	err = s.userRepository.ChangePassword(hashedPassword, email)
+
+	if err != nil {
+		return err
+	}
+	return nil
 }

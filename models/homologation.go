@@ -15,9 +15,9 @@ type Homologation struct {
 	Brand            primitive.ObjectID `bson:"brand,omitempty"`
 	SoftwareVersion  string             `bson:"software_version,omitempty"`
 	HardwareVersion  string             `bson:"hardware_version,omitempty"`
-	Type             int                `bson:"type,omitempty"`
+	Type             int                `bson:"type"`
 	TestResults      []TestResult       `bson:"test_results,omitempty"`
-	CurrentPhase     int                `bson:"current_phase,omitempty"`
+	CurrentPhase     int                `bson:"current_phase"`
 	PlanningDate     time.Time          `bson:"planning_date"`
 	SampleStartDate  time.Time          `bson:"sample_start_date"`
 	SampleEndDate    time.Time          `bson:"sample_end_date"`

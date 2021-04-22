@@ -17,4 +17,9 @@ var HomologationPhase_value = map[string]int{
 	"UNDER_EVALUATION": 3,
 	"COMPLETE":         4,
 }
-
+var TestResult_value = map[string]int{
+	"NORUN": 0,
+	"NA":    1,
+	"PASS":  2,
+	"FAIL":  3,
+}

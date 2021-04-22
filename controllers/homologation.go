@@ -12,6 +12,7 @@ import (
 type IHomologationController interface {
 	Create() gin.HandlerFunc
 	Get() gin.HandlerFunc
+	GetReport() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
@@ -71,6 +72,22 @@ func (c *homologationController) Get() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, homologations)
+		return
+	}
+
+}
+func (c *homologationController) GetReport() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		var id string
+		id = ctx.Param("id")
+		homologationReport, err := c.homologationService.GetReport(id)
+		if err != nil {
+			handleErrorResponse(ctx, err)
+			return
+		}
+
+		ctx.JSON(http.StatusOK, homologationReport)
 		return
 	}
 

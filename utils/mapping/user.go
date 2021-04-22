@@ -8,7 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func UserRequestToUser(userRequest *request.UserRequest) *models.User {
+func UserRequestToUser(userRequest *request.User) *models.User {
 
 	hashedPassword := functions.HashPassword(userRequest.Password)
 	brands := functions.StringsToObjectIds(userRequest.Brands)

@@ -47,21 +47,30 @@ func (r *testCategoryRepository) Create(category *models.TestCategory) (*primiti
 // Get returns a list of all test categories
 func (r *testCategoryRepository) Get() ([]*responses.TestCategory, error) {
 
-	cursor, err := testCategoryCollection.Find(context.TODO(), bson.M{})
+	cursor, err := testCategoryCollection.Aggregate(context.TODO(), queries.GetCategories())
 
 	if err != nil {
 		return nil, err
 	}
 	var testCategories []*responses.TestCategory = []*responses.TestCategory{}
 	for cursor.Next(context.TODO()) {
-		var result responses.TestCategory
-		err := cursor.Decode(&result)
+		var categoryExpanded *responses.TestCategoryExpanded
+		var category responses.TestCategory
+		err := cursor.Decode(&categoryExpanded)
 		if err != nil {
 			return nil, err
 		}
-		result.Name = fmt.Sprintf("%s(%d)", result.Name, len(result.TestCases))
-		result.TestCases = nil
-		testCategories = append(testCategories, &result)
+		var testCount int = 0
+		for _, testCase := range categoryExpanded.TestCases {
+			if testCase.IsActive {
+				testCount++
+			}
+		}
+		category.Description = categoryExpanded.Description
+		category.ID = categoryExpanded.ID
+		category.Name = fmt.Sprintf("%s(%d)", categoryExpanded.Name, testCount)
+		category.TestCases = nil
+		testCategories = append(testCategories, &category)
 	}
 
 	cursor.Close(context.TODO())
@@ -101,13 +110,19 @@ func (r *testCategoryRepository) GetByIds(categoriesId []primitive.ObjectID) ([]
 	}
 	var testCategories []*responses.TestCategoryExpanded = []*responses.TestCategoryExpanded{}
 	for cursor.Next(context.TODO()) {
-		var result responses.TestCategoryExpanded
-		err := cursor.Decode(&result)
-
+		var category responses.TestCategoryExpanded
+		err := cursor.Decode(&category)
 		if err != nil {
 			return nil, err
 		}
-		testCategories = append(testCategories, &result)
+		var testCases []responses.TestCase
+		for _, testCase := range category.TestCases {
+			if testCase.IsActive {
+				testCases = append(testCases, testCase)
+			}
+		}
+		category.TestCases = testCases
+		testCategories = append(testCategories, &category)
 	}
 
 	return testCategories, nil

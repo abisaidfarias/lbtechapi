@@ -3,11 +3,14 @@ package functions
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"strconv"
 	"time"
 
 	"github.com/abisaidfarias/lbtechapi/models"
+	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gofrs/uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
@@ -121,4 +124,47 @@ func SetHomologationDatesToNull(homologation *responses.HomologationExpanded) {
 	if homologation.CompletedDate.IsZero() {
 		homologation.CompletedDate = nil
 	}
+}
+func ValidateUserCredentials(passwordHash string, password string) error {
+
+	passwordMatches := CompareHashAndPassword(passwordHash, []byte(password))
+
+	if !passwordMatches {
+		return fmt.Errorf("%w", utils.ErrorInvalidCredentials)
+	}
+
+	return nil
+}
+func GenerateJWT(user *responses.AuthUser) string {
+
+	var JWTKey = []byte(os.Getenv("SECRET_KEY"))
+	expirationTime := time.Now().Add(1000 * time.Hour)
+
+	claims := &models.AuthClaim{
+		ID:         user.ID.Hex(),
+		CompanyID:  user.Company.Hex(),
+		IsInternal: strconv.FormatBool(user.IsInternal),
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: expirationTime.Unix(),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	tokenString, err := token.SignedString(JWTKey)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return tokenString
+}
+func CompareHashAndPassword(hashedPassword string, incomingPassword []byte) bool {
+
+	byteHash := []byte(hashedPassword)
+	err := bcrypt.CompareHashAndPassword(byteHash, incomingPassword)
+	if err != nil {
+		return false
+	}
+	return true
 }

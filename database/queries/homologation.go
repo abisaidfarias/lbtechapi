@@ -15,6 +15,13 @@ func GetHomologationValidations(deviceId primitive.ObjectID,
 		"country": countryId, "status": enums.HomologationStatus_value["IN_PROGRESS"]}
 
 }
+func GetHomologationById(oid primitive.ObjectID) []bson.D {
+	matchStage := bson.D{
+		primitive.E{Key: "$match", Value: bson.D{
+			primitive.E{Key: "_id", Value: oid},
+		}}}
+	return mongo.Pipeline{matchStage}
+}
 func GetHomologations(companies []primitive.ObjectID,
 	brands []primitive.ObjectID, countries []primitive.ObjectID,
 	isInternal bool, companyID primitive.ObjectID) []bson.D {

@@ -97,3 +97,13 @@ func GetUsers() []bson.D {
 		}}}
 	return mongo.Pipeline{lookupStage, unwindStage, lookupStage2, unwindStage2}
 }
+func ChangePassword(email string, hashPassword string) (primitive.M, primitive.M) {
+
+	filter := primitive.M{
+		"email": email,
+	}
+	update := primitive.M{
+		"$set": primitive.M{"passwordHash": hashPassword},
+	}
+	return filter, update
+}

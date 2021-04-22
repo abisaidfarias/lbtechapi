@@ -1,6 +1,5 @@
-package models
+package responses
 
-// TestCase model
 type TestResult struct {
 	Code             string       `bson:"code" json:"code"`
 	Name             string       `bson:"name" json:"name"`

@@ -96,6 +96,7 @@ func main() {
 			users.GET("/profile", userController.GetProfileByID())
 			users.PUT(":id", userController.Update())
 			users.DELETE(":id", userController.Delete())
+			users.PUT(":id/changePassword", userController.ChangePassword())
 		}
 
 		categories := v1.Group("/test-categories")
@@ -161,6 +162,7 @@ func main() {
 		{
 			homologation.POST("", homologationController.Create())
 			homologation.GET("", homologationController.Get())
+			homologation.GET(":id/report", homologationController.GetReport())
 		}
 	}
 

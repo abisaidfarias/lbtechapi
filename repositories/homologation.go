@@ -22,6 +22,7 @@ type IHomologationRepository interface {
 		[]primitive.ObjectID) ([]*responses.HomologationExpanded, error)
 	GetByExternal(primitive.ObjectID, []primitive.ObjectID,
 		[]primitive.ObjectID) ([]*responses.HomologationExpanded, error)
+	GetByID(primitive.ObjectID) (*responses.Homologation, error)
 }
 
 type homologationRepository struct {
@@ -114,4 +115,22 @@ func (r *homologationRepository) GetByExternal(companyID primitive.ObjectID,
 	}
 
 	return homologations, nil
+}
+func (r *homologationRepository) GetByID(homologationID primitive.ObjectID) (*responses.Homologation, error) {
+
+	cursor, err := homologationCollection.Aggregate(context.TODO(),
+		queries.GetHomologationById(homologationID))
+	if err != nil {
+		return nil, err
+	}
+	var homologation *responses.Homologation
+	for cursor.Next(context.TODO()) {
+		var homologation *responses.Homologation
+		err := cursor.Decode(&homologation)
+		if err != nil {
+			return nil, err
+		}
+		return homologation, nil
+	}
+	return homologation, nil
 }

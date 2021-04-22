@@ -20,13 +20,17 @@ func HomologationRequestToHomologation(homologation *request.Homologation,
 
 		for _, testCase := range testCategory.TestCases {
 			if testCase.IsActive {
+				var category models.TestCategory
+				category.ID = testCategory.ID
+				category.Description = testCategory.Description
+				category.Name = testCategory.Name
 				var testResult models.TestResult
 				testResult.Code = testCase.Code
 				testResult.Description = testCase.Description
 				testResult.Expected = testCase.Expected
 				testResult.IsActive = testCase.IsActive
 				testResult.Name = testCase.Name
-				testResult.TestCategory = testCase.TestCategory
+				testResult.TestCategory = category
 				testResults = append(testResults, testResult)
 			}
 		}

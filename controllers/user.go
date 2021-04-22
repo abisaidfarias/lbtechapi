@@ -20,6 +20,7 @@ type IUserController interface {
 	Delete() gin.HandlerFunc
 	Get() gin.HandlerFunc
 	GetProfileByID() gin.HandlerFunc
+	ChangePassword() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
@@ -39,7 +40,7 @@ func (c *userController) Create() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 
-		var user request.UserRequest
+		var user request.User
 
 		err := ctx.ShouldBindJSON(&user)
 
@@ -192,6 +193,27 @@ func (c *userController) GetProfileByID() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, profile)
+		return
+	}
+
+}
+func (c *userController) ChangePassword() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		email := ctx.Param("id")
+
+		var changePassword request.ChangePassword
+
+		err := ctx.ShouldBindJSON(&changePassword)
+
+		err = c.userService.ChangePassword(email, changePassword)
+
+		if err != nil {
+			handleErrorResponse(ctx, err)
+			return
+		}
+
+		ctx.Status(http.StatusOK)
 		return
 	}
 
