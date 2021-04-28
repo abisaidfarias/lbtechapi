@@ -17,6 +17,7 @@ type IHomologationService interface {
 	Create(*request.Homologation) (*models.CustomError, error)
 	Get(string) ([]*responses.HomologationExpanded, error)
 	GetReport(string) (*responses.HomologationReport, error)
+	// GetCategories(string) (*responses.TestResult, error)
 }
 
 type homologationService struct {
@@ -109,6 +110,7 @@ func (s *homologationService) GetReport(id string) (*responses.HomologationRepor
 	for _, t := range homologation.TestResults {
 
 		value, _ := categoriesGrouped[t.TestCategory.Name]
+
 		if t.Result == enums.TestResult_value["FAIL"] {
 			value.Fail++
 		} else if t.Result == enums.TestResult_value["PASS"] {
@@ -118,6 +120,11 @@ func (s *homologationService) GetReport(id string) (*responses.HomologationRepor
 		} else {
 			value.NoRun++
 		}
+		var testCaseResume responses.TestCaseResume
+		testCaseResume.Code = t.Code
+		testCaseResume.Name = t.Name
+		testCaseResume.Result = t.Result
+		value.TestCaseResume = append(value.TestCaseResume, testCaseResume)
 		categoriesGrouped[t.TestCategory.Name] = value
 	}
 	var homologationReport responses.HomologationReport
