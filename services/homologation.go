@@ -116,7 +116,7 @@ func (s *homologationService) GetReport(id string) (*responses.HomologationRepor
 		} else if t.Result == enums.TestResult_value["PASS"] {
 			value.Pass++
 		} else if t.Result == enums.TestResult_value["NA"] {
-			value.Pass++
+			value.NA++
 		} else {
 			value.NoRun++
 		}
