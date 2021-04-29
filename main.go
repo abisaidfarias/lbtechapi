@@ -163,6 +163,8 @@ func main() {
 			homologation.POST("", homologationController.Create())
 			homologation.GET("", homologationController.Get())
 			homologation.GET(":id/report", homologationController.GetReport())
+			homologation.GET(":id/categories/test", homologationController.GetCategoriesWithTest())
+
 		}
 	}
 

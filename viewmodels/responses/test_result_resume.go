@@ -1,10 +1,8 @@
 package responses
 
-type TestResult struct {
+type TestResultResume struct {
 	Code             string       `bson:"code" json:"code"`
 	Name             string       `bson:"name" json:"name"`
-	TestCategory     TestCategory `bson:"test_category" json:"test_category"`
-	IsActive         bool         `bson:"is_active" json:"is_active"`
 	Description      string       `bson:"description" json:"description"`
 	Expected         string       `bson:"expected" json:"expected"`
 	Result           int          `bson:"result" json:"result"`

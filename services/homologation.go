@@ -1,6 +1,8 @@
 package services
 
 import (
+	"fmt"
+
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/utils"
@@ -17,7 +19,7 @@ type IHomologationService interface {
 	Create(*request.Homologation) (*models.CustomError, error)
 	Get(string) ([]*responses.HomologationExpanded, error)
 	GetReport(string) (*responses.HomologationReport, error)
-	// GetCategories(string) (*responses.TestResult, error)
+	GetCategoriesWithTest(string) (map[string]responses.CategoryExpanded, error)
 }
 
 type homologationService struct {
@@ -102,7 +104,7 @@ func (s *homologationService) GetReport(id string) (*responses.HomologationRepor
 	homologationID, _ := primitive.ObjectIDFromHex(id)
 	homologation, err := s.homologationRepository.GetByID(homologationID)
 
-	if err != nil {
+	if err != nil || homologation == nil {
 		return nil, err
 	}
 	categoriesGrouped := make(map[string]responses.CategoryResult)
@@ -130,5 +132,45 @@ func (s *homologationService) GetReport(id string) (*responses.HomologationRepor
 	var homologationReport responses.HomologationReport
 	homologationReport.Categories = categoriesGrouped
 	return &homologationReport, nil
+
+}
+func (s *homologationService) GetCategoriesWithTest(id string) (map[string]responses.CategoryExpanded, error) {
+
+	homologationID, _ := primitive.ObjectIDFromHex(id)
+	homologation, err := s.homologationRepository.GetByID(homologationID)
+
+	if err != nil || homologation == nil {
+		return nil, err
+	}
+	categoriesGrouped := make(map[string]responses.CategoryExpanded)
+
+	for _, t := range homologation.TestResults {
+
+		value, _ := categoriesGrouped[t.TestCategory.Name]
+
+		if t.Result == enums.TestResult_value["FAIL"] {
+			value.Fail++
+		} else if t.Result == enums.TestResult_value["PASS"] {
+			value.Pass++
+		} else if t.Result == enums.TestResult_value["NA"] {
+			value.NA++
+		} else {
+			value.NoRun++
+		}
+		var testResultResume responses.TestResultResume
+		testResultResume.Code = t.Code
+		testResultResume.Name = fmt.Sprintf("%s %s", t.Code, t.Name)
+		testResultResume.Result = t.Result
+		testResultResume.Description = t.Description
+		testResultResume.Expected = t.Expected
+		testResultResume.Hyperlinks = t.Hyperlinks
+		testResultResume.Images = t.Images
+		testResultResume.IssueDescription = t.IssueDescription
+		testResultResume.Value = t.Value
+
+		value.TestResultResume = append(value.TestResultResume, testResultResume)
+		categoriesGrouped[t.TestCategory.Name] = value
+	}
+	return categoriesGrouped, nil
 
 }

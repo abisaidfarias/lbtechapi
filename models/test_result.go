@@ -10,5 +10,7 @@ type TestResult struct {
 	Expected         string       `bson:"expected" json:"expected"`
 	Result           int          `bson:"result" json:"result"`
 	IssueDescription string       `bson:"issue_description" json:"issue_description"`
-	Comment          string       `bson:"comment" json:"comment"`
+	Images           []string     `bson:"images" json:"images"`
+	Hyperlinks       []Hyperlink  `bson:"hyperlinks" json:"hyperlinks"`
+	Value            string       `bson:"value" json:"value"`
 }
