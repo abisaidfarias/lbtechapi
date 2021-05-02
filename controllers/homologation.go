@@ -14,6 +14,7 @@ type IHomologationController interface {
 	Get() gin.HandlerFunc
 	GetReport() gin.HandlerFunc
 	GetCategoriesWithTest() gin.HandlerFunc
+	UpdateTestResult() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
@@ -58,7 +59,6 @@ func (c *homologationController) Create() gin.HandlerFunc {
 		}
 
 		ctx.Status(http.StatusCreated)
-		return
 	}
 }
 
@@ -73,7 +73,6 @@ func (c *homologationController) Get() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, homologations)
-		return
 	}
 
 }
@@ -89,7 +88,6 @@ func (c *homologationController) GetReport() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, homologationReport)
-		return
 	}
 }
 func (c *homologationController) GetCategoriesWithTest() gin.HandlerFunc {
@@ -104,7 +102,29 @@ func (c *homologationController) GetCategoriesWithTest() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, homologationReport)
-		return
+	}
+
+}
+func (c *homologationController) UpdateTestResult() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		var id string
+		id = ctx.Param("id")
+
+		var testResult request.TestResultResume
+
+		err := ctx.ShouldBindJSON(&testResult)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		err = c.homologationService.UpdateTestResult(id, testResult)
+		if err != nil {
+			handleErrorResponse(ctx, err)
+			return
+		}
+
+		ctx.Status(http.StatusOK)
 	}
 
 }

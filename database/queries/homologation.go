@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/abisaidfarias/lbtechapi/utils/enums"
+	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"go.mongodb.org/mongo-driver/bson"
 	primitive "go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -134,4 +135,21 @@ func GetHomologations(companies []primitive.ObjectID,
 
 	return pipeline
 
+}
+func UpdateTestResult(testResult request.TestResultResume, oid primitive.ObjectID) (primitive.M, primitive.M) {
+
+	filter := primitive.M{
+		"_id":               oid,
+		"test_results.code": testResult.Code,
+	}
+	update := primitive.M{
+		"$set": primitive.M{
+			"test_results.$.issue_description": testResult.IssueDescription,
+			"test_results.$.hyperlinks":        testResult.Hyperlinks,
+			"test_results.$.images":            testResult.Images,
+			"test_results.$.result":            testResult.Result,
+			"test_results.$.value":             testResult.Value,
+		},
+	}
+	return filter, update
 }

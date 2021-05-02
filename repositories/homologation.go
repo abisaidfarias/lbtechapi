@@ -11,6 +11,7 @@ import (
 	"github.com/abisaidfarias/lbtechapi/database/queries"
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/utils/functions"
+	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 )
 
@@ -23,6 +24,7 @@ type IHomologationRepository interface {
 	GetByExternal(primitive.ObjectID, []primitive.ObjectID,
 		[]primitive.ObjectID) ([]*responses.HomologationExpanded, error)
 	GetByID(primitive.ObjectID) (*responses.Homologation, error)
+	UpdateTestResult(string, request.TestResultResume) error
 }
 
 type homologationRepository struct {
@@ -133,4 +135,21 @@ func (r *homologationRepository) GetByID(homologationID primitive.ObjectID) (*re
 		return homologation, nil
 	}
 	return homologation, nil
+}
+func (r *homologationRepository) UpdateTestResult(id string, testResult request.TestResultResume) error {
+
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	filter, update := queries.UpdateTestResult(testResult, oid)
+
+	_, err = homologationCollection.UpdateOne(context.TODO(), filter, update)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

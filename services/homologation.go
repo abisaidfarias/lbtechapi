@@ -20,6 +20,7 @@ type IHomologationService interface {
 	Get(string) ([]*responses.HomologationExpanded, error)
 	GetReport(string) (*responses.HomologationReport, error)
 	GetCategoriesWithTest(string) (map[string]responses.CategoryExpanded, error)
+	UpdateTestResult(string, request.TestResultResume) error
 }
 
 type homologationService struct {
@@ -173,4 +174,14 @@ func (s *homologationService) GetCategoriesWithTest(id string) (map[string]respo
 	}
 	return categoriesGrouped, nil
 
+}
+
+// Update updates a test case
+func (s *homologationService) UpdateTestResult(id string, testResultRequest request.TestResultResume) error {
+
+	err := s.homologationRepository.UpdateTestResult(id, testResultRequest)
+	if err != nil {
+		return err
+	}
+	return nil
 }
