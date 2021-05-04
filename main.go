@@ -66,7 +66,6 @@ var (
 func main() {
 	server := gin.Default()
 	server.Use(middlewares.CORSMiddleware())
-	// server.Use(gindump.Dump())
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("passwordFormat", utils.ValidPassword)

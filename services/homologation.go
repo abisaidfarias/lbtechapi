@@ -1,8 +1,6 @@
 package services
 
 import (
-	"fmt"
-
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/utils"
@@ -160,7 +158,7 @@ func (s *homologationService) GetCategoriesWithTest(id string) (map[string]respo
 		}
 		var testResultResume responses.TestResultResume
 		testResultResume.Code = t.Code
-		testResultResume.Name = fmt.Sprintf("%s %s", t.Code, t.Name)
+		testResultResume.Name = t.Name
 		testResultResume.Result = t.Result
 		testResultResume.Description = t.Description
 		testResultResume.Expected = t.Expected
