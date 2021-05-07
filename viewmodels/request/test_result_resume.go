@@ -7,4 +7,6 @@ type TestResultResume struct {
 	Images           []string    `bson:"images" json:"images"`
 	Hyperlinks       []Hyperlink `bson:"hyperlinks" json:"hyperlinks"`
 	Value            string      `bson:"value" json:"value"`
+	IssueFrequency   int         `bson:"issue_frequency" json:"issue_frequency"`
+	IssueSeverity    int         `bson:"issue_severity" json:"issue_severity"`
 }

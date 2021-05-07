@@ -23,3 +23,15 @@ var TestResult_value = map[string]int{
 	"PASS":  2,
 	"FAIL":  3,
 }
+
+var TestFailureFrequency_value = map[string]int{
+	"ALWAYS": 0,
+	"RANDOM": 1,
+	"ONCE":   2,
+}
+
+var TestFailureSeverity_value = map[string]int{
+	"HIGH":   0,
+	"MEDIUM": 1,
+	"LOW":    2,
+}

@@ -145,6 +145,8 @@ func UpdateTestResult(testResult request.TestResultResume, oid primitive.ObjectI
 	update := primitive.M{
 		"$set": primitive.M{
 			"test_results.$.issue_description": testResult.IssueDescription,
+			"test_results.$.issue_frequency":   testResult.IssueFrequency,
+			"test_results.$.issue_severity":    testResult.IssueSeverity,
 			"test_results.$.hyperlinks":        testResult.Hyperlinks,
 			"test_results.$.images":            testResult.Images,
 			"test_results.$.result":            testResult.Result,
