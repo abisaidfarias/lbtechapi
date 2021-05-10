@@ -25,8 +25,10 @@ type IHomologationRepository interface {
 		[]primitive.ObjectID) ([]*responses.HomologationExpanded, error)
 	GetByID(primitive.ObjectID) (*responses.Homologation, error)
 	UpdateTestResult(string, request.TestResultResume) error
+	// GetGroupedByDate([]primitive.ObjectID, []primitive.ObjectID,
+	// 	[]primitive.ObjectID) error
+	PhaseChange(string, *models.Homologation) error
 }
-
 type homologationRepository struct {
 }
 
@@ -144,6 +146,45 @@ func (r *homologationRepository) UpdateTestResult(id string, testResult request.
 	}
 
 	filter, update := queries.UpdateTestResult(testResult, oid)
+
+	_, err = homologationCollection.UpdateOne(context.TODO(), filter, update)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// func (r *homologationRepository) GetGroupedByDate(companies []primitive.ObjectID, devices []primitive.ObjectID,
+// 	countries []primitive.ObjectID) error {
+
+// 	cursor, err := homologationCollection.Aggregate(context.TODO(),
+// 		queries.GetHomologations(companies, devices, countries, true, primitive.ObjectID{}))
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	var homologations []*responses.HomologationExpanded = []*responses.HomologationExpanded{}
+// 	for cursor.Next(context.TODO()) {
+// 		var homologation *responses.HomologationExpanded
+// 		err := cursor.Decode(&homologation)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		functions.SetHomologationDatesToNull(homologation)
+// 		homologations = append(homologations, homologation)
+// 	}
+
+// 	return homologations, nil
+// }
+func (r *homologationRepository) PhaseChange(id string, homologation *models.Homologation) error {
+
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	filter, update := queries.UpdatePhaseChange(homologation, oid)
 
 	_, err = homologationCollection.UpdateOne(context.TODO(), filter, update)
 

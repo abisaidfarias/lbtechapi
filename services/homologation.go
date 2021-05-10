@@ -19,6 +19,7 @@ type IHomologationService interface {
 	GetReport(string) (*responses.HomologationReport, error)
 	GetCategoriesWithTest(string) (map[string]responses.CategoryExpanded, error)
 	UpdateTestResult(string, request.TestResultResume) error
+	PhaseChange(string, *request.HomologationResume) error
 }
 
 type homologationService struct {
@@ -181,6 +182,16 @@ func (s *homologationService) GetCategoriesWithTest(id string) (map[string]respo
 func (s *homologationService) UpdateTestResult(id string, testResultRequest request.TestResultResume) error {
 
 	err := s.homologationRepository.UpdateTestResult(id, testResultRequest)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (s *homologationService) PhaseChange(id string, homologationRequest *request.HomologationResume) error {
+
+	homologation := mapping.HomologationRequestToHomologationResume(homologationRequest)
+
+	err := s.homologationRepository.PhaseChange(id, homologation)
 	if err != nil {
 		return err
 	}

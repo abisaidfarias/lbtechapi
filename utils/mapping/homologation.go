@@ -60,3 +60,21 @@ func HomologationRequestToHomologation(homologation *request.Homologation,
 		Brand:            brandID,
 	}
 }
+
+func HomologationRequestToHomologationResume(homologation *request.HomologationResume) *models.Homologation {
+
+	return &models.Homologation{
+		SoftwareVersion: homologation.SoftwareVersion,
+		HardwareVersion: homologation.HardwareVersion,
+		CurrentPhase:    homologation.CurrentPhase,
+		PlanningDate:    homologation.PlanningDate,
+		SampleStartDate: homologation.SampleStartDate,
+		SampleEndDate:   homologation.SampleEndDate,
+		TestStartDate:   homologation.TestStartDate,
+		TestEndDate:     homologation.TestEndDate,
+		UnderStartDate:  homologation.UnderStartDate,
+		UnderEndDate:    homologation.UnderEndDate,
+		CompletedDate:   homologation.CompletedDate,
+		Status:          homologation.Status,
+	}
+}

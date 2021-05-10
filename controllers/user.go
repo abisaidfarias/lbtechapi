@@ -62,15 +62,12 @@ func (c *userController) Create() gin.HandlerFunc {
 		}
 
 		ctx.Status(http.StatusCreated)
-		return
 	}
 }
 
 func (c *userController) GetByID() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var id string
-
-		id = ctx.Param("id")
+		id := ctx.Param("id")
 
 		if id == "" {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("%w", utils.ErrorInvalidURLParams)})
@@ -85,7 +82,6 @@ func (c *userController) GetByID() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, *user)
-		return
 	}
 
 }
@@ -108,7 +104,6 @@ func (c *userController) GetByEmail() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, *user)
-		return
 	}
 
 }
@@ -116,9 +111,7 @@ func (c *userController) GetByEmail() gin.HandlerFunc {
 func (c *userController) Update() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
-		var id string
-
-		id = ctx.Param("id")
+		id := ctx.Param("id")
 
 		var user models.User
 
@@ -142,7 +135,7 @@ func (c *userController) Update() gin.HandlerFunc {
 		}
 
 		ctx.Status(http.StatusOK)
-		return
+
 	}
 
 }
@@ -150,9 +143,7 @@ func (c *userController) Update() gin.HandlerFunc {
 func (c *userController) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
-		var id string
-
-		id = ctx.Param("id")
+		id := ctx.Param("id")
 
 		err := c.userService.Delete(id)
 
@@ -162,7 +153,7 @@ func (c *userController) Delete() gin.HandlerFunc {
 		}
 
 		ctx.Status(http.StatusOK)
-		return
+
 	}
 
 }
@@ -177,7 +168,6 @@ func (c *userController) Get() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, users)
-		return
 	}
 
 }
@@ -193,7 +183,7 @@ func (c *userController) GetProfileByID() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, profile)
-		return
+
 	}
 
 }
@@ -205,7 +195,10 @@ func (c *userController) ChangePassword() gin.HandlerFunc {
 		var changePassword request.ChangePassword
 
 		err := ctx.ShouldBindJSON(&changePassword)
-
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 		err = c.userService.ChangePassword(email, changePassword)
 
 		if err != nil {
@@ -214,7 +207,6 @@ func (c *userController) ChangePassword() gin.HandlerFunc {
 		}
 
 		ctx.Status(http.StatusOK)
-		return
 	}
 
 }

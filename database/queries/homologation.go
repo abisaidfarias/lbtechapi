@@ -3,6 +3,7 @@ package queries
 import (
 	"log"
 
+	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/utils/enums"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"go.mongodb.org/mongo-driver/bson"
@@ -153,5 +154,44 @@ func UpdateTestResult(testResult request.TestResultResume, oid primitive.ObjectI
 			"test_results.$.value":             testResult.Value,
 		},
 	}
+	return filter, update
+}
+func UpdatePhaseChange(homologation *models.Homologation, oid primitive.ObjectID) (primitive.M, primitive.D) {
+
+	filter := primitive.M{
+		"_id": oid,
+	}
+	update := primitive.D{
+		{Key: "$set",
+			Value: primitive.D{
+				{Key: "current_phase", Value: homologation.CurrentPhase},
+				{Key: "status", Value: homologation.Status},
+				{Key: "software_version", Value: homologation.SoftwareVersion},
+				{Key: "hardware_version", Value: homologation.HardwareVersion},
+				{Key: "planning_date", Value: homologation.PlanningDate},
+				{Key: "sample_start_date", Value: homologation.SampleStartDate},
+				{Key: "sample_end_date", Value: homologation.SampleEndDate},
+				{Key: "test_start_date", Value: homologation.TestStartDate},
+				{Key: "test_end_date", Value: homologation.TestEndDate},
+				{Key: "under_start_date", Value: homologation.UnderStartDate},
+				{Key: "under_end_date", Value: homologation.UnderEndDate},
+				{Key: "completed_date", Value: homologation.CompletedDate},
+			},
+		},
+	}
+	// 	"current_phase":     homologation.CurrentPhase,
+	// 	"status":            homologation.Status,
+	// 	"software_version":  homologation.SoftwareVersion,
+	// 	"hardware_version":  homologation.HardwareVersion,
+	// 	"planning_date":     homologation.PlanningDate,
+	// 	"sample_start_date": homologation.SampleStartDate,
+	// 	"sample_end_date":   homologation.SampleEndDate,
+	// 	"test_start_date":   homologation.TestStartDate,
+	// 	"test_end_date":     homologation.TestEndDate,
+	// 	"under_start_date":  homologation.UnderStartDate,
+	// 	"under_end_date":    homologation.UnderEndDate,
+	// 	"completed_date":    homologation.CompletedDate,
+	// },
+	//}
 	return filter, update
 }
