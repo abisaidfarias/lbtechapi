@@ -17,12 +17,8 @@ func GetHomologationValidations(deviceId primitive.ObjectID,
 		"country": countryId, "status": enums.HomologationStatus_value["IN_PROGRESS"]}
 
 }
-func GetHomologationById(oid primitive.ObjectID) []bson.D {
-	matchStage := bson.D{
-		primitive.E{Key: "$match", Value: bson.D{
-			primitive.E{Key: "_id", Value: oid},
-		}}}
-	return mongo.Pipeline{matchStage}
+func GetHomologationById(oid primitive.ObjectID) primitive.M {
+	return primitive.M{"_id": oid}
 }
 func GetHomologations(companies []primitive.ObjectID,
 	brands []primitive.ObjectID, countries []primitive.ObjectID,
@@ -179,19 +175,5 @@ func UpdatePhaseChange(homologation *models.Homologation, oid primitive.ObjectID
 			},
 		},
 	}
-	// 	"current_phase":     homologation.CurrentPhase,
-	// 	"status":            homologation.Status,
-	// 	"software_version":  homologation.SoftwareVersion,
-	// 	"hardware_version":  homologation.HardwareVersion,
-	// 	"planning_date":     homologation.PlanningDate,
-	// 	"sample_start_date": homologation.SampleStartDate,
-	// 	"sample_end_date":   homologation.SampleEndDate,
-	// 	"test_start_date":   homologation.TestStartDate,
-	// 	"test_end_date":     homologation.TestEndDate,
-	// 	"under_start_date":  homologation.UnderStartDate,
-	// 	"under_end_date":    homologation.UnderEndDate,
-	// 	"completed_date":    homologation.CompletedDate,
-	// },
-	//}
 	return filter, update
 }

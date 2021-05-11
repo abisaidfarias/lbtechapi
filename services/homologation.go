@@ -20,6 +20,7 @@ type IHomologationService interface {
 	GetCategoriesWithTest(string) (map[string]responses.CategoryExpanded, error)
 	UpdateTestResult(string, request.TestResultResume) error
 	PhaseChange(string, *request.HomologationResume) error
+	GetHomologationFails(string) (*responses.TestFails, error)
 }
 
 type homologationService struct {
@@ -111,7 +112,7 @@ func (s *homologationService) GetReport(id string) (*responses.HomologationRepor
 
 	for _, t := range homologation.TestResults {
 
-		value, _ := categoriesGrouped[t.TestCategory.Name]
+		value := categoriesGrouped[t.TestCategory.Name]
 
 		if t.Result == enums.TestResult_value["FAIL"] {
 			value.Fail++
@@ -196,4 +197,32 @@ func (s *homologationService) PhaseChange(id string, homologationRequest *reques
 		return err
 	}
 	return nil
+}
+func (s *homologationService) GetHomologationFails(id string) (*responses.TestFails, error) {
+
+	homologationID, _ := primitive.ObjectIDFromHex(id)
+	homologation, err := s.homologationRepository.GetByID(homologationID)
+	if err != nil {
+		return nil, err
+	}
+
+	var testResults []responses.TestResult = []responses.TestResult{}
+	testFails := new(responses.TestFails)
+	for _, test := range homologation.TestResults {
+
+		if test.Result == enums.TestResult_value["FAIL"] {
+			testFails.TotalTest++
+			if test.IssueSeverity == enums.TestFailureSeverity_value["HIGH"] {
+				testFails.TotalHigh++
+			} else if test.IssueSeverity == enums.TestFailureSeverity_value["MEDIUM"] {
+				testFails.TotalMedium++
+			} else {
+				testFails.TotalLow++
+			}
+			testResults = append(testResults, test)
+		}
+	}
+	testFails.TestResults = testResults
+	return testFails, nil
+
 }

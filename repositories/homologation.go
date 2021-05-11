@@ -28,6 +28,7 @@ type IHomologationRepository interface {
 	// GetGroupedByDate([]primitive.ObjectID, []primitive.ObjectID,
 	// 	[]primitive.ObjectID) error
 	PhaseChange(string, *models.Homologation) error
+	// GetHomologationFails(primitive.ObjectID) (*responses.Homologation, error)
 }
 type homologationRepository struct {
 }
@@ -122,20 +123,21 @@ func (r *homologationRepository) GetByExternal(companyID primitive.ObjectID,
 }
 func (r *homologationRepository) GetByID(homologationID primitive.ObjectID) (*responses.Homologation, error) {
 
-	cursor, err := homologationCollection.Aggregate(context.TODO(),
-		queries.GetHomologationById(homologationID))
+	var homologation *responses.Homologation
+	err := homologationCollection.FindOne(context.TODO(),
+		queries.GetHomologationById(homologationID)).Decode(&homologation)
 	if err != nil {
 		return nil, err
 	}
-	var homologation *responses.Homologation
-	for cursor.Next(context.TODO()) {
-		var homologation *responses.Homologation
-		err := cursor.Decode(&homologation)
-		if err != nil {
-			return nil, err
-		}
-		return homologation, nil
-	}
+	// var homologation *responses.Homologation
+	// for cursor.Next(context.TODO()) {
+	// 	var homologation *responses.Homologation
+	// 	err := cursor.Decode(&homologation)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	return homologation, nil
+	// }
 	return homologation, nil
 }
 func (r *homologationRepository) UpdateTestResult(id string, testResult request.TestResultResume) error {
@@ -194,3 +196,22 @@ func (r *homologationRepository) PhaseChange(id string, homologation *models.Hom
 
 	return nil
 }
+
+// func (r *homologationRepository) GetHomologationFails(homologationID primitive.ObjectID) (*responses.Homologation, error) {
+
+// 	cursor, err := homologationCollection.Aggregate(context.TODO(),
+// 		queries.GetHomologationFailsById(homologationID))
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	var homologation *responses.Homologation
+// 	for cursor.Next(context.TODO()) {
+// 		var homologation *responses.Homologation
+// 		err := cursor.Decode(&homologation)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		return homologation, nil
+// 	}
+// 	return homologation, nil
+// }
