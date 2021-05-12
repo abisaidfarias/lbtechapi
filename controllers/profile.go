@@ -59,7 +59,6 @@ func (c *profileController) Create() gin.HandlerFunc {
 		}
 
 		ctx.Status(http.StatusCreated)
-		return
 	}
 }
 
@@ -76,7 +75,6 @@ func (c *profileController) Get() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, profiles)
-		return
 	}
 
 }
@@ -85,9 +83,8 @@ func (c *profileController) Get() gin.HandlerFunc {
 func (c *profileController) GetById() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
-		var id string
 
-		id = ctx.Param("id")
+		id := ctx.Param("id")
 
 		if id == "" {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("%w", utils.ErrorInvalidURLParams)})
@@ -102,7 +99,6 @@ func (c *profileController) GetById() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, profile)
-		return
 	}
 }
 
@@ -111,9 +107,7 @@ func (c *profileController) Update() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 
-		var id string
-
-		id = ctx.Param("id")
+		id := ctx.Param("id")
 
 		var profile request.Profile
 
@@ -137,7 +131,6 @@ func (c *profileController) Update() gin.HandlerFunc {
 		}
 
 		ctx.Status(http.StatusOK)
-		return
 	}
 }
 
@@ -145,11 +138,10 @@ func (c *profileController) Update() gin.HandlerFunc {
 func (c *profileController) Delete() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
-		var id string
 
-		id = ctx.Param("id")
+		id := ctx.Param("id")
 
-		err, canDelete := c.profileService.Delete(id)
+		canDelete, err := c.profileService.Delete(id)
 		if err != nil {
 			handleErrorResponse(ctx, err)
 			return
@@ -160,7 +152,6 @@ func (c *profileController) Delete() gin.HandlerFunc {
 		}
 
 		ctx.Status(http.StatusOK)
-		return
 
 	}
 }
