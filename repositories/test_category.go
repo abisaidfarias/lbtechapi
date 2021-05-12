@@ -7,9 +7,11 @@ import (
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/database/queries"
 	"github.com/abisaidfarias/lbtechapi/models"
+	"github.com/abisaidfarias/lbtechapi/utils"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // ITestCateogryRepository is the category repository for test cases
@@ -18,6 +20,8 @@ type ITestCategoryRepository interface {
 	Get() ([]*responses.TestCategory, error)
 	GetSimple() ([]*responses.TestCategory, error)
 	GetByIds([]primitive.ObjectID) ([]*responses.TestCategoryExpanded, error)
+	GetOtherCategory() (models.TestCategory, error)
+	CreateOtherCategory() (models.TestCategory, error)
 }
 
 type testCategoryRepository struct {
@@ -127,4 +131,32 @@ func (r *testCategoryRepository) GetByIds(categoriesId []primitive.ObjectID) ([]
 
 	return testCategories, nil
 
+}
+func (r *testCategoryRepository) GetOtherCategory() (models.TestCategory, error) {
+
+	var testCategory models.TestCategory
+	err := homologationCollection.FindOne(context.TODO(),
+		queries.GetOtherCategory()).Decode(testCategory)
+	switch err {
+	case mongo.ErrNoDocuments:
+		return testCategory, nil
+	case nil:
+		return testCategory, nil
+	default:
+		return testCategory, err
+	}
+}
+func (r *testCategoryRepository) CreateOtherCategory() (models.TestCategory, error) {
+
+	var otherCategory models.TestCategory
+	otherCategory.Name = utils.OtherCategory
+	res, err := testCategoryCollection.InsertOne(context.TODO(), otherCategory)
+
+	if err != nil {
+		return otherCategory, err
+	}
+
+	otherCategory.ID = res.InsertedID.(primitive.ObjectID)
+
+	return otherCategory, nil
 }

@@ -1,6 +1,7 @@
 package request
 
 type TestResultResume struct {
+	Name             string      `bson:"name" json:"name"`
 	Code             string      `bson:"code" json:"code" binding:"required"`
 	Result           int         `bson:"result" json:"result"`
 	IssueDescription string      `bson:"issue_description" json:"issue_description"`

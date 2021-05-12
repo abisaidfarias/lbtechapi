@@ -152,6 +152,18 @@ func UpdateTestResult(testResult request.TestResultResume, oid primitive.ObjectI
 	}
 	return filter, update
 }
+func CreateTestResult(testResult *models.TestResult, oid primitive.ObjectID) (primitive.M, primitive.M) {
+
+	filter := primitive.M{
+		"_id": oid,
+	}
+	update := primitive.M{
+		"$push": primitive.M{
+			"test_results": testResult,
+		},
+	}
+	return filter, update
+}
 func UpdatePhaseChange(homologation *models.Homologation, oid primitive.ObjectID) (primitive.M, primitive.D) {
 
 	filter := primitive.M{

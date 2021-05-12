@@ -168,6 +168,7 @@ func main() {
 			homologation.PUT(":id", homologationController.UpdateTestResult())
 			homologation.PUT(":id/phase", homologationController.PhaseChange())
 			homologation.GET(":id/test/fails", homologationController.GetHomologationFails())
+			homologation.POST(":id/failTest", homologationController.CreateFailTest())
 
 		}
 	}

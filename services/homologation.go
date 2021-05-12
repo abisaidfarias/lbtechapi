@@ -21,6 +21,7 @@ type IHomologationService interface {
 	UpdateTestResult(string, request.TestResultResume) error
 	PhaseChange(string, *request.HomologationResume) error
 	GetHomologationFails(string) (*responses.TestFails, error)
+	CreateFailTestResult(string, *request.TestResultResume) error
 }
 
 type homologationService struct {
@@ -147,7 +148,7 @@ func (s *homologationService) GetCategoriesWithTest(id string) (map[string]respo
 
 	for _, t := range homologation.TestResults {
 
-		value, _ := categoriesGrouped[t.TestCategory.Name]
+		value := categoriesGrouped[t.TestCategory.Name]
 
 		if t.Result == enums.TestResult_value["FAIL"] {
 			value.Fail++
@@ -209,9 +210,8 @@ func (s *homologationService) GetHomologationFails(id string) (*responses.TestFa
 	var testResults []responses.TestResult = []responses.TestResult{}
 	testFails := new(responses.TestFails)
 	for _, test := range homologation.TestResults {
-
+		testFails.TotalTest++
 		if test.Result == enums.TestResult_value["FAIL"] {
-			testFails.TotalTest++
 			if test.IssueSeverity == enums.TestFailureSeverity_value["HIGH"] {
 				testFails.TotalHigh++
 			} else if test.IssueSeverity == enums.TestFailureSeverity_value["MEDIUM"] {
@@ -225,4 +225,27 @@ func (s *homologationService) GetHomologationFails(id string) (*responses.TestFa
 	testFails.TestResults = testResults
 	return testFails, nil
 
+}
+func (s *homologationService) CreateFailTestResult(id string, testResultRequest *request.TestResultResume) error {
+
+	failCategory, err := s.testCategoryRepository.GetOtherCategory()
+	if err != nil {
+		return err
+	}
+
+	if failCategory.ID == primitive.NilObjectID {
+		failCategory, err = s.testCategoryRepository.CreateOtherCategory()
+		if err != nil {
+			return err
+		}
+	}
+
+	testResult := mapping.TestResultRequestToTestResult(testResultRequest)
+	testResult.TestCategory = failCategory
+
+	err = s.homologationRepository.CreateFailTestResult(id, testResult)
+	if err != nil {
+		return err
+	}
+	return nil
 }

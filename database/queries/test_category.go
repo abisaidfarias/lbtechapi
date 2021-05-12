@@ -1,6 +1,7 @@
 package queries
 
 import (
+	"github.com/abisaidfarias/lbtechapi/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	primitive "go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -37,4 +38,7 @@ func GetCategories() []bson.D {
 		}}}
 	return mongo.Pipeline{lookupStage}
 
+}
+func GetOtherCategory() primitive.M {
+	return primitive.M{"name": utils.OtherCategory}
 }
