@@ -126,8 +126,8 @@ func ValidateHomologationRequest(homologation *responses.Homologation,
 	if homologation.Status == enums.HomologationStatus_value["REJECTED"] {
 		if homologationRequest.Type != enums.HomologationType_value["REGRETION"] {
 			var customeErr models.CustomError
-			customeErr.Code = HomologationMustBeMaintenanceCode
-			customeErr.Err = HomologationMustBeMaintenance
+			customeErr.Code = HomologationMustBeRegretionCode
+			customeErr.Err = HomologationMustBeRegretion
 			return false, &customeErr
 		}
 	}

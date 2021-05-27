@@ -61,6 +61,9 @@ var (
 	homologationRepository repositories.IHomologationRepository = repositories.NewHomologationRepository()
 	homologationService    services.IHomologationService        = services.NewHomologationService(homologationRepository, testCategoryRepository, userRepository)
 	homologationController controllers.IHomologationController  = controllers.NewHomologationController(homologationService)
+
+	dashboardService    services.IDashboardService       = services.NewDashboardService(homologationRepository, userRepository)
+	dashboardController controllers.IDashboardController = controllers.NewDashboardController(dashboardService)
 )
 
 func main() {
@@ -170,6 +173,10 @@ func main() {
 			homologation.GET(":id/test/fails", homologationController.GetHomologationFails())
 			homologation.POST(":id/failTest", homologationController.CreateFailTest())
 
+		}
+		dashboard := v1.Group("/dashboard")
+		{
+			dashboard.GET("", dashboardController.Get())
 		}
 	}
 

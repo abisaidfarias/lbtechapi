@@ -52,15 +52,12 @@ func (s *homologationService) Create(homologationRequest *request.Homologation) 
 
 	existHomologation, err := s.homologationRepository.GetPrevious(deviceID,
 		countryID, companyID)
-	if existHomologation != nil || err != nil {
-		var customeErr models.CustomError
-		customeErr.Code = utils.HomologationExistCode
-		customeErr.Err = utils.HomologationExist
-		return &customeErr, nil
+	if err != nil {
+		return nil, err
 	}
 
 	if response, err := utils.ValidateHomologationRequest(existHomologation,
-		homologationRequest); response == false {
+		homologationRequest); !response {
 		return err, nil
 	}
 	ids := functions.StringsToObjectIds(homologationRequest.TestCategories)

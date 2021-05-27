@@ -1,10 +1,7 @@
 package queries
 
 import (
-	"log"
-
 	"github.com/abisaidfarias/lbtechapi/models"
-	"github.com/abisaidfarias/lbtechapi/utils/enums"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"go.mongodb.org/mongo-driver/bson"
 	primitive "go.mongodb.org/mongo-driver/bson/primitive"
@@ -14,7 +11,7 @@ import (
 func GetHomologationValidations(deviceId primitive.ObjectID,
 	countryId primitive.ObjectID, companyId primitive.ObjectID) primitive.M {
 	return primitive.M{"device": deviceId, "company": companyId,
-		"country": countryId, "status": enums.HomologationStatus_value["IN_PROGRESS"]}
+		"country": countryId}
 
 }
 func GetHomologationById(oid primitive.ObjectID) primitive.M {
@@ -87,7 +84,7 @@ func GetHomologations(companies []primitive.ObjectID,
 	var matchStage bson.D
 	var objectStage bson.D
 	var hasStage bool
-	if len(companies) > 0 && isInternal == true {
+	if len(companies) > 0 && isInternal {
 
 		var companyStage bson.D
 		companyStage = append(companyStage, primitive.E{Key: "$in", Value: companies})
@@ -128,9 +125,39 @@ func GetHomologations(companies []primitive.ObjectID,
 			lookupStageTestPlan, unwindStageTestPlan,
 			lookupStageBrand, unwindStageBrand}
 	}
-	log.Println("pipeline", pipeline)
 
 	return pipeline
+
+}
+func GetHomologationsGroupedCountryApprovalType() bson.D {
+
+	return bson.D{
+		primitive.E{Key: "$group", Value: bson.D{
+			primitive.E{Key: "_id", Value: bson.D{
+				primitive.E{Key: "type", Value: "$type"},
+				primitive.E{Key: "country", Value: "$country.name"},
+				primitive.E{Key: "month", Value: bson.D{
+					primitive.E{Key: "$month", Value: "$test_start_date"},
+				}},
+				primitive.E{Key: "year", Value: bson.D{
+					primitive.E{Key: "$year", Value: "$test_start_date"},
+				}},
+			}},
+			primitive.E{Key: "count", Value: bson.D{
+				primitive.E{Key: "$sum", Value: 1},
+			}},
+		}}}
+
+}
+func SortGroupedCountryApprovalType() bson.D {
+
+	return bson.D{
+		primitive.E{Key: "$sort", Value: bson.D{
+			primitive.E{Key: "_id.year", Value: 1},
+			primitive.E{Key: "_id.month", Value: 1},
+			primitive.E{Key: "_id.country", Value: 1},
+			primitive.E{Key: "_id.type", Value: 1},
+		}}}
 
 }
 func UpdateTestResult(testResult request.TestResultResume, oid primitive.ObjectID) (primitive.M, primitive.M) {

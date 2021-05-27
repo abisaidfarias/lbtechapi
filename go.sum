@@ -133,6 +133,9 @@ github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6Tm2C1GtYGdfGttqA=
+github.com/raunakjodhawat/multisort v1.0.0 h1:EVF+taL9wbSTlzwRR8/my8p9KcnmMW5W+zc75p5puEQ=
+github.com/raunakjodhawat/multisort v2.0.0+incompatible h1:tN60sg9dxEVzoIrylDcfB5SvvDgUDZvOi8oUc43WBXE=
+github.com/raunakjodhawat/multisort v2.0.0+incompatible/go.mod h1:B7kT4dUBxfjPp7pfHH84YN3jOrSnly2ZqHreeffAmmo=
 github.com/rogpeppe/go-internal v1.1.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 github.com/rogpeppe/go-internal v1.2.2/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=

@@ -5,6 +5,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/abisaidfarias/lbtechapi/database"
@@ -26,8 +27,8 @@ type IHomologationRepository interface {
 	GetByID(primitive.ObjectID) (*responses.Homologation, error)
 	UpdateTestResult(string, request.TestResultResume) error
 	CreateFailTestResult(string, *models.TestResult) error
-	// GetGroupedByDate([]primitive.ObjectID, []primitive.ObjectID,
-	// 	[]primitive.ObjectID) error
+	GetGroupedByTypeCountry(companies []primitive.ObjectID,
+		devices []primitive.ObjectID, countries []primitive.ObjectID) ([]*responses.ChartTypeCountry, error)
 	PhaseChange(string, *models.Homologation) error
 	// GetHomologationFails(primitive.ObjectID) (*responses.Homologation, error)
 }
@@ -70,16 +71,27 @@ func (r *homologationRepository) Get() ([]*responses.Homologation, error) {
 func (r *homologationRepository) GetPrevious(deviceId primitive.ObjectID,
 	countryId primitive.ObjectID, companyId primitive.ObjectID) (*responses.Homologation, error) {
 
-	var homologation *responses.Homologation
-	err := homologationCollection.FindOne(context.TODO(),
-		queries.GetHomologationValidations(deviceId, countryId, companyId)).Decode(&homologation)
-
-	switch err {
-	case mongo.ErrNoDocuments:
-		return homologation, nil
-	default:
-		return homologation, err
+	var homologations []*responses.Homologation
+	findOptions := options.Find()
+	findOptions.SetSort(bson.M{"_id": -1})
+	cursor, err := homologationCollection.Find(context.TODO(),
+		queries.GetHomologationValidations(deviceId, countryId, companyId), findOptions)
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			return nil, nil
+		default:
+			return nil, err
+		}
 	}
+	if err = cursor.All(context.TODO(), &homologations); err != nil {
+		return nil, err
+	}
+	if len(homologations) > 0 {
+		return homologations[0], nil
+	}
+
+	return nil, nil
 }
 func (r *homologationRepository) GetByInternal(companies []primitive.ObjectID,
 	devices []primitive.ObjectID, countries []primitive.ObjectID) ([]*responses.HomologationExpanded, error) {
@@ -167,27 +179,32 @@ func (r *homologationRepository) CreateFailTestResult(id string, testResult *mod
 	return nil
 }
 
-// func (r *homologationRepository) GetGroupedByDate(companies []primitive.ObjectID, devices []primitive.ObjectID,
-// 	countries []primitive.ObjectID) error {
+func (r *homologationRepository) GetGroupedByTypeCountry(companies []primitive.ObjectID,
+	devices []primitive.ObjectID, countries []primitive.ObjectID) ([]*responses.ChartTypeCountry, error) {
 
-// 	cursor, err := homologationCollection.Aggregate(context.TODO(),
-// 		queries.GetHomologations(companies, devices, countries, true, primitive.ObjectID{}))
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	var homologations []*responses.HomologationExpanded = []*responses.HomologationExpanded{}
-// 	for cursor.Next(context.TODO()) {
-// 		var homologation *responses.HomologationExpanded
-// 		err := cursor.Decode(&homologation)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		functions.SetHomologationDatesToNull(homologation)
-// 		homologations = append(homologations, homologation)
-// 	}
+	homologationQuery := queries.GetHomologations(companies, devices, countries, true, primitive.ObjectID{})
+	groupedQuery := queries.GetHomologationsGroupedCountryApprovalType()
+	sort := queries.SortGroupedCountryApprovalType()
+	homologationQuery = append(homologationQuery, groupedQuery)
+	homologationQuery = append(homologationQuery, sort)
 
-// 	return homologations, nil
-// }
+	cursor, err := homologationCollection.Aggregate(context.TODO(),
+		homologationQuery)
+	if err != nil {
+		return nil, err
+	}
+	var charts []*responses.ChartTypeCountry = []*responses.ChartTypeCountry{}
+	for cursor.Next(context.TODO()) {
+		var chart *responses.ChartTypeCountry
+		err := cursor.Decode(&chart)
+		if err != nil {
+			return nil, err
+		}
+		charts = append(charts, chart)
+	}
+
+	return charts, nil
+}
 func (r *homologationRepository) PhaseChange(id string, homologation *models.Homologation) error {
 
 	oid, err := primitive.ObjectIDFromHex(id)
