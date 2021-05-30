@@ -64,6 +64,9 @@ var (
 
 	dashboardService    services.IDashboardService       = services.NewDashboardService(homologationRepository, userRepository)
 	dashboardController controllers.IDashboardController = controllers.NewDashboardController(dashboardService)
+
+	kpiService    services.IKpiService       = services.NewKpiService(homologationRepository, userRepository)
+	kpiController controllers.IKpiController = controllers.NewKpiController(kpiService)
 )
 
 func main() {
@@ -177,6 +180,10 @@ func main() {
 		dashboard := v1.Group("/dashboard")
 		{
 			dashboard.GET("", dashboardController.Get())
+		}
+		kpi := v1.Group("/kpi")
+		{
+			kpi.GET("/volume", kpiController.GetVolumeChart())
 		}
 	}
 

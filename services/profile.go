@@ -104,7 +104,7 @@ func (s *profileService) Update(id string, profileRequest *request.Profile) erro
 	return nil
 }
 func (s *profileService) Delete(id string) (bool, error) {
-	err, canDelete := s.profileRepository.Delete(id)
+	canDelete, err := s.profileRepository.Delete(id)
 
 	if err != nil {
 		return canDelete, err

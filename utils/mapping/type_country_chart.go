@@ -9,7 +9,7 @@ import (
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 )
 
-func TypeCountriesToTypeCountriesCharts(charttypeCountries []*responses.ChartTypeCountry) *responses.DashboardChart {
+func TypeCountriesToTypeCountriesCharts(chartTypeCountries []*responses.ChartTypeCountry) *responses.DashboardChart {
 
 	countriesMap := make(map[string]responses.StackedSerieChart)
 	timeMap := make(map[string]bool)
@@ -19,7 +19,7 @@ func TypeCountriesToTypeCountriesCharts(charttypeCountries []*responses.ChartTyp
 	pieSerie := make(map[string]int)
 	certificationSerie := make(map[string][3]int)
 	var countries []string
-	for _, tc := range charttypeCountries {
+	for _, tc := range chartTypeCountries {
 
 		certificationSerie = InsertCertificationChart(certificationSerie, tc.Keys.Country[0:3], tc.Keys.Type, tc.Count)
 		countPieSerie := pieSerie[enums.HomologationType_key[tc.Keys.Type]]
@@ -89,26 +89,3 @@ func InsertCertificationChart(certificationSerie map[string][3]int, key string,
 	certificationSerie[string(key)] = countCertificationSerie
 	return certificationSerie
 }
-
-// categoriesGrouped := make(map[string]responses.CategoryResult)
-
-// for _, t := range homologation.TestResults {
-
-// 	value := categoriesGrouped[t.TestCategory.Name]
-
-// 	if t.Result == enums.TestResult_value["FAIL"] {
-// 		value.Fail++
-// 	} else if t.Result == enums.TestResult_value["PASS"] {
-// 		value.Pass++
-// 	} else if t.Result == enums.TestResult_value["NA"] {
-// 		value.NA++
-// 	} else {
-// 		value.NoRun++
-// 	}
-// 	var testCaseResume responses.TestCaseResume
-// 	testCaseResume.Code = t.Code
-// 	testCaseResume.Name = t.Name
-// 	testCaseResume.Result = t.Result
-// 	value.TestCaseResume = append(value.TestCaseResume, testCaseResume)
-// 	categoriesGrouped[t.TestCategory.Name] = value
-// }

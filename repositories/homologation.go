@@ -30,7 +30,10 @@ type IHomologationRepository interface {
 	GetGroupedByTypeCountry(companies []primitive.ObjectID,
 		devices []primitive.ObjectID, countries []primitive.ObjectID) ([]*responses.ChartTypeCountry, error)
 	PhaseChange(string, *models.Homologation) error
-	// GetHomologationFails(primitive.ObjectID) (*responses.Homologation, error)
+	GetGroupedByBrandCountry(companies []primitive.ObjectID,
+		devices []primitive.ObjectID, countries []primitive.ObjectID) ([]*responses.ChartVolumeCountry, error)
+	GetGroupedByBrandType(companies []primitive.ObjectID,
+		devices []primitive.ObjectID, countries []primitive.ObjectID) ([]*responses.ChartVolumeType, error)
 }
 type homologationRepository struct {
 }
@@ -178,6 +181,23 @@ func (r *homologationRepository) CreateFailTestResult(id string, testResult *mod
 
 	return nil
 }
+func (r *homologationRepository) PhaseChange(id string, homologation *models.Homologation) error {
+
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	filter, update := queries.UpdatePhaseChange(homologation, oid)
+
+	_, err = homologationCollection.UpdateOne(context.TODO(), filter, update)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func (r *homologationRepository) GetGroupedByTypeCountry(companies []primitive.ObjectID,
 	devices []primitive.ObjectID, countries []primitive.ObjectID) ([]*responses.ChartTypeCountry, error) {
@@ -205,20 +225,56 @@ func (r *homologationRepository) GetGroupedByTypeCountry(companies []primitive.O
 
 	return charts, nil
 }
-func (r *homologationRepository) PhaseChange(id string, homologation *models.Homologation) error {
 
-	oid, err := primitive.ObjectIDFromHex(id)
+func (r *homologationRepository) GetGroupedByBrandCountry(companies []primitive.ObjectID,
+	devices []primitive.ObjectID, countries []primitive.ObjectID) ([]*responses.ChartVolumeCountry, error) {
+
+	homologationQuery := queries.GetHomologations(companies, devices, countries, true, primitive.ObjectID{})
+	groupedQuery := queries.GetHomologationsGroupedCountryBrand()
+	sort := queries.SortGroupedCountryBrand()
+	homologationQuery = append(homologationQuery, groupedQuery)
+	homologationQuery = append(homologationQuery, sort)
+
+	cursor, err := homologationCollection.Aggregate(context.TODO(),
+		homologationQuery)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	var charts []*responses.ChartVolumeCountry = []*responses.ChartVolumeCountry{}
+	for cursor.Next(context.TODO()) {
+		var chart *responses.ChartVolumeCountry
+		err := cursor.Decode(&chart)
+		if err != nil {
+			return nil, err
+		}
+		charts = append(charts, chart)
 	}
 
-	filter, update := queries.UpdatePhaseChange(homologation, oid)
+	return charts, nil
+}
+func (r *homologationRepository) GetGroupedByBrandType(companies []primitive.ObjectID,
+	devices []primitive.ObjectID, countries []primitive.ObjectID) ([]*responses.ChartVolumeType, error) {
 
-	_, err = homologationCollection.UpdateOne(context.TODO(), filter, update)
+	homologationQuery := queries.GetHomologations(companies, devices, countries, true, primitive.ObjectID{})
+	groupedQuery := queries.GetHomologationsGroupedTypeBrand()
+	sort := queries.SortGroupedBrandType()
+	homologationQuery = append(homologationQuery, groupedQuery)
+	homologationQuery = append(homologationQuery, sort)
 
+	cursor, err := homologationCollection.Aggregate(context.TODO(),
+		homologationQuery)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	var charts []*responses.ChartVolumeType = []*responses.ChartVolumeType{}
+	for cursor.Next(context.TODO()) {
+		var chart *responses.ChartVolumeType
+		err := cursor.Decode(&chart)
+		if err != nil {
+			return nil, err
+		}
+		charts = append(charts, chart)
 	}
 
-	return nil
+	return charts, nil
 }

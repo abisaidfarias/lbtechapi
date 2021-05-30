@@ -18,7 +18,7 @@ type IProfileRepository interface {
 	GetById(string) (*responses.Profile, error)
 	GetByCompany(primitive.ObjectID) ([]*bson.M, error)
 	Update(string, *models.Profile) error
-	Delete(string) (error, bool)
+	Delete(string) (bool, error)
 }
 
 type profileRepository struct {
@@ -97,28 +97,28 @@ func (r *profileRepository) Update(id string, profile *models.Profile) error {
 
 	return nil
 }
-func (r *profileRepository) Delete(id string) (error, bool) {
+func (r *profileRepository) Delete(id string) (bool, error) {
 	oid, err := primitive.ObjectIDFromHex(id)
 
 	cursor, err := userCollection.Find(context.TODO(), queries.GetUsersProfileId(id))
 	if err != nil {
-		return err, false
+		return false, err
 	}
 
 	var users []*responses.User
 	if err = cursor.All(context.TODO(), &users); err != nil {
-		return err, false
+		return false, err
 	}
 	if len(users) > 0 {
-		return nil, false
+		return false, nil
 	}
 	_, err = profileCollection.DeleteOne(context.TODO(), queries.DeleteProfile(oid))
 
 	if err != nil {
-		return err, false
+		return false, err
 	}
 
-	return nil, true
+	return true, nil
 }
 func (r *profileRepository) GetByCompany(companyID primitive.ObjectID) ([]*bson.M, error) {
 

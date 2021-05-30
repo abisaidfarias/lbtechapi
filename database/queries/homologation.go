@@ -134,18 +134,55 @@ func GetHomologationsGroupedCountryApprovalType() bson.D {
 	return bson.D{
 		primitive.E{Key: "$group", Value: bson.D{
 			primitive.E{Key: "_id", Value: bson.D{
-				primitive.E{Key: "type", Value: "$type"},
-				primitive.E{Key: "country", Value: "$country.name"},
-				primitive.E{Key: "month", Value: bson.D{
-					primitive.E{Key: "$month", Value: "$test_start_date"},
-				}},
 				primitive.E{Key: "year", Value: bson.D{
 					primitive.E{Key: "$year", Value: "$test_start_date"},
 				}},
+				primitive.E{Key: "month", Value: bson.D{
+					primitive.E{Key: "$month", Value: "$test_start_date"},
+				}},
+				primitive.E{Key: "country", Value: "$country.name"},
+				primitive.E{Key: "type", Value: "$type"},
 			}},
 			primitive.E{Key: "count", Value: bson.D{
 				primitive.E{Key: "$sum", Value: 1},
 			}},
+		}}}
+
+}
+func GetHomologationsGroupedCountryBrand() bson.D {
+
+	return bson.D{
+		primitive.E{Key: "$group", Value: bson.D{
+			primitive.E{Key: "_id", Value: bson.D{
+				primitive.E{Key: "country", Value: "$country.name"},
+				primitive.E{Key: "brand", Value: "$brand.name"},
+			}},
+			primitive.E{Key: "count", Value: bson.D{
+				primitive.E{Key: "$sum", Value: 1},
+			}},
+		}}}
+
+}
+func GetHomologationsGroupedTypeBrand() bson.D {
+
+	return bson.D{
+		primitive.E{Key: "$group", Value: bson.D{
+			primitive.E{Key: "_id", Value: bson.D{
+				primitive.E{Key: "type", Value: "$type"},
+				primitive.E{Key: "brand", Value: "$brand.name"},
+			}},
+			primitive.E{Key: "count", Value: bson.D{
+				primitive.E{Key: "$sum", Value: 1},
+			}},
+		}}}
+
+}
+func SortGroupedBrandType() bson.D {
+
+	return bson.D{
+		primitive.E{Key: "$sort", Value: bson.D{
+			primitive.E{Key: "_id.brand", Value: 1},
+			primitive.E{Key: "_id.type", Value: 1},
 		}}}
 
 }
@@ -157,6 +194,15 @@ func SortGroupedCountryApprovalType() bson.D {
 			primitive.E{Key: "_id.month", Value: 1},
 			primitive.E{Key: "_id.country", Value: 1},
 			primitive.E{Key: "_id.type", Value: 1},
+		}}}
+
+}
+func SortGroupedCountryBrand() bson.D {
+
+	return bson.D{
+		primitive.E{Key: "$sort", Value: bson.D{
+			primitive.E{Key: "_id.country", Value: 1},
+			primitive.E{Key: "_id.brand", Value: 1},
 		}}}
 
 }
