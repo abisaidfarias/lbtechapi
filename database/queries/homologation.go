@@ -81,6 +81,7 @@ func GetHomologations(companies []primitive.ObjectID,
 			primitive.E{Key: "path", Value: "$brand"},
 			primitive.E{Key: "preserveNullAndEmptyArrays", Value: true},
 		}}}
+
 	var matchStage bson.D
 	var objectStage bson.D
 	var hasStage bool

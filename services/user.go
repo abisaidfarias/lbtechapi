@@ -120,7 +120,7 @@ func (s *userService) Delete(id string) error {
 }
 func (s *userService) GetProfileByID(id string) (*responses.Profile, error) {
 
-	oid, err := primitive.ObjectIDFromHex(id)
+	oid, _ := primitive.ObjectIDFromHex(id)
 	profile, err := s.userRepository.GetProfileByID(oid)
 
 	if err != nil {

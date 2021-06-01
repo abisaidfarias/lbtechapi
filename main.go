@@ -183,7 +183,8 @@ func main() {
 		}
 		kpi := v1.Group("/kpi")
 		{
-			kpi.GET("/volume", kpiController.GetVolumeChart())
+			kpi.GET("/volume/:start/:end", kpiController.GetVolumeChart())
+			kpi.GET("/time/:start/:end", kpiController.GetTimeChart())
 		}
 	}
 
