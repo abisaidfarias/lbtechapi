@@ -21,6 +21,9 @@ func TypeCountriesToTypeCountriesCharts(chartTypeCountries []*responses.ChartTyp
 	var countries []string
 	for _, tc := range chartTypeCountries {
 
+		if tc.Keys.Year == 1 {
+			continue
+		}
 		certificationSerie = InsertCertificationChart(certificationSerie, tc.Keys.Country[0:3], tc.Keys.Type, tc.Count)
 		countPieSerie := pieSerie[enums.HomologationType_key[tc.Keys.Type]]
 		countPieSerie++
