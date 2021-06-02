@@ -238,7 +238,7 @@ func (s *homologationService) CreateFailTestResult(id string, testResultRequest 
 	}
 
 	testResult := mapping.TestResultRequestToTestResult(testResultRequest)
-	testResult.TestCategory = failCategory
+	testResult.TestCategory = *failCategory
 
 	err = s.homologationRepository.CreateFailTestResult(id, testResult)
 	if err != nil {

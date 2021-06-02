@@ -20,8 +20,8 @@ type ITestCategoryRepository interface {
 	Get() ([]*responses.TestCategory, error)
 	GetSimple() ([]*responses.TestCategory, error)
 	GetByIds([]primitive.ObjectID) ([]*responses.TestCategoryExpanded, error)
-	GetOtherCategory() (models.TestCategory, error)
-	CreateOtherCategory() (models.TestCategory, error)
+	GetOtherCategory() (*models.TestCategory, error)
+	CreateOtherCategory() (*models.TestCategory, error)
 }
 
 type testCategoryRepository struct {
@@ -132,23 +132,21 @@ func (r *testCategoryRepository) GetByIds(categoriesId []primitive.ObjectID) ([]
 	return testCategories, nil
 
 }
-func (r *testCategoryRepository) GetOtherCategory() (models.TestCategory, error) {
+func (r *testCategoryRepository) GetOtherCategory() (*models.TestCategory, error) {
 
-	var testCategory models.TestCategory
-	err := homologationCollection.FindOne(context.TODO(),
-		queries.GetOtherCategory()).Decode(testCategory)
+	var testCategory *models.TestCategory
+	err := testCategoryCollection.FindOne(context.TODO(),
+		queries.GetOtherCategory()).Decode(&testCategory)
 	switch err {
 	case mongo.ErrNoDocuments:
-		return testCategory, nil
-	case nil:
-		return testCategory, nil
-	default:
 		return testCategory, err
+	default:
+		return testCategory, nil
 	}
 }
-func (r *testCategoryRepository) CreateOtherCategory() (models.TestCategory, error) {
+func (r *testCategoryRepository) CreateOtherCategory() (*models.TestCategory, error) {
 
-	var otherCategory models.TestCategory
+	var otherCategory *models.TestCategory
 	otherCategory.Name = utils.OtherCategory
 	res, err := testCategoryCollection.InsertOne(context.TODO(), otherCategory)
 
