@@ -9,6 +9,7 @@ import (
 // IDashboardService is the dashboard service
 type IDashboardService interface {
 	Get(string) (*responses.DashboardChart, error)
+	GetGeneralInfo(string) (*responses.DashboardInfo, error)
 }
 
 type dashboardService struct {
@@ -38,4 +39,23 @@ func (s *dashboardService) Get(userID string) (*responses.DashboardChart, error)
 		return nil, err
 	}
 	return mapping.TypeCountriesToTypeCountriesCharts(chartTypeCountry), nil
+}
+func (s *dashboardService) GetGeneralInfo(userID string) (*responses.DashboardInfo, error) {
+	user, err := s.userRepository.GetByIDExpanded(userID)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, nil
+	}
+	response := new(responses.DashboardInfo)
+	response.CompanyName = user.Company.Name
+	response.LogoImage = "https://lbtechfilestorage.blob.core.windows.net/images/5708700001266629581.jpg"
+	response.TotalFinished = 10
+	response.TotalOngoing = 6
+	response.TotalPlanning = 8
+	response.TotalSampleReception = 9
+	response.Month = "September"
+
+	return response, nil
 }

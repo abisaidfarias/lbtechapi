@@ -34,6 +34,25 @@ func DeleteUser(oid primitive.ObjectID) primitive.M {
 func GetUserById(oid primitive.ObjectID) primitive.M {
 	return primitive.M{"_id": oid}
 }
+func GetUserExpandedById(oid primitive.ObjectID) []bson.D {
+	lookupStageCompany := bson.D{
+		primitive.E{Key: "$lookup", Value: bson.D{
+			primitive.E{Key: "from", Value: "companies"},
+			primitive.E{Key: "localField", Value: "company"},
+			primitive.E{Key: "foreignField", Value: "_id"},
+			primitive.E{Key: "as", Value: "company"},
+		}}}
+	unwindStageCompany := bson.D{
+		primitive.E{Key: "$unwind", Value: bson.D{
+			primitive.E{Key: "path", Value: "$company"},
+			primitive.E{Key: "preserveNullAndEmptyArrays", Value: false},
+		}}}
+	matchStage := bson.D{
+		primitive.E{Key: "$match", Value: bson.D{
+			primitive.E{Key: "_id", Value: oid},
+		}}}
+	return mongo.Pipeline{lookupStageCompany, unwindStageCompany, matchStage}
+}
 func GetUserByEmail(email string) primitive.M {
 	return primitive.M{"email": email}
 }

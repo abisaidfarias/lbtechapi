@@ -24,6 +24,7 @@ type IUserRepository interface {
 	Update(string, *models.User) error
 	Delete(string) error
 	ChangePassword(string, string) error
+	GetByIDExpanded(string) (*responses.UserExpanded, error)
 }
 
 type userRepository struct {
@@ -170,4 +171,26 @@ func (r *userRepository) ChangePassword(hashPassword string, email string) error
 	}
 
 	return nil
+}
+func (r *userRepository) GetByIDExpanded(id string) (*responses.UserExpanded, error) {
+
+	oid, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var user *responses.UserExpanded
+
+	cursor, err := userCollection.Aggregate(context.TODO(), queries.GetUserExpandedById(oid))
+	if err != nil {
+		return nil, err
+	}
+	for cursor.Next(context.TODO()) {
+		err := cursor.Decode(&user)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return user, nil
 }

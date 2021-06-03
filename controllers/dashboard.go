@@ -10,6 +10,7 @@ import (
 // IUserController controller
 type IDashboardController interface {
 	Get() gin.HandlerFunc
+	GetGeneralInfo() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
@@ -30,6 +31,21 @@ func (c *dashboardController) Get() gin.HandlerFunc {
 
 		userID := ctx.MustGet("userID").(string)
 		dashboards, err := c.dashboardService.Get(userID)
+
+		if err != nil {
+			handleErrorResponse(ctx, err)
+			return
+		}
+
+		ctx.JSON(http.StatusOK, dashboards)
+	}
+
+}
+func (c *dashboardController) GetGeneralInfo() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		userID := ctx.MustGet("userID").(string)
+		dashboards, err := c.dashboardService.GetGeneralInfo(userID)
 
 		if err != nil {
 			handleErrorResponse(ctx, err)

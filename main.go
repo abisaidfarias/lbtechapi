@@ -180,6 +180,7 @@ func main() {
 		dashboard := v1.Group("/dashboard")
 		{
 			dashboard.GET("", dashboardController.Get())
+			dashboard.GET("/info", dashboardController.GetGeneralInfo())
 		}
 		kpi := v1.Group("/kpi")
 		{
