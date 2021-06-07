@@ -59,12 +59,14 @@ func DeviceRequestToDevice(device *request.Device) *models.Device {
 		ImageUrl:               device.ImageUrl,
 	}
 }
-func DeviceToDeviceResponse(device *models.Device) *responses.Device {
+func DeviceToDeviceResponse(device *models.Device) *responses.DeviceExpanded {
 
-	return &responses.Device{
+	brand := new(responses.Brand)
+	brand.ID = device.Brand
+	return &responses.DeviceExpanded{
 		ID:                     device.ID,
 		Type:                   device.Type,
-		Brand:                  device.Brand.Hex(),
+		Brand:                  *brand,
 		CommercialModel:        device.CommercialModel,
 		TechnicalModel:         device.TechnicalModel,
 		DisplayType:            device.DisplayType,

@@ -13,7 +13,7 @@ import (
 )
 
 type IDeviceRepository interface {
-	Create(*models.Device) (*responses.Device, error)
+	Create(*models.Device) (*responses.DeviceExpanded, error)
 	Get() ([]*responses.DeviceExpanded, error)
 	GetById(string) (*responses.Device, error)
 	Update(string, *models.Device) error
@@ -30,7 +30,7 @@ func NewDeviceRepository() IDeviceRepository {
 var deviceCollection = database.GetInstance().Collection("devices")
 
 // Create a new tet case
-func (r *deviceRepository) Create(device *models.Device) (*responses.Device, error) {
+func (r *deviceRepository) Create(device *models.Device) (*responses.DeviceExpanded, error) {
 
 	res, err := deviceCollection.InsertOne(context.TODO(), device)
 	if err != nil {

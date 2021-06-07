@@ -61,9 +61,12 @@ func (s *homologationService) Create(homologationRequest *request.Homologation) 
 		return err, nil
 	}
 	ids := functions.StringsToObjectIds(homologationRequest.TestCategories)
-	categories, err := s.testCategoryRepository.GetByIds(ids)
-	if err != nil {
-		return nil, err
+	var categories []*responses.TestCategoryExpanded = []*responses.TestCategoryExpanded{}
+	if len(ids) > 0 {
+		categories, err = s.testCategoryRepository.GetByIds(ids)
+		if err != nil {
+			return nil, err
+		}
 	}
 	homologation := mapping.HomologationRequestToHomologation(homologationRequest,
 		categories, companyID, deviceID, countryID, testPlanID, brandID)
