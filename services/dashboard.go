@@ -55,7 +55,7 @@ func (s *dashboardService) GetGeneralInfo(userID string) (*responses.DashboardIn
 	response.TotalOngoing = 6
 	response.TotalPlanning = 8
 	response.TotalSampleReception = 9
-	response.Month = "September"
+	response.Month = "December"
 
 	return response, nil
 }

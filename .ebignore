@@ -1,0 +1,18 @@
+#Ignore source Files
+
+controllers/
+database/
+middlewares/
+models/
+repositories/
+services/
+utils/
+viewmodels/
+main.go
+go.mod
+go.sum
+Dockerfile
+
+#Ignore git Files
+.git/
+.gitignore
