@@ -9,6 +9,7 @@ import (
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/database/queries"
 	"github.com/abisaidfarias/lbtechapi/models"
+	"github.com/abisaidfarias/lbtechapi/utils/mapping"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 )
 
@@ -38,17 +39,25 @@ func (r *printerRepository) Create(printer *models.Printer) error {
 		switch err {
 		case mongo.ErrNoDocuments:
 			_, err := printerCollection.InsertOne(context.TODO(), printer)
-
 			if err != nil {
 				return err
 			}
 		default:
 			return err
 		}
-	}else{
-		filter, update := queries.UpdatePrinterRegistry(printerExist, printerExist.ID)
+	} else {
+		filter, update := queries.UpdatePrinter(printer, printerExist.ID)
 
-		_, err = deviceCollection.UpdateOne(context.TODO(), filter, update)
+		_, err = printerCollection.UpdateOne(context.TODO(), filter, update)
+
+		if err != nil {
+			return err
+		}
+
+		detail := mapping.PrinterToDetail(printer)
+		filter, update = queries.UpdatePrinterRegistry(detail, printerExist.ID)
+
+		_, err = printerCollection.UpdateOne(context.TODO(), filter, update)
 
 		if err != nil {
 			return err

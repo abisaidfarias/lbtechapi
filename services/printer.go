@@ -30,11 +30,11 @@ func NewPrinterService(printerRepository repositories.IPrinterRepository) IPrint
 // Create creates a new cateogry
 func (s *printerService) Create(printerRequest *request.Printer) error {
 
-	printer := mapping.PrinterRequestToPrinter(printerRequest)
-	remTonner, _ := strconv.ParseFloat(printer.RemToner, 64)
-	maxTonner, _ := strconv.ParseFloat(printer.MaxTonner, 64)
+	remTonner, _ := strconv.ParseFloat(printerRequest.RemToner, 64)
+	maxTonner, _ := strconv.ParseFloat(printerRequest.MaxToner, 64)
 	totalDiv := (remTonner / maxTonner) * 100
-	printer.PercentageTonner = fmt.Sprintf("%f", totalDiv) + "%"
+	percentageTonner := fmt.Sprintf("%.0f", totalDiv) + "%"
+	printer := mapping.PrinterRequestToPrinter(printerRequest, percentageTonner)
 
 	err := s.printerRepository.Create(printer)
 
