@@ -67,6 +67,10 @@ var (
 
 	kpiService    services.IKpiService       = services.NewKpiService(homologationRepository, userRepository)
 	kpiController controllers.IKpiController = controllers.NewKpiController(kpiService)
+
+	printerRepository repositories.IPrinterRepository = repositories.NewPrinterRepository()
+	printerService    services.IPrinterService        = services.NewPrinterService(printerRepository)
+	printerController controllers.IPrinterController  = controllers.NewPrinterController(printerService)
 )
 
 func main() {
@@ -92,7 +96,11 @@ func main() {
 		v1.GET("/health", func(ctx *gin.Context) {
 			ctx.JSON(http.StatusOK, gin.H{"status": "server is up"})
 		})
-
+		printer := v1.Group("/printer")
+		{
+			printer.GET("", printerController.Get())
+			printer.POST("", printerController.Create())
+		}
 		v1.POST("/sign-in", authController.SignIn())
 		v1.Use(middlewares.AuthMiddleware())
 

@@ -94,7 +94,11 @@ func initDB() *mongo.Database {
 			"commercial_model": 1,
 		}, Options: options.Index().SetUnique(true),
 	}
-
+	indexPrinterSerial := mongo.IndexModel{
+		Keys: bson.M{
+			"serial": 1,
+		}, Options: options.Index().SetUnique(true),
+	}
 	database.Collection("users").Indexes().CreateOne(context.Background(), indexEmail)
 	database.Collection("test_cases").Indexes().CreateOne(context.Background(), indexCode)
 	database.Collection("test_categories").Indexes().CreateOne(context.Background(), indexTestCategoryName)
@@ -104,6 +108,7 @@ func initDB() *mongo.Database {
 	database.Collection("brands").Indexes().CreateOne(context.Background(), indexBrandName)
 	database.Collection("countries").Indexes().CreateOne(context.Background(), indexCountryName)
 	database.Collection("devices").Indexes().CreateOne(context.Background(), indexDeviceCommercialName)
+	database.Collection("printers").Indexes().CreateOne(context.Background(), indexPrinterSerial)
 	return database
 }
 func GetMongoDBClient() *mongo.Client {

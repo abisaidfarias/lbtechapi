@@ -51,11 +51,11 @@ func (s *dashboardService) GetGeneralInfo(userID string) (*responses.DashboardIn
 	response := new(responses.DashboardInfo)
 	response.CompanyName = user.Company.Name
 	response.LogoImage = "https://lbtechfilestorage.blob.core.windows.net/images/5708700001266629581.jpg"
-	response.TotalFinished = 10
-	response.TotalOngoing = 6
-	response.TotalPlanning = 8
-	response.TotalSampleReception = 9
-	response.Month = "December"
+	response.TotalFinished = 109
+	response.TotalOngoing = 69
+	response.TotalPlanning = 89
+	response.TotalSampleReception = 99
+	response.Month = "January"
 
 	return response, nil
 }
