@@ -10,38 +10,38 @@ import (
 )
 
 // IUserController controller
-type IBrandController interface {
+type ILocationController interface {
 	Create() gin.HandlerFunc
 	Get() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
-type brandController struct {
-	brandService services.IBrandService
+type locationController struct {
+	locationService services.ILocationService
 }
 
 //NewUserController is the constructor
-func NewBrandController(brandService services.IBrandService) IBrandController {
-	return &brandController{
-		brandService: brandService,
+func NewLocationController(locationService services.ILocationService) ILocationController {
+	return &locationController{
+		locationService: locationService,
 	}
 }
 
 // Create creates a category
-func (c *brandController) Create() gin.HandlerFunc {
+func (c *locationController) Create() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 
-		var brand request.Brand
+		var location request.Location
 
-		err := ctx.ShouldBindJSON(&brand)
+		err := ctx.ShouldBindJSON(&location)
 
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		id, err := c.brandService.Create(&brand)
+		id, err := c.locationService.Create(&location)
 
 		if err != nil {
 			if utils.ErrorDuplicatedData(err) {
@@ -58,17 +58,17 @@ func (c *brandController) Create() gin.HandlerFunc {
 }
 
 // Get list all categories
-func (c *brandController) Get() gin.HandlerFunc {
+func (c *locationController) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
-		brands, err := c.brandService.Get()
+		locations, err := c.locationService.Get()
 
 		if err != nil {
 			handleErrorResponse(ctx, err)
 			return
 		}
 
-		ctx.JSON(http.StatusOK, brands)
+		ctx.JSON(http.StatusOK, locations)
 	}
 
 }

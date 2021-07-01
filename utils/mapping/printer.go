@@ -37,9 +37,9 @@ func PrinterRequestToPrinter(printer *request.Printer, percentageTonner string) 
 		Details:          details,
 	}
 }
-func PrinterToDetail(printer *models.Printer) *models.Detail {
+func PrinterToDetail(printer *models.Printer) models.Detail {
 
-	return &models.Detail{
+	return models.Detail{
 		Pages:            printer.Pages,
 		Location:         printer.Location,
 		MaxTonner:        printer.MaxTonner,

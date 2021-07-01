@@ -83,9 +83,8 @@ func (c *deviceController) Get() gin.HandlerFunc {
 func (c *deviceController) GetById() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
-		var id string
 
-		id = ctx.Param("id")
+		id := ctx.Param("id")
 
 		if id == "" {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("%w", utils.ErrorInvalidURLParams)})
@@ -109,9 +108,7 @@ func (c *deviceController) Update() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 
-		var id string
-
-		id = ctx.Param("id")
+		id := ctx.Param("id")
 
 		var device request.Device
 
@@ -143,9 +140,8 @@ func (c *deviceController) Update() gin.HandlerFunc {
 func (c *deviceController) Delete() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
-		var id string
 
-		id = ctx.Param("id")
+		id := ctx.Param("id")
 
 		err := c.deviceService.Delete(id)
 		if err != nil {

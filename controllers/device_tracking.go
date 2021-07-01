@@ -10,38 +10,38 @@ import (
 )
 
 // IUserController controller
-type IBrandController interface {
+type IDeviceTrackingController interface {
 	Create() gin.HandlerFunc
 	Get() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
-type brandController struct {
-	brandService services.IBrandService
+type deviceTrackingController struct {
+	deviceTrackingService services.IDeviceTrackingService
 }
 
 //NewUserController is the constructor
-func NewBrandController(brandService services.IBrandService) IBrandController {
-	return &brandController{
-		brandService: brandService,
+func NewDeviceTrackingController(deviceTrackingService services.IDeviceTrackingService) IDeviceTrackingController {
+	return &deviceTrackingController{
+		deviceTrackingService: deviceTrackingService,
 	}
 }
 
 // Create creates a category
-func (c *brandController) Create() gin.HandlerFunc {
+func (c *deviceTrackingController) Create() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 
-		var brand request.Brand
+		var deviceTracking request.DeviceTracking
 
-		err := ctx.ShouldBindJSON(&brand)
+		err := ctx.ShouldBindJSON(&deviceTracking)
 
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		id, err := c.brandService.Create(&brand)
+		err = c.deviceTrackingService.Create(&deviceTracking)
 
 		if err != nil {
 			if utils.ErrorDuplicatedData(err) {
@@ -53,22 +53,22 @@ func (c *brandController) Create() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusCreated, gin.H{"id": id})
+		ctx.Status(http.StatusCreated)
 	}
 }
 
 // Get list all categories
-func (c *brandController) Get() gin.HandlerFunc {
+func (c *deviceTrackingController) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-
-		brands, err := c.brandService.Get()
+		userID := ctx.MustGet("userID").(string)
+		deviceTrackings, err := c.deviceTrackingService.Get(userID)
 
 		if err != nil {
 			handleErrorResponse(ctx, err)
 			return
 		}
 
-		ctx.JSON(http.StatusOK, brands)
+		ctx.JSON(http.StatusOK, deviceTrackings)
 	}
 
 }

@@ -71,6 +71,14 @@ var (
 	printerRepository repositories.IPrinterRepository = repositories.NewPrinterRepository()
 	printerService    services.IPrinterService        = services.NewPrinterService(printerRepository)
 	printerController controllers.IPrinterController  = controllers.NewPrinterController(printerService)
+
+	locationRepository repositories.ILocationRepository = repositories.NewLocationRepository()
+	locationService    services.ILocationService        = services.NewLocationService(locationRepository)
+	locationController controllers.ILocationController  = controllers.NewLocationController(locationService)
+
+	deviceTrackingRepository repositories.IDeviceTrackingRepository = repositories.NewDeviceTrackingRepository()
+	deviceTrackingService    services.IDeviceTrackingService        = services.NewDeviceTrackingService(deviceTrackingRepository, userRepository)
+	deviceTrackingController controllers.IDeviceTrackingController  = controllers.NewDeviceTrackingController(deviceTrackingService)
 )
 
 func main() {
@@ -194,6 +202,16 @@ func main() {
 		{
 			kpi.GET("/volume/:start/:end", kpiController.GetVolumeChart())
 			kpi.GET("/time/:start/:end", kpiController.GetTimeChart())
+		}
+		location := v1.Group("/location")
+		{
+			location.POST("", locationController.Create())
+			location.GET("", locationController.Get())
+		}
+		deviceTracking := v1.Group("/device-tracking")
+		{
+			deviceTracking.POST("", deviceTrackingController.Create())
+			deviceTracking.GET("", deviceTrackingController.Get())
 		}
 	}
 

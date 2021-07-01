@@ -46,16 +46,11 @@ func (r *printerRepository) Create(printer *models.Printer) error {
 			return err
 		}
 	} else {
-		filter, update := queries.UpdatePrinter(printer, printerExist.ID)
-
-		_, err = printerCollection.UpdateOne(context.TODO(), filter, update)
-
-		if err != nil {
-			return err
-		}
 
 		detail := mapping.PrinterToDetail(printer)
-		filter, update = queries.UpdatePrinterRegistry(detail, printerExist.ID)
+		printerExist.Details = append(printerExist.Details, detail)
+		printer.Details = printerExist.Details
+		filter, update := queries.UpdatePrinter(printer, printerExist.ID)
 
 		_, err = printerCollection.UpdateOne(context.TODO(), filter, update)
 
