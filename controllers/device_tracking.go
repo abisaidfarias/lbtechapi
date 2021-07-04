@@ -13,6 +13,7 @@ import (
 type IDeviceTrackingController interface {
 	Create() gin.HandlerFunc
 	Get() gin.HandlerFunc
+	AddTrakingLog() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
@@ -71,4 +72,33 @@ func (c *deviceTrackingController) Get() gin.HandlerFunc {
 		ctx.JSON(http.StatusOK, deviceTrackings)
 	}
 
+}
+func (c *deviceTrackingController) AddTrakingLog() gin.HandlerFunc {
+
+	return func(ctx *gin.Context) {
+
+		id := ctx.Param("id")
+		var trackingLog *request.TrackingLog
+
+		err := ctx.ShouldBindJSON(&trackingLog)
+
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		err = c.deviceTrackingService.AddTrakingLog(trackingLog, id)
+
+		if err != nil {
+			if utils.ErrorDuplicatedData(err) {
+				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicated.Error()})
+				return
+			}
+			ctx.Status(http.StatusInternalServerError)
+			handleErrorResponse(ctx, err)
+			return
+		}
+
+		ctx.Status(http.StatusOK)
+	}
 }

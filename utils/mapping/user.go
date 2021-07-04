@@ -48,3 +48,14 @@ func UserToUserResponse(user *models.User) *responses.User {
 		Clients:    user.Clients,
 	}
 }
+func UserResumeToUser(userResume *request.UserResume) *models.User {
+
+	id, _ := primitive.ObjectIDFromHex(userResume.UserID)
+	return &models.User{
+		ID:         id,
+		Email:      userResume.Email,
+		Name:       userResume.Name,
+		LastName:   userResume.LastName,
+		IsInternal: userResume.IsInternal,
+	}
+}

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"gopkg.in/mgo.v2/bson"
 
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/database/queries"
@@ -41,19 +40,8 @@ func (r *deviceTrackingRepository) Create(deviceTracking *models.DeviceTracking)
 // Get returns a list of all test cases
 func (r *deviceTrackingRepository) Get(isInternal bool, companyID primitive.ObjectID) ([]*responses.DeviceTracking, error) {
 
-	if isInternal {
-		cursor, err := deviceTrackingCollection.Find(context.TODO(), bson.M{})
-		if err != nil {
-			panic(err)
-		}
-		var deviceTrackings []*responses.DeviceTracking = []*responses.DeviceTracking{}
-		if err = cursor.All(context.TODO(), &deviceTrackings); err != nil {
-			panic(err)
-		}
-		cursor.Close(context.TODO())
-		return deviceTrackings, nil
-	}
-	cursor, err := deviceCollection.Aggregate(context.TODO(), queries.GetDeviceTracking(companyID))
+	cursor, err := deviceTrackingCollection.Aggregate(context.TODO(), 
+		queries.GetDeviceTrackingExpanded(isInternal,companyID))
 	if err != nil {
 		return nil, err
 	}

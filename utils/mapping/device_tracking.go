@@ -9,24 +9,41 @@ import (
 func DeviceTrackinRequestToDeviceTracking(deviceTraking *request.DeviceTracking, imei string) *models.DeviceTracking {
 	companyID, _ := primitive.ObjectIDFromHex(deviceTraking.Company)
 	deviceID, _ := primitive.ObjectIDFromHex(deviceTraking.Device)
-	countryID, _ := primitive.ObjectIDFromHex(deviceTraking.TrackingLog.Country)
-	locationID, _ := primitive.ObjectIDFromHex(deviceTraking.TrackingLog.Location)
-	userID, _ := primitive.ObjectIDFromHex(deviceTraking.TrackingLog.InternalResponsible)
-
+	country, _ := CountryRequestToCountry(&deviceTraking.TrackingLog.Country)
+	location, _ := LocationRequestToLocation(&deviceTraking.TrackingLog.Location)
+	user := UserResumeToUser(&deviceTraking.TrackingLog.InternalResponsible)
 	trackingLog := models.TrackingLog{
-		Country:             countryID,
-		Location:            locationID,
-		InternalResponsible: userID,
+		Country:             *country,
+		Location:            *location,
+		InternalResponsible: *user,
 		ExternalResponsible: deviceTraking.TrackingLog.ExternalResponsible,
 		Comment:             deviceTraking.TrackingLog.Comment,
 		DocumentUrl:         deviceTraking.TrackingLog.DocumentUrl,
 		TrackingDate:        deviceTraking.TrackingLog.TrackingDate,
 	}
+	var trakings []models.TrackingLog = []models.TrackingLog{}
 
+	trakings = append(trakings, trackingLog)
 	return &models.DeviceTracking{
-		Company:     companyID,
-		Device:      deviceID,
-		Imei:        imei,
-		TrackingLog: trackingLog,
+		Company:      companyID,
+		Device:       deviceID,
+		Imei:         imei,
+		TrackingLogs: trakings,
+	}
+}
+func TrackinLogRequestToTrackingLog(trackingLogReq *request.TrackingLog) *models.TrackingLog {
+
+	country, _ := CountryRequestToCountry(&trackingLogReq.Country)
+	location, _ := LocationRequestToLocation(&trackingLogReq.Location)
+	user := UserResumeToUser(&trackingLogReq.InternalResponsible)
+
+	return &models.TrackingLog{
+		Country:             *country,
+		Location:            *location,
+		InternalResponsible: *user,
+		ExternalResponsible: trackingLogReq.ExternalResponsible,
+		Comment:             trackingLogReq.Comment,
+		DocumentUrl:         trackingLogReq.DocumentUrl,
+		TrackingDate:        trackingLogReq.TrackingDate,
 	}
 }

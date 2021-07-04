@@ -1,16 +1,20 @@
 package services
 
 import (
+	"fmt"
+
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/utils/mapping"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // IDeviceTrackingService is the deviceTracking service
 type IDeviceTrackingService interface {
 	Create(*request.DeviceTracking) error
 	Get(string) ([]*responses.Tracking, error)
+	AddTrakingLog(*request.TrackingLog, string) error
 }
 
 type deviceTrackingService struct {
@@ -48,11 +52,39 @@ func (s *deviceTrackingService) Get(userID string) ([]*responses.Tracking, error
 	if err != nil {
 		return nil, err
 	}
-	_, err = s.deviceTrackingRepository.Get(user.IsInternal, user.Company)
-
+	deviceTrackings, err := s.deviceTrackingRepository.Get(user.IsInternal, user.Company)
 	if err != nil {
 		return nil, err
 	}
 
-	return nil, nil
+	trackingGrouped := make(map[string]responses.Tracking)
+	for _, deviceTracking := range deviceTrackings {
+		deviceName := fmt.Sprintf("%s %s",
+			deviceTracking.Device.Brand.Name, deviceTracking.Device.CommercialModel)
+		existTracking := trackingGrouped[deviceName]
+		existTracking.Brand = deviceTracking.Device.Brand.Name
+		existTracking.Model = deviceTracking.Device.CommercialModel
+		existTracking.ImageUrl = deviceTracking.Device.ImageUrl
+		existTracking.DeviceTrackings = append(existTracking.DeviceTrackings, *deviceTracking)
+		trackingGrouped[deviceName] = existTracking
+
+	}
+	var trakings []*responses.Tracking = []*responses.Tracking{}
+	for _, v := range trackingGrouped {
+		trakings = append(trakings, &v)
+	}
+
+	return trakings, nil
+}
+func (s *deviceTrackingService) AddTrakingLog(trackingLogReq *request.TrackingLog,
+	deviceTranckingStr string) error {
+
+	deviceTranckingID, _ := primitive.ObjectIDFromHex(deviceTranckingStr)
+	trackingLog := mapping.TrackinLogRequestToTrackingLog(trackingLogReq)
+
+	err := s.deviceTrackingRepository.AddTrakingLog(trackingLog, deviceTranckingID)
+	if err != nil {
+		return err
+	}
+	return nil
 }
