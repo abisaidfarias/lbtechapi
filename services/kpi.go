@@ -96,7 +96,7 @@ func (s *kpiService) GetTimeChart(userID string, startDate time.Time,
 				countryCount := countryTestingCountMap[tc.Country.Name[0:3]]
 				countryCount[0]++
 				countryTestingCountMap[tc.Country.Name[0:3]] = countryCount
-
+ 
 				brandTotalTime := brandTestingMap[tc.Brand.Name]
 				brandTotalTime[0] += tc.TestEndDate.Sub(*tc.TestStartDate).Hours() / 24
 				brandTestingMap[tc.Brand.Name] = brandTotalTime

@@ -77,8 +77,7 @@ func (c *deviceTrackingController) AddTrakingLog() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 
-		id := ctx.Param("id")
-		var trackingLog *request.TrackingLog
+		var trackingLog *request.TrackingLogMultiple
 
 		err := ctx.ShouldBindJSON(&trackingLog)
 
@@ -87,7 +86,7 @@ func (c *deviceTrackingController) AddTrakingLog() gin.HandlerFunc {
 			return
 		}
 
-		err = c.deviceTrackingService.AddTrakingLog(trackingLog, id)
+		err = c.deviceTrackingService.AddTrakingLog(trackingLog)
 
 		if err != nil {
 			if utils.ErrorDuplicatedData(err) {

@@ -14,7 +14,7 @@ import (
 type IDeviceTrackingService interface {
 	Create(*request.DeviceTracking) error
 	Get(string) ([]*responses.Tracking, error)
-	AddTrakingLog(*request.TrackingLog, string) error
+	AddTrakingLog(*request.TrackingLogMultiple) error
 }
 
 type deviceTrackingService struct {
@@ -64,6 +64,7 @@ func (s *deviceTrackingService) Get(userID string) ([]*responses.Tracking, error
 		existTracking := trackingGrouped[deviceName]
 		existTracking.Brand = deviceTracking.Device.Brand.Name
 		existTracking.Model = deviceTracking.Device.CommercialModel
+		existTracking.ID = deviceTracking.Device.ID
 		existTracking.ImageUrl = deviceTracking.Device.ImageUrl
 		existTracking.DeviceTrackings = append(existTracking.DeviceTrackings, *deviceTracking)
 		trackingGrouped[deviceName] = existTracking
@@ -76,15 +77,15 @@ func (s *deviceTrackingService) Get(userID string) ([]*responses.Tracking, error
 
 	return trakings, nil
 }
-func (s *deviceTrackingService) AddTrakingLog(trackingLogReq *request.TrackingLog,
-	deviceTranckingStr string) error {
+func (s *deviceTrackingService) AddTrakingLog(trackingLogReq *request.TrackingLogMultiple) error {
 
-	deviceTranckingID, _ := primitive.ObjectIDFromHex(deviceTranckingStr)
-	trackingLog := mapping.TrackinLogRequestToTrackingLog(trackingLogReq)
-
-	err := s.deviceTrackingRepository.AddTrakingLog(trackingLog, deviceTranckingID)
-	if err != nil {
-		return err
+	for _, id := range trackingLogReq.DeviceTrackingIds {
+		deviceTranckingID, _ := primitive.ObjectIDFromHex(id)
+		trackingLog := mapping.TrackinLogRequestToTrackingLog(&trackingLogReq.TrackingLog)
+		err := s.deviceTrackingRepository.AddTrakingLog(trackingLog, deviceTranckingID)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
