@@ -13,7 +13,7 @@ import (
 // IDeviceTrackingService is the deviceTracking service
 type IDeviceTrackingService interface {
 	Create(*request.DeviceTracking) error
-	Get(string) ([]*responses.Tracking, error)
+	Get(string) ([]responses.Tracking, error)
 	AddTrakingLog(*request.TrackingLogMultiple) error
 }
 
@@ -47,7 +47,7 @@ func (s *deviceTrackingService) Create(deviceTrackingRequest *request.DeviceTrac
 }
 
 // Get gets a list of all categories
-func (s *deviceTrackingService) Get(userID string) ([]*responses.Tracking, error) {
+func (s *deviceTrackingService) Get(userID string) ([]responses.Tracking, error) {
 	user, err := s.userRepository.GetByID(userID)
 	if err != nil {
 		return nil, err
@@ -70,9 +70,9 @@ func (s *deviceTrackingService) Get(userID string) ([]*responses.Tracking, error
 		trackingGrouped[deviceName] = existTracking
 
 	}
-	var trakings []*responses.Tracking = []*responses.Tracking{}
+	var trakings []responses.Tracking = []responses.Tracking{}
 	for _, v := range trackingGrouped {
-		trakings = append(trakings, &v)
+		trakings = append(trakings, v)
 	}
 
 	return trakings, nil
