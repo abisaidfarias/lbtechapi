@@ -79,7 +79,7 @@ func (s *deviceTrackingService) Get(userID string) ([]responses.Tracking, error)
 }
 func (s *deviceTrackingService) AddTrakingLog(trackingLogReq *request.TrackingLogMultiple) error {
 
-	for _, id := range trackingLogReq.DeviceTrackingIds {
+	for _, id := range trackingLogReq.DeviceTrackings {
 		deviceTranckingID, _ := primitive.ObjectIDFromHex(id)
 		trackingLog := mapping.TrackinLogRequestToTrackingLog(&trackingLogReq.TrackingLog)
 		err := s.deviceTrackingRepository.AddTrakingLog(trackingLog, deviceTranckingID)
