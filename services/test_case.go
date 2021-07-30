@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"io"
 	"mime/multipart"
+	"strings"
 
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
@@ -142,7 +143,7 @@ func (s *testCaseService) ProcessFile(fileHeader *multipart.FileHeader) (*respon
 	catMap := functions.GenerateCategoryMap(categories)
 
 	reader := csv.NewReader(bufio.NewReader(file))
-
+	reader.Comma = ';'
 	for {
 
 		line, err := reader.Read()
@@ -174,7 +175,6 @@ func (s *testCaseService) ProcessFile(fileHeader *multipart.FileHeader) (*respon
 }
 
 func (s *testCaseService) ProcessLine(line []string, catMap map[string]string) error {
-
 	if len(line) != 5 {
 		// invalid csv columns length
 		return utils.ErrorInvalidLineFormat
@@ -184,9 +184,9 @@ func (s *testCaseService) ProcessLine(line []string, catMap map[string]string) e
 		// category is empty
 		return utils.ErrorInvalidLineFormat
 	}
+	catName := strings.Trim(line[4], " ")
 
-	catId, ok := catMap[line[4]]
-
+	catId, ok := catMap[catName]
 	if !ok {
 		// category does not exist
 		return utils.ErrorInvalidLineFormat
