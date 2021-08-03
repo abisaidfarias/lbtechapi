@@ -199,7 +199,7 @@ func (s *testCaseService) ProcessLine(line []string, catMap map[string]string) e
 		return utils.ErrorInvalidLineFormat
 	}
 
-	err := s.testCaseRepository.Upsert(testCase.Code, testCase)
+	err := s.testCaseRepository.Create(testCase)
 
 	if err != nil {
 		// failed to upsert the test case

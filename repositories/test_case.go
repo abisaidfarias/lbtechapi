@@ -2,10 +2,8 @@ package repositories
 
 import (
 	"context"
-	"log"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/abisaidfarias/lbtechapi/database"
@@ -19,7 +17,6 @@ type ITestCaseRepository interface {
 	Get() ([]*bson.M, error)
 	GetById(string) (*bson.M, error)
 	Update(string, *models.TestCase) error
-	Upsert(string, *models.TestCase) error
 	Delete(string) error
 }
 
@@ -121,9 +118,9 @@ func (r *testCaseRepository) Update(id string, testCase *models.TestCase) error 
 	return nil
 }
 func (r *testCaseRepository) Delete(id string) error {
-	oid, err := primitive.ObjectIDFromHex(id)
+	oid, _ := primitive.ObjectIDFromHex(id)
 
-	_, err = testCaseCollection.DeleteOne(context.TODO(), queries.DeleteTestCase(oid))
+	_, err := testCaseCollection.DeleteOne(context.TODO(), queries.DeleteTestCase(oid))
 
 	if err != nil {
 		return err
@@ -132,23 +129,29 @@ func (r *testCaseRepository) Delete(id string) error {
 	return nil
 }
 
-func (r *testCaseRepository) Upsert(code string, testCase *models.TestCase) error {
+// func (r *testCaseRepository) Upsert(code string, testCase *models.TestCase) error {
 
-	opts := options.Update().SetUpsert(true)
+// 	opts := options.Update().SetUpsert(true)
 
-	filter := primitive.M{
-		"code": code,
-	}
+// 	filter := primitive.M{
+// 		"code": code,
+// 	}
 
-	update := primitive.M{
-		"$set": testCase,
-	}
-	_, err := testCaseCollection.UpdateOne(context.TODO(), filter, update, opts)
+// 	update := primitive.M{
+// 		"$set": testCase,
+// 	}
+// 	_, err := testCaseCollection.UpdateOne(context.TODO(), filter, update, opts)
 
-	if err != nil {
-		log.Fatal(err)
-		return err
-	}
+// 	if err != nil {
+// 		log.Fatal(err)
+// 		return err
+// 	}
+// 	filter, update = queries.InsertTestCase(testCase.TestCategory, oid)
 
-	return nil
-}
+// 	_, err = testCategoryCollection.UpdateOne(context.TODO(), filter, update)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	return nil
+// }
