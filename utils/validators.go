@@ -93,7 +93,7 @@ var ValidTestCaseCode validator.Func = func(fl validator.FieldLevel) bool {
 
 	incomingCode := fl.Field().String()
 
-	var codeRegex = regexp.MustCompile(`^[A-Z]{3}\-[A-Z0-9]{2}[A-Z]$`)
+	var codeRegex = regexp.MustCompile(`^[A-Z]{8}\-[A-Z0-9]{2}[A-Z]$`)
 
 	return codeRegex.MatchString(incomingCode)
 }
