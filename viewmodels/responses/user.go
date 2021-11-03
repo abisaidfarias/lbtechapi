@@ -11,7 +11,6 @@ type User struct {
 	Name       string               `bson:"name"`
 	LastName   string               `bson:"lastName"`
 	Phone      string               `bson:"phone"`
-	Dni        string               `bson:"dni"`
 	Profile    primitive.ObjectID   `bson:"profile"`
 	Company    primitive.ObjectID   `bson:"company"`
 	Brands     []primitive.ObjectID `bson:"brands"`

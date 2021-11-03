@@ -1,15 +1,15 @@
 package services
 
 import (
-	"context"
 	"fmt"
-	"io/ioutil"
-	"net/url"
-	"os"
 
-	"github.com/Azure/azure-storage-blob-go/azblob"
-	"github.com/abisaidfarias/lbtechapi/utils"
+	"bytes"
+
 	"github.com/abisaidfarias/lbtechapi/utils/functions"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
 // IStorageService is the storage service
@@ -26,37 +26,26 @@ func NewStorageService() IStorageService {
 
 func (s *storageService) UploadImage(filesf []byte) (string, error) {
 
-	accountKey, accountName, _, _ := functions.GetAccountInfo()
-	credential, err := azblob.NewSharedKeyCredential(accountName, accountKey)
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String("us-east-1")},
+	)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to connect to aws s3, %v", err)
 	}
-	p := azblob.NewPipeline(credential, azblob.PipelineOptions{})
-	containerName := utils.ImageContainer
-	pathUrl, _ := url.Parse(
-		fmt.Sprintf(utils.BaseUrlAzureBlob, accountName, containerName))
-
-	containerURL := azblob.NewContainerURL(*pathUrl, p)
-
-	ctx := context.Background()
-
+	// Create an uploader with the session and default options
+	uploader := s3manager.NewUploader(sess)
+	reader := bytes.NewReader(filesf)
 	fileName := functions.RandomImageString()
-	err = ioutil.WriteFile(fileName, filesf, 0700)
+	// Upload the file to S3.
+	result, err := uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String("lbtechimages"),
+		Key:    aws.String(fileName),
+		Body:   reader,
+		ACL:    aws.String(s3.BucketCannedACLPublicRead),
+	})
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to upload file, %v", err)
 	}
-	blobURL := containerURL.NewBlockBlobURL(fileName)
-	file, err := os.Open(fileName)
-	if err != nil {
-		return "", err
-	}
-	_, err = azblob.UploadFileToBlockBlob(ctx, file, blobURL, azblob.UploadToBlockBlobOptions{
-		BlockSize:   4 * 1024 * 1024,
-		Parallelism: 16})
-	if err != nil {
-		return "", err
-	}
-	file.Close()
-	os.Remove(fileName)
-	return fmt.Sprintf("%s/%s", pathUrl, fileName), nil
+	return result.Location, nil
+
 }

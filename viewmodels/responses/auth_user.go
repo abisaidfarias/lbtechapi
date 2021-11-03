@@ -12,7 +12,6 @@ type AuthUser struct {
 	LastName     string               `bson:"lastName"`
 	PasswordHash string               `bson:"passwordHash"`
 	Phone        string               `bson:"phone"`
-	Dni          string               `bson:"dni"`
 	Profile      primitive.ObjectID   `bson:"profile"`
 	Company      primitive.ObjectID   `bson:"company"`
 	Brands       []primitive.ObjectID `bson:"brands"`

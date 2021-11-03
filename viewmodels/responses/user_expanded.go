@@ -11,6 +11,5 @@ type UserExpanded struct {
 	Name     string             `bson:"name"`
 	LastName string             `bson:"lastName"`
 	Phone    string             `bson:"phone"`
-	Dni      string             `bson:"dni"`
 	Company  Company            `bson:"company"`
 }

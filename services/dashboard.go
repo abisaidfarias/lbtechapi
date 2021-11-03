@@ -49,8 +49,8 @@ func (s *dashboardService) GetGeneralInfo(userID string) (*responses.DashboardIn
 		return nil, nil
 	}
 	response := new(responses.DashboardInfo)
-	response.CompanyName = "VTR"
-	response.LogoImage = "https://lbtechfilestorage.blob.core.windows.net/images/8349903236570226587.jpg"
+	response.CompanyName = user.Company.Name
+	response.LogoImage = "https://lbtechfilestorage.blob.core.windows.net/images/5708700001266629581.jpg"
 	response.TotalFinished = 109
 	response.TotalOngoing = 69
 	response.TotalPlanning = 89

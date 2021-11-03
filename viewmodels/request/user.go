@@ -8,7 +8,6 @@ type User struct {
 	Name       string   `json:"name" bson:"name" binding:"required"`
 	LastName   string   `json:"lastName" bson:"lastName" binding:"required"`
 	Phone      string   `json:"phone" bson:"phone"`
-	Dni        string   `json:"dni" bson:"dni" binding:"required"`
 	Profile    string   `json:"profile" binding:"required"`
 	Company    string   `json:"company"`
 	IsInternal bool     `json:"is_internal"`
