@@ -58,6 +58,8 @@ func HomologationRequestToHomologation(homologation *request.Homologation,
 		TestResults:      testResults,
 		TestPlan:         testPlanID,
 		Brand:            brandID,
+		ProjectType:      homologation.ProjectType,
+		OsVersion:        homologation.OsVersion,
 	}
 }
 
@@ -76,5 +78,7 @@ func HomologationRequestToHomologationResume(homologation *request.HomologationR
 		UnderEndDate:    homologation.UnderEndDate,
 		CompletedDate:   homologation.CompletedDate,
 		Status:          homologation.Status,
+		ProjectType:     homologation.ProjectType,
+		OsVersion:       homologation.OsVersion,
 	}
 }

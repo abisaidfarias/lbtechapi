@@ -18,4 +18,6 @@ type HomologationResume struct {
 	UnderEndDate    time.Time `json:"under_end_date"`
 	CompletedDate   time.Time `json:"completed_date"`
 	Status          int       `bson:"status" json:"status"`
+	ProjectType     bool      `bson:"project_type" json:"project_type"`
+	OsVersion       string    `bson:"os_version" json:"os_version"`
 }

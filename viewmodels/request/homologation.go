@@ -26,4 +26,6 @@ type Homologation struct {
 	IsCustomTestPlan bool      `json:"is_custom_test_plan"`
 	TestPlan         string    `bson:"test_plan" json:"test_plan"`
 	Status           int       `bson:"status" json:"status"`
+	ProjectType      bool      `bson:"project_type" json:"project_type" binding:"required"`
+	OsVersion        string    `bson:"os_version" json:"os_version" binding:"required"`
 }

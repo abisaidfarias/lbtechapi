@@ -30,4 +30,7 @@ type Homologation struct {
 	CreatedDate      time.Time          `bson:"created_date"`
 	Status           int                `bson:"status"`
 	TestPlan         primitive.ObjectID `bson:"test_plan,omitempty"`
+	ProjectType      bool               `bson:"project_type,omitempty"`
+	OsVersion        string             `bson:"os_version,omitempty"`
+	
 }
