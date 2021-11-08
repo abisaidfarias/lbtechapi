@@ -62,9 +62,9 @@ func GetBlobName() string {
 
 	return fmt.Sprintf("%s-%v.jpg", t.Format("20060102"), uuid)
 }
-func RandomImageString() string {
+func RandomFileName(mimeType string ) string {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	return fmt.Sprintf("%s%s", strconv.Itoa(r.Int()), ".jpg")
+	return fmt.Sprintf("%s%s", strconv.Itoa(r.Int()), mimeType)
 }
 
 // test cases

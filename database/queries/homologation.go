@@ -9,9 +9,9 @@ import (
 )
 
 func GetHomologationValidations(deviceId primitive.ObjectID,
-	countryId primitive.ObjectID, companyId primitive.ObjectID) primitive.M {
+	countryId primitive.ObjectID, companyId primitive.ObjectID, isInternal bool) primitive.M {
 	return primitive.M{"device": deviceId, "company": companyId,
-		"country": countryId}
+		"country": countryId, "is_internal_project": isInternal}
 
 }
 func GetHomologationById(oid primitive.ObjectID) primitive.M {
@@ -81,6 +81,13 @@ func GetHomologations(companies []primitive.ObjectID,
 			primitive.E{Key: "path", Value: "$brand"},
 			primitive.E{Key: "preserveNullAndEmptyArrays", Value: true},
 		}}}
+	sort := bson.D{
+		primitive.E{Key: "$sort", Value: bson.D{
+			primitive.E{Key: "completed_date", Value: 1},
+			primitive.E{Key: "test_start_date", Value: -1},
+			primitive.E{Key: "planning_date", Value: -1},
+			primitive.E{Key: "sample_start_date", Value: -1},
+		}}}
 
 	var matchStage bson.D
 	var objectStage bson.D
@@ -118,13 +125,13 @@ func GetHomologations(companies []primitive.ObjectID,
 			lookupStageCompany, unwindStageCompany,
 			lookupStageCountry, unwindStageCountry,
 			lookupStageTestPlan, unwindStageTestPlan,
-			lookupStageBrand, unwindStageBrand, matchStage}
+			lookupStageBrand, unwindStageBrand, matchStage, sort}
 	} else {
 		pipeline = mongo.Pipeline{lookupStageDevice, unwindStageDevice,
 			lookupStageCompany, unwindStageCompany,
 			lookupStageCountry, unwindStageCountry,
 			lookupStageTestPlan, unwindStageTestPlan,
-			lookupStageBrand, unwindStageBrand}
+			lookupStageBrand, unwindStageBrand, sort}
 	}
 
 	return pipeline
@@ -262,4 +269,7 @@ func UpdatePhaseChange(homologation *models.Homologation, oid primitive.ObjectID
 		},
 	}
 	return filter, update
+}
+func GetHomologationByTestPlan(oid primitive.ObjectID) primitive.M {
+	return primitive.M{"test_plan": oid}
 }

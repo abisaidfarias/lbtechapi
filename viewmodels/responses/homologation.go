@@ -8,25 +8,27 @@ import (
 
 // Company model
 type Homologation struct {
-	ID               primitive.ObjectID `bson:"_id" json:"_id"`
-	Company          primitive.ObjectID `bson:"company" json:"company"`
-	Device           primitive.ObjectID `bson:"device" json:"device"`
-	Country          primitive.ObjectID `bson:"country" json:"country"`
-	TestPlan         primitive.ObjectID `bson:"test_plan" json:"test_plan"`
-	SoftwareVersion  string             `bson:"software_version" json:"software_version"`
-	HardwareVersion  string             `bson:"hardware_version" json:"hardware_version"`
-	Type             int                `bson:"type" json:"type"`
-	TestCategories   []TestCategory     `bson:"test_categories" json:"test_categories"`
-	CurrentPhase     int                `bson:"current_phase" json:"current_phase"`
-	PlanningDate     *time.Time         `bson:"planning_date" json:"planning_date"`
-	SampleStartDate  *time.Time         `bson:"sample_start_date" json:"sample_start_date"`
-	SampleEndDate    *time.Time         `bson:"sample_end_date" json:"sample_end_date"`
-	TestStartDate    *time.Time         `bson:"test_start_date" json:"test_start_date"`
-	TestEndDate      *time.Time         `bson:"test_end_date" json:"test_end_date"`
-	UnderStartDate   *time.Time         `bson:"under_start_date" json:"under_start_date"`
-	UnderEndDate     *time.Time         `bson:"under_end_date" json:"under_end_date"`
-	CompletedDate    *time.Time         `bson:"completed_date" json:"completed_date"`
-	IsCustomTestPlan bool               `bson:"is_custom_test_plan" json:"is_custom_test_plan"`
-	Status           int                `bson:"status" json:"status"`
-	TestResults      []TestResult       `bson:"test_results,omitempty"`
+	ID                primitive.ObjectID `bson:"_id" json:"_id"`
+	Company           primitive.ObjectID `bson:"company" json:"company"`
+	Device            primitive.ObjectID `bson:"device" json:"device"`
+	Country           primitive.ObjectID `bson:"country" json:"country"`
+	TestPlan          primitive.ObjectID `bson:"test_plan" json:"test_plan"`
+	SoftwareVersion   string             `bson:"software_version" json:"software_version"`
+	HardwareVersion   string             `bson:"hardware_version" json:"hardware_version"`
+	Type              int                `bson:"type" json:"type"`
+	TestCategories    []TestCategory     `bson:"test_categories" json:"test_categories"`
+	CurrentPhase      int                `bson:"current_phase" json:"current_phase"`
+	PlanningDate      *time.Time         `bson:"planning_date" json:"planning_date"`
+	SampleStartDate   *time.Time         `bson:"sample_start_date" json:"sample_start_date"`
+	SampleEndDate     *time.Time         `bson:"sample_end_date" json:"sample_end_date"`
+	TestStartDate     *time.Time         `bson:"test_start_date" json:"test_start_date"`
+	TestEndDate       *time.Time         `bson:"test_end_date" json:"test_end_date"`
+	UnderStartDate    *time.Time         `bson:"under_start_date" json:"under_start_date"`
+	UnderEndDate      *time.Time         `bson:"under_end_date" json:"under_end_date"`
+	CompletedDate     *time.Time         `bson:"completed_date" json:"completed_date"`
+	IsCustomTestPlan  bool               `bson:"is_custom_test_plan" json:"is_custom_test_plan"`
+	Status            int                `bson:"status" json:"status"`
+	TestResults       []TestResult       `bson:"test_results,omitempty"`
+	IsInternalProject bool               `bson:"is_internal_project" json:"is_internal_project"`
+	OsVersion         string             `bson:"os_version" json:"os_version"`
 }

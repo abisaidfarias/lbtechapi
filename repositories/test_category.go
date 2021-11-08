@@ -146,7 +146,7 @@ func (r *testCategoryRepository) GetOtherCategory() (*models.TestCategory, error
 }
 func (r *testCategoryRepository) CreateOtherCategory() (*models.TestCategory, error) {
 
-	var otherCategory *models.TestCategory
+	otherCategory := new(models.TestCategory)
 	otherCategory.Name = utils.OtherCategory
 	res, err := testCategoryCollection.InsertOne(context.TODO(), otherCategory)
 

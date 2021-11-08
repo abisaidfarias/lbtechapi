@@ -40,3 +40,16 @@ var TestFailureSeverity_value = map[string]int{
 	"MEDIUM": 1,
 	"LOW":    2,
 }
+var MimeTypes_value = map[string]string{
+	"image/gif":                ".gif",
+	"text/html; charset=utf-8": ".html",
+	"image/jpeg":               ".jpg",
+	"application/json":         ".json",
+	"application/pdf":          ".pdf",
+	"image/png":                ".png",
+	"image/svg+xml":            ".svg",
+	"text/xml; charset=utf-8":  ".xls",
+	"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":         ".xlsx",
+	"application/vnd.openxmlformats-officedocument.wordprocessingml.document":   ".docx",
+	"application/vnd.openxmlformats-officedocument.presentationml.presentation": ".pptx",
+}

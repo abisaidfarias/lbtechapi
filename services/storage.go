@@ -10,11 +10,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/gabriel-vasile/mimetype"
 )
 
 // IStorageService is the storage service
 type IStorageService interface {
-	UploadImage([]byte) (string, error)
+	UploadFile([]byte) (string, error)
 }
 
 type storageService struct {
@@ -24,7 +25,7 @@ func NewStorageService() IStorageService {
 	return &storageService{}
 }
 
-func (s *storageService) UploadImage(filesf []byte) (string, error) {
+func (s *storageService) UploadFile(filesf []byte) (string, error) {
 
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("us-east-1")},
@@ -34,8 +35,9 @@ func (s *storageService) UploadImage(filesf []byte) (string, error) {
 	}
 	// Create an uploader with the session and default options
 	uploader := s3manager.NewUploader(sess)
+	mtype := mimetype.Detect(filesf)
 	reader := bytes.NewReader(filesf)
-	fileName := functions.RandomImageString()
+	fileName := functions.RandomFileName(mtype.Extension())
 	// Upload the file to S3.
 	result, err := uploader.Upload(&s3manager.UploadInput{
 		Bucket: aws.String("lbtechimages"),

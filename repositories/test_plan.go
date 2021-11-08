@@ -17,7 +17,7 @@ type ITestPlanRepository interface {
 	Get() ([]*responses.TestPlanExpanded, error)
 	GetById(string) (*responses.TestPlanExpanded, error)
 	Update(string, *models.TestPlan) error
-	Delete(string) error
+	Delete(primitive.ObjectID) error
 }
 
 type testPlanRepository struct {
@@ -106,10 +106,9 @@ func (r *testPlanRepository) Update(id string, testPlan *models.TestPlan) error 
 
 	return nil
 }
-func (r *testPlanRepository) Delete(id string) error {
-	oid, err := primitive.ObjectIDFromHex(id)
+func (r *testPlanRepository) Delete(id primitive.ObjectID) error {
 
-	_, err = testPlanCollection.DeleteOne(context.TODO(), queries.DeleteTestPlan(oid))
+	_, err := testPlanCollection.DeleteOne(context.TODO(), queries.DeleteTestPlan(id))
 
 	if err != nil {
 		return err

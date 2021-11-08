@@ -5,6 +5,7 @@ import (
 	"github.com/abisaidfarias/lbtechapi/utils/mapping"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // ITestPlanService is the test Plan service interface
@@ -13,17 +14,20 @@ type ITestPlanService interface {
 	Get() ([]*responses.TestPlanExpanded, error)
 	GetById(string) (*responses.TestPlanExpanded, error)
 	Update(string, *request.TestPlan) error
-	Delete(string) error
+	Delete(string) (bool, error)
 }
 
 type testPlanService struct {
-	testPlanRepository repositories.ITestPlanRepository
+	testPlanRepository     repositories.ITestPlanRepository
+	homologationRepository repositories.IHomologationRepository
 }
 
 // NewTestPlanService is a constructor
-func NewTestPlanService(testPlanRepository repositories.ITestPlanRepository) ITestPlanService {
+func NewTestPlanService(testPlanRepository repositories.ITestPlanRepository,
+	homologationRepository repositories.IHomologationRepository) ITestPlanService {
 	return &testPlanService{
-		testPlanRepository: testPlanRepository,
+		testPlanRepository:     testPlanRepository,
+		homologationRepository: homologationRepository,
 	}
 }
 
@@ -82,10 +86,19 @@ func (s *testPlanService) Update(id string, testPlanRequest *request.TestPlan) e
 	}
 	return nil
 }
-func (s *testPlanService) Delete(id string) error {
-	err := s.testPlanRepository.Delete(id)
+func (s *testPlanService) Delete(id string) (bool, error) {
+	testPlanID, _ := primitive.ObjectIDFromHex(id)
+
+	homologation, err := s.homologationRepository.GetByTestPlan(testPlanID)
 	if err != nil {
-		return err
+		return false, err
 	}
-	return nil
+	if homologation != nil {
+		return true, err
+	}
+	err = s.testPlanRepository.Delete(testPlanID)
+	if err != nil {
+		return false, err
+	}
+	return false, nil
 }

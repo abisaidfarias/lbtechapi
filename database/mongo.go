@@ -37,6 +37,17 @@ func initDB() *mongo.Database {
 	clientOpts := options.Client().ApplyURI(os.Getenv("MONGO_URI"))
 
 	client, err := mongo.Connect(context.TODO(), clientOpts)
+	collation := options.Collation{
+		Strength:        2,
+		Locale:          "es",
+		CaseLevel:       false,
+		CaseFirst:       "off",
+		NumericOrdering: false,
+		Alternate:       "non-ignorable",
+		MaxVariable:     "punct",
+		Normalization:   false,
+		Backwards:       false,
+	}
 
 	if err != nil {
 		log.Fatal(err)
@@ -92,7 +103,7 @@ func initDB() *mongo.Database {
 	indexDeviceCommercialName := mongo.IndexModel{
 		Keys: bson.M{
 			"commercial_model": 1,
-		}, Options: options.Index().SetUnique(true),
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
 	}
 	indexPrinterSerial := mongo.IndexModel{
 		Keys: bson.M{
@@ -104,6 +115,7 @@ func initDB() *mongo.Database {
 			"name": 1,
 		}, Options: options.Index().SetUnique(true),
 	}
+
 	indexImei := mongo.IndexModel{
 		Keys: bson.M{
 			"imei": 1,

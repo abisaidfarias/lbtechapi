@@ -51,7 +51,7 @@ func (s *homologationService) Create(homologationRequest *request.Homologation) 
 	brandID, _ := primitive.ObjectIDFromHex(homologationRequest.Brand)
 
 	existHomologation, err := s.homologationRepository.GetPrevious(deviceID,
-		countryID, companyID)
+		countryID, companyID, homologationRequest.IsInternalProject)
 	if err != nil {
 		return nil, err
 	}
@@ -230,7 +230,10 @@ func (s *homologationService) CreateFailTestResult(id string, testResultRequest 
 
 	failCategory, err := s.testCategoryRepository.GetOtherCategory()
 	if err != nil {
-		return err
+		failCategory, err = s.testCategoryRepository.CreateOtherCategory()
+		if err != nil {
+			return err
+		}
 	}
 
 	if failCategory.ID == primitive.NilObjectID {

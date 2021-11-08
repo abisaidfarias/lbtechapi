@@ -11,7 +11,7 @@ import (
 
 // IUserController controller
 type IStorageController interface {
-	UploadImage() gin.HandlerFunc
+	UploadFile() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
@@ -30,7 +30,7 @@ func NewStorageController(storageService services.IStorageService) IStorageContr
 }
 
 // Create creates a category
-func (c *storageController) UploadImage() gin.HandlerFunc {
+func (c *storageController) UploadFile() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 
@@ -45,7 +45,7 @@ func (c *storageController) UploadImage() gin.HandlerFunc {
 		if err != nil {
 			return
 		}
-		url, err := c.storageService.UploadImage(byteContainer)
+		url, err := c.storageService.UploadFile(byteContainer)
 		if err != nil {
 			handleErrorResponse(ctx, err)
 			return

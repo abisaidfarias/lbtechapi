@@ -19,7 +19,7 @@ import (
 type IHomologationRepository interface {
 	Create(*models.Homologation) error
 	GetPrevious(primitive.ObjectID,
-		primitive.ObjectID, primitive.ObjectID) (*responses.Homologation, error)
+		primitive.ObjectID, primitive.ObjectID, bool) (*responses.Homologation, error)
 	GetByInternal([]primitive.ObjectID, []primitive.ObjectID,
 		[]primitive.ObjectID) ([]*responses.HomologationExpanded, error)
 	GetByExternal(primitive.ObjectID, []primitive.ObjectID,
@@ -34,6 +34,7 @@ type IHomologationRepository interface {
 		devices []primitive.ObjectID, countries []primitive.ObjectID) ([]*responses.ChartVolumeCountry, error)
 	GetGroupedByBrandType(companies []primitive.ObjectID,
 		devices []primitive.ObjectID, countries []primitive.ObjectID) ([]*responses.ChartVolumeType, error)
+	GetByTestPlan(testPlan primitive.ObjectID) (*responses.Homologation, error)
 }
 type homologationRepository struct {
 }
@@ -72,13 +73,13 @@ func (r *homologationRepository) Get() ([]*responses.Homologation, error) {
 
 // Get returns a list of all test cases
 func (r *homologationRepository) GetPrevious(deviceId primitive.ObjectID,
-	countryId primitive.ObjectID, companyId primitive.ObjectID) (*responses.Homologation, error) {
+	countryId primitive.ObjectID, companyId primitive.ObjectID, isIntenal bool) (*responses.Homologation, error) {
 
 	var homologations []*responses.Homologation
 	findOptions := options.Find()
 	findOptions.SetSort(bson.M{"_id": -1})
 	cursor, err := homologationCollection.Find(context.TODO(),
-		queries.GetHomologationValidations(deviceId, countryId, companyId), findOptions)
+		queries.GetHomologationValidations(deviceId, countryId, companyId, isIntenal), findOptions)
 	if err != nil {
 		switch err {
 		case mongo.ErrNoDocuments:
@@ -277,4 +278,20 @@ func (r *homologationRepository) GetGroupedByBrandType(companies []primitive.Obj
 	}
 
 	return charts, nil
+}
+func (r *homologationRepository) GetByTestPlan(testPlanId primitive.ObjectID) (*responses.Homologation, error) {
+
+	var homologation *responses.Homologation
+	err := homologationCollection.FindOne(context.TODO(),
+		queries.GetHomologationByTestPlan(testPlanId)).Decode(&homologation)
+
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			return nil, nil
+		default:
+			return nil, err
+		}
+	}
+	return homologation, nil
 }

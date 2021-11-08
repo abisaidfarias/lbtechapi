@@ -142,18 +142,17 @@ func (c *testPlanController) Update() gin.HandlerFunc {
 func (c *testPlanController) Delete() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
-		var id string
+		var id string = ctx.Param("id")
 
-		id = ctx.Param("id")
-
-		err := c.testPlanService.Delete(id)
-
+		hasHomologations, err := c.testPlanService.Delete(id)
 		if err != nil {
 			handleErrorResponse(ctx, err)
 			return
 		}
-
+		if hasHomologations {
+			ctx.Status(http.StatusConflict)
+			return
+		}
 		ctx.Status(http.StatusOK)
-		return
 	}
 }

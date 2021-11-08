@@ -31,10 +31,6 @@ var (
 	testCaseService    services.ITestCaseService        = services.NewTestCaseService(testCaseRepository, testCategoryService)
 	testCaseController controllers.ITestCaseController  = controllers.NewTestCaseController(testCaseService)
 
-	testPlanRepository repositories.ITestPlanRepository = repositories.NewTestPlanRepository()
-	testPlanService    services.ITestPlanService        = services.NewTestPlanService(testPlanRepository)
-	testPlanController controllers.ITestPlanController  = controllers.NewTestPlanController(testPlanService)
-
 	profileRepository repositories.IProfileRepository = repositories.NewProfileRepository()
 	profileService    services.IProfileService        = services.NewProfileService(profileRepository, userRepository)
 	profileController controllers.IProfileController  = controllers.NewProfileController(profileService)
@@ -79,6 +75,10 @@ var (
 	deviceTrackingRepository repositories.IDeviceTrackingRepository = repositories.NewDeviceTrackingRepository()
 	deviceTrackingService    services.IDeviceTrackingService        = services.NewDeviceTrackingService(deviceTrackingRepository, userRepository)
 	deviceTrackingController controllers.IDeviceTrackingController  = controllers.NewDeviceTrackingController(deviceTrackingService)
+
+	testPlanRepository repositories.ITestPlanRepository = repositories.NewTestPlanRepository()
+	testPlanService    services.ITestPlanService        = services.NewTestPlanService(testPlanRepository, homologationRepository)
+	testPlanController controllers.ITestPlanController  = controllers.NewTestPlanController(testPlanService)
 )
 
 func main() {
@@ -179,7 +179,7 @@ func main() {
 		}
 		storage := v1.Group("/upload")
 		{
-			storage.POST("/images", storageController.UploadImage())
+			storage.POST("/images", storageController.UploadFile())
 		}
 		homologation := v1.Group("/homologation")
 		{
