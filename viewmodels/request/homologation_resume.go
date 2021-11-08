@@ -20,4 +20,5 @@ type HomologationResume struct {
 	Status            int       `bson:"status" json:"status"`
 	IsInternalProject bool      `bson:"is_internal_project,omitempty"`
 	OsVersion         string    `bson:"os_version" json:"os_version"`
+	DocumentUrl       string    `bson:"document_url" json:"document_url"`
 }

@@ -60,6 +60,7 @@ func HomologationRequestToHomologation(homologation *request.Homologation,
 		Brand:             brandID,
 		IsInternalProject: homologation.IsInternalProject,
 		OsVersion:         homologation.OsVersion,
+		DocumentUrl:       homologation.DocumentUrl,
 	}
 }
 
@@ -80,5 +81,6 @@ func HomologationRequestToHomologationResume(homologation *request.HomologationR
 		Status:            homologation.Status,
 		IsInternalProject: homologation.IsInternalProject,
 		OsVersion:         homologation.OsVersion,
+		DocumentUrl:       homologation.DocumentUrl,
 	}
 }

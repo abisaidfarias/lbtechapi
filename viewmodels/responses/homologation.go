@@ -31,4 +31,5 @@ type Homologation struct {
 	TestResults       []TestResult       `bson:"test_results,omitempty"`
 	IsInternalProject bool               `bson:"is_internal_project" json:"is_internal_project"`
 	OsVersion         string             `bson:"os_version" json:"os_version"`
+	DocumentUrl       string             `bson:"document_url" json:"document_url"`
 }

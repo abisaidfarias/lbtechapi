@@ -32,4 +32,5 @@ type Homologation struct {
 	TestPlan          primitive.ObjectID `bson:"test_plan,omitempty"`
 	IsInternalProject bool               `bson:"is_internal_project"`
 	OsVersion         string             `bson:"os_version,omitempty"`
+	DocumentUrl       string             `bson:"document_url"`
 }

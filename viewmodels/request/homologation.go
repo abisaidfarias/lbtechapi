@@ -28,4 +28,5 @@ type Homologation struct {
 	Status            int       `bson:"status" json:"status"`
 	IsInternalProject bool      `bson:"is_internal_project" json:"is_internal_project"`
 	OsVersion         string    `bson:"os_version" json:"os_version" binding:"required"`
+	DocumentUrl       string    `bson:"document_url" json:"document_url"`
 }

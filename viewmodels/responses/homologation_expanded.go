@@ -29,4 +29,5 @@ type HomologationExpanded struct {
 	CompletedDate    *time.Time         `bson:"completed_date" json:"completed_date"`
 	IsCustomTestPlan bool               `bson:"is_custom_test_plan" json:"is_custom_test_plan"`
 	Status           int                `bson:"status" json:"status"`
+	DocumentUrl      string             `bson:"document_url" json:"document_url"`
 }
