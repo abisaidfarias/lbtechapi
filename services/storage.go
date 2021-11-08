@@ -44,6 +44,7 @@ func (s *storageService) UploadFile(filesf []byte) (string, error) {
 		Key:    aws.String(fileName),
 		Body:   reader,
 		ACL:    aws.String(s3.BucketCannedACLPublicRead),
+		
 	})
 	if err != nil {
 		return "", fmt.Errorf("failed to upload file, %v", err)
