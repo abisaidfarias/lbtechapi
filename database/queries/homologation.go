@@ -273,3 +273,17 @@ func UpdatePhaseChange(homologation *models.Homologation, oid primitive.ObjectID
 func GetHomologationByTestPlan(oid primitive.ObjectID) primitive.M {
 	return primitive.M{"test_plan": oid}
 }
+func UpdateDocument(documentUrl string, homologationId primitive.ObjectID) (primitive.M, primitive.D) {
+
+	filter := primitive.M{
+		"_id": homologationId,
+	}
+	update := primitive.D{
+		{Key: "$set",
+			Value: primitive.D{
+				{Key: "document_url", Value: documentUrl},
+			},
+		},
+	}
+	return filter, update
+}

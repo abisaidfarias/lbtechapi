@@ -22,6 +22,7 @@ type IHomologationService interface {
 	PhaseChange(string, *request.HomologationResume) error
 	GetHomologationFails(string) (*responses.TestFails, error)
 	CreateFailTestResult(string, *request.TestResultResume) error
+	UpdateDocument(string, *request.Homologation) error
 }
 
 type homologationService struct {
@@ -247,6 +248,15 @@ func (s *homologationService) CreateFailTestResult(id string, testResultRequest 
 	testResult.TestCategory = *failCategory
 
 	err = s.homologationRepository.CreateFailTestResult(id, testResult)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (s *homologationService) UpdateDocument(id string, homologation *request.Homologation) error {
+
+	homologationId, _ := primitive.ObjectIDFromHex(id)
+	err := s.homologationRepository.UpdateDocument(homologation.DocumentUrl, homologationId)
 	if err != nil {
 		return err
 	}

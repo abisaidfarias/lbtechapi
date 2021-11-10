@@ -51,6 +51,5 @@ func (c *storageController) UploadFile() gin.HandlerFunc {
 			return
 		}
 		ctx.JSON(http.StatusCreated, gin.H{"url": url})
-		return
 	}
 }

@@ -54,7 +54,6 @@ func (c *countryController) Create() gin.HandlerFunc {
 		}
 
 		ctx.Status(http.StatusCreated)
-		return
 	}
 }
 
@@ -70,7 +69,6 @@ func (c *countryController) Get() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, countries)
-		return
 	}
 
 }

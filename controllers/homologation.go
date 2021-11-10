@@ -18,6 +18,7 @@ type IHomologationController interface {
 	PhaseChange() gin.HandlerFunc
 	GetHomologationFails() gin.HandlerFunc
 	CreateFailTest() gin.HandlerFunc
+	UpdateDocument() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
@@ -178,6 +179,28 @@ func (c *homologationController) CreateFailTest() gin.HandlerFunc {
 			return
 		}
 		err = c.homologationService.CreateFailTestResult(id, testResult)
+		if err != nil {
+			handleErrorResponse(ctx, err)
+			return
+		}
+
+		ctx.Status(http.StatusOK)
+	}
+
+}
+func (c *homologationController) UpdateDocument() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		id := ctx.Param("id")
+
+		var homologation *request.Homologation
+
+		err := ctx.ShouldBindJSON(&homologation)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		err = c.homologationService.UpdateDocument(id, homologation)
 		if err != nil {
 			handleErrorResponse(ctx, err)
 			return

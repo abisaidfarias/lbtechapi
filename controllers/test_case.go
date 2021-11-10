@@ -59,7 +59,6 @@ func (c *testCaseController) Create() gin.HandlerFunc {
 		}
 
 		ctx.Status(http.StatusCreated)
-		return
 	}
 }
 
@@ -75,7 +74,6 @@ func (c *testCaseController) Get() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, testCases)
-		return
 	}
 
 }
@@ -84,9 +82,7 @@ func (c *testCaseController) Get() gin.HandlerFunc {
 func (c *testCaseController) GetById() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
-		var id string
-
-		id = ctx.Param("id")
+		var id string = ctx.Param("id")
 
 		if id == "" {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("%w", utils.ErrorInvalidURLParams)})
@@ -101,7 +97,6 @@ func (c *testCaseController) GetById() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, testCase)
-		return
 	}
 }
 
@@ -110,9 +105,7 @@ func (c *testCaseController) Update() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 
-		var id string
-
-		id = ctx.Param("id")
+		var id string = ctx.Param("id")
 
 		var testCase request.TestCase
 
@@ -136,7 +129,6 @@ func (c *testCaseController) Update() gin.HandlerFunc {
 		}
 
 		ctx.Status(http.StatusOK)
-		return
 	}
 }
 
@@ -145,9 +137,7 @@ func (c *testCaseController) Upgrade() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 
-		var id string
-
-		id = ctx.Param("id")
+		var id string = ctx.Param("id")
 
 		var testCase request.TestCase
 
@@ -171,7 +161,6 @@ func (c *testCaseController) Upgrade() gin.HandlerFunc {
 		}
 
 		ctx.Status(http.StatusOK)
-		return
 	}
 }
 
@@ -179,9 +168,7 @@ func (c *testCaseController) Upgrade() gin.HandlerFunc {
 func (c *testCaseController) Delete() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
-		var id string
-
-		id = ctx.Param("id")
+		var id string = ctx.Param("id")
 
 		err := c.testCaseService.Delete(id)
 
@@ -191,7 +178,6 @@ func (c *testCaseController) Delete() gin.HandlerFunc {
 		}
 
 		ctx.Status(http.StatusOK)
-		return
 	}
 }
 

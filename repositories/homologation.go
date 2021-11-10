@@ -35,6 +35,7 @@ type IHomologationRepository interface {
 	GetGroupedByBrandType(companies []primitive.ObjectID,
 		devices []primitive.ObjectID, countries []primitive.ObjectID) ([]*responses.ChartVolumeType, error)
 	GetByTestPlan(testPlan primitive.ObjectID) (*responses.Homologation, error)
+	UpdateDocument(string, primitive.ObjectID) error
 }
 type homologationRepository struct {
 }
@@ -294,4 +295,16 @@ func (r *homologationRepository) GetByTestPlan(testPlanId primitive.ObjectID) (*
 		}
 	}
 	return homologation, nil
+}
+func (r *homologationRepository) UpdateDocument(documentUrl string, homologationId primitive.ObjectID) error {
+
+	filter, update := queries.UpdateDocument(documentUrl, homologationId)
+
+	_, err := homologationCollection.UpdateOne(context.TODO(), filter, update)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

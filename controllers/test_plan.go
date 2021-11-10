@@ -58,7 +58,6 @@ func (c *testPlanController) Create() gin.HandlerFunc {
 			return
 		}
 		ctx.Status(http.StatusCreated)
-		return
 	}
 }
 
@@ -74,7 +73,6 @@ func (c *testPlanController) Get() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, testPlans)
-		return
 	}
 
 }
@@ -83,9 +81,7 @@ func (c *testPlanController) Get() gin.HandlerFunc {
 func (c *testPlanController) GetById() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
-		var id string
-
-		id = ctx.Param("id")
+		var id string = ctx.Param("id")
 
 		if id == "" {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("%w", utils.ErrorInvalidURLParams)})
@@ -99,7 +95,6 @@ func (c *testPlanController) GetById() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, testPlan)
-		return
 	}
 }
 
@@ -108,9 +103,7 @@ func (c *testPlanController) Update() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 
-		var id string
-
-		id = ctx.Param("id")
+		var id string = ctx.Param("id")
 
 		var testPlan request.TestPlan
 
@@ -134,7 +127,6 @@ func (c *testPlanController) Update() gin.HandlerFunc {
 		}
 
 		ctx.Status(http.StatusOK)
-		return
 	}
 }
 

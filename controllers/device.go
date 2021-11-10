@@ -58,7 +58,6 @@ func (c *deviceController) Create() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusCreated, *deviceResponse)
-		return
 	}
 }
 
@@ -74,7 +73,6 @@ func (c *deviceController) Get() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, devices)
-		return
 	}
 
 }
@@ -99,7 +97,6 @@ func (c *deviceController) GetById() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, device)
-		return
 	}
 }
 
@@ -132,7 +129,6 @@ func (c *deviceController) Update() gin.HandlerFunc {
 		}
 
 		ctx.Status(http.StatusOK)
-		return
 	}
 }
 
@@ -150,7 +146,5 @@ func (c *deviceController) Delete() gin.HandlerFunc {
 		}
 
 		ctx.Status(http.StatusOK)
-		return
-
 	}
 }

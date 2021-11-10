@@ -54,7 +54,6 @@ func (c *testCategoryController) Create() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusCreated, gin.H{"id": id})
-		return
 	}
 }
 
@@ -70,7 +69,6 @@ func (c *testCategoryController) Get() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, categories)
-		return
 	}
 
 }

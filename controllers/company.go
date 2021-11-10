@@ -54,7 +54,6 @@ func (c *companyController) Create() gin.HandlerFunc {
 		}
 
 		ctx.Status(http.StatusCreated)
-		return
 	}
 }
 
@@ -68,9 +67,7 @@ func (c *companyController) Get() gin.HandlerFunc {
 			handleErrorResponse(ctx, err)
 			return
 		}
-
 		ctx.JSON(http.StatusOK, companies)
-		return
 	}
 
 }

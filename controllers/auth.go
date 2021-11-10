@@ -45,6 +45,5 @@ func (c *authController) SignIn() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, *userRes)
-		return
 	}
 }
