@@ -168,10 +168,12 @@ func (s *homologationService) GetCategoriesWithTest(id string) (map[string]respo
 		testResultResume.Expected = t.Expected
 		testResultResume.Hyperlinks = t.Hyperlinks
 		testResultResume.Images = t.Images
-		testResultResume.IssueDescription = t.IssueDescription
+		testResultResume.OverviewIssue = t.OverviewIssue
+		testResultResume.ActualResult = t.ActualResult
+		testResultResume.StepsToReproduce = t.StepsToReproduce
+		testResultResume.ExpectedResult = t.ExpectedResult
 		testResultResume.IssueSeverity = t.IssueSeverity
 		testResultResume.IssueFrequency = t.IssueFrequency
-		testResultResume.IssueDescription = t.IssueDescription
 		testResultResume.Value = t.Value
 
 		value.TestResultResume = append(value.TestResultResume, testResultResume)

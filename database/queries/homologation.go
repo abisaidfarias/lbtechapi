@@ -220,15 +220,22 @@ func UpdateTestResult(testResult request.TestResultResume, oid primitive.ObjectI
 		"_id":               oid,
 		"test_results.code": testResult.Code,
 	}
+	// OverviewIssue    string       `bson:"overview_issue" json:"overview_issue"`
+	// StepsToReproduce string       `bson:"steps_to_reproduce" json:"steps_to_reproduce"`
+	// ActualResult     string       `bson:"actual_result" json:"actual_result"`
+	// ExpectedResult   string       `bson:"expected_result" json:"expected_result"
 	update := primitive.M{
 		"$set": primitive.M{
-			"test_results.$.issue_description": testResult.IssueDescription,
-			"test_results.$.issue_frequency":   testResult.IssueFrequency,
-			"test_results.$.issue_severity":    testResult.IssueSeverity,
-			"test_results.$.hyperlinks":        testResult.Hyperlinks,
-			"test_results.$.images":            testResult.Images,
-			"test_results.$.result":            testResult.Result,
-			"test_results.$.value":             testResult.Value,
+			"test_results.$.overview_issue":     testResult.OverviewIssue,
+			"test_results.$.steps_to_reproduce": testResult.StepsToReproduce,
+			"test_results.$.actual_result":      testResult.ActualResult,
+			"test_results.$.expected_result":    testResult.ExpectedResult,
+			"test_results.$.issue_frequency":    testResult.IssueFrequency,
+			"test_results.$.issue_severity":     testResult.IssueSeverity,
+			"test_results.$.hyperlinks":         testResult.Hyperlinks,
+			"test_results.$.images":             testResult.Images,
+			"test_results.$.result":             testResult.Result,
+			"test_results.$.value":              testResult.Value,
 		},
 	}
 	return filter, update
