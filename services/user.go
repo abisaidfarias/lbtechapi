@@ -24,6 +24,7 @@ type IUserService interface {
 	Update(string, *models.User) error
 	Delete(string) error
 	ChangePassword(string, request.ChangePassword) error
+	Upgrade(*request.User) error
 }
 type userService struct {
 	userRepository repositories.IUserRepository
@@ -51,6 +52,18 @@ func (s *userService) Create(userRequest *request.User) error {
 	user := mapping.UserRequestToUser(userRequest)
 
 	err = s.userRepository.Create(user)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+func (s *userService) Upgrade(userRequest *request.User) error {
+
+	user := mapping.UserRequestToUser(userRequest)
+
+	err := s.userRepository.Create(user)
 
 	if err != nil {
 		return err

@@ -25,6 +25,7 @@ type IUserRepository interface {
 	Delete(string) error
 	ChangePassword(string, string) error
 	GetByIDExpanded(string) (*responses.UserExpanded, error)
+	Updgrade(*models.User) error
 }
 
 type userRepository struct {
@@ -193,4 +194,14 @@ func (r *userRepository) GetByIDExpanded(id string) (*responses.UserExpanded, er
 		}
 	}
 	return user, nil
+}
+func (r *userRepository) Updgrade(user *models.User) error {
+
+	_, err := userCollection.InsertOne(context.TODO(), user)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

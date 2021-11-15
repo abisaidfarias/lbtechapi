@@ -1,7 +1,10 @@
 package services
 
 import (
+	"time"
+
 	"github.com/abisaidfarias/lbtechapi/repositories"
+	"github.com/abisaidfarias/lbtechapi/utils/enums"
 	"github.com/abisaidfarias/lbtechapi/utils/mapping"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 )
@@ -48,14 +51,28 @@ func (s *dashboardService) GetGeneralInfo(userID string) (*responses.DashboardIn
 	if user == nil {
 		return nil, nil
 	}
+
+	t := time.Now()
+	dashboardTotals, err := s.homologationRepository.GetByCompanyStatusGrouped(user.Company.ID)
+	if err != nil {
+		return nil, nil
+	}
 	response := new(responses.DashboardInfo)
 	response.CompanyName = user.Company.Name
-	response.LogoImage = "https://lbtechfilestorage.blob.core.windows.net/images/5708700001266629581.jpg"
-	response.TotalFinished = 109
-	response.TotalOngoing = 69
-	response.TotalPlanning = 89
-	response.TotalSampleReception = 99
-	response.Month = "January"
-
+	response.LogoImage = user.Company.LogoUrl
+	response.Month = t.Month().String()
+	for _, dashboardTotal := range dashboardTotals {
+		if dashboardTotal.CurrentPhase == enums.HomologationPhase_value["PLANNING"] {
+			response.TotalPlanning = dashboardTotal.Count
+			response.TotalOngoing += dashboardTotal.Count
+		} else if dashboardTotal.CurrentPhase == enums.HomologationPhase_value["SAMPLE_RECEPTION"] {
+			response.TotalSampleReception = dashboardTotal.Count
+			response.TotalOngoing += dashboardTotal.Count
+		} else if dashboardTotal.CurrentPhase == enums.HomologationPhase_value["COMPLETE"] {
+			response.TotalFinished = dashboardTotal.Count
+		} else {
+			response.TotalOngoing += dashboardTotal.Count
+		}
+	}
 	return response, nil
 }

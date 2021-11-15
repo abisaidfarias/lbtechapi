@@ -36,6 +36,7 @@ type IHomologationRepository interface {
 		devices []primitive.ObjectID, countries []primitive.ObjectID) ([]*responses.ChartVolumeType, error)
 	GetByTestPlan(testPlan primitive.ObjectID) (*responses.Homologation, error)
 	UpdateDocument(string, primitive.ObjectID) error
+	GetByCompanyStatusGrouped(primitive.ObjectID) ([]*responses.DashboardTotal, error)
 }
 type homologationRepository struct {
 }
@@ -307,4 +308,23 @@ func (r *homologationRepository) UpdateDocument(documentUrl string, homologation
 	}
 
 	return nil
+}
+func (r *homologationRepository) GetByCompanyStatusGrouped(companyId primitive.ObjectID) ([]*responses.DashboardTotal, error) {
+
+	homologationQuery := queries.GetHomologationsGroupedByStatus(companyId)
+	cursor, err := homologationCollection.Aggregate(context.TODO(),
+		homologationQuery)
+	if err != nil {
+		return nil, err
+	}
+	var dashboardTotals []*responses.DashboardTotal = []*responses.DashboardTotal{}
+	for cursor.Next(context.TODO()) {
+		var dashboardTotal *responses.DashboardTotal
+		err := cursor.Decode(&dashboardTotal)
+		if err != nil {
+			return nil, err
+		}
+		dashboardTotals = append(dashboardTotals, dashboardTotal)
+	}
+	return dashboardTotals, nil
 }

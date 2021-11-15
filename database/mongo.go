@@ -58,47 +58,47 @@ func initDB() *mongo.Database {
 		log.Fatal(err)
 	}
 
-	database := client.Database("lbtechdev")
+	database := client.Database(os.Getenv("MONGO_DB"))
 
 	indexEmail := mongo.IndexModel{
 		Keys: bson.M{
 			"email": 1,
-		}, Options: options.Index().SetUnique(true),
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
 	}
 	indexCode := mongo.IndexModel{
 		Keys: bson.M{
 			"code": 1,
-		}, Options: options.Index().SetUnique(true),
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
 	}
 	indexTestPlanName := mongo.IndexModel{
 		Keys: bson.M{
 			"name": 1,
-		}, Options: options.Index().SetUnique(true),
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
 	}
 	indexTestCategoryName := mongo.IndexModel{
 		Keys: bson.M{
 			"name": 1,
-		}, Options: options.Index().SetUnique(true),
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
 	}
 	indexProfileName := mongo.IndexModel{
 		Keys: bson.M{
 			"name": 1,
-		}, Options: options.Index().SetUnique(true),
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
 	}
 	indexCompanyName := mongo.IndexModel{
 		Keys: bson.M{
 			"name": 1,
-		}, Options: options.Index().SetUnique(true),
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
 	}
 	indexBrandName := mongo.IndexModel{
 		Keys: bson.M{
 			"name": 1,
-		}, Options: options.Index().SetUnique(true),
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
 	}
 	indexCountryName := mongo.IndexModel{
 		Keys: bson.M{
 			"name": 1,
-		}, Options: options.Index().SetUnique(true),
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
 	}
 	indexDeviceCommercialName := mongo.IndexModel{
 		Keys: bson.M{
@@ -108,18 +108,18 @@ func initDB() *mongo.Database {
 	indexPrinterSerial := mongo.IndexModel{
 		Keys: bson.M{
 			"serial": 1,
-		}, Options: options.Index().SetUnique(true),
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
 	}
 	indexLocationName := mongo.IndexModel{
 		Keys: bson.M{
 			"name": 1,
-		}, Options: options.Index().SetUnique(true),
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
 	}
 
 	indexImei := mongo.IndexModel{
 		Keys: bson.M{
 			"imei": 1,
-		}, Options: options.Index().SetUnique(true),
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
 	}
 	database.Collection("users").Indexes().CreateOne(context.Background(), indexEmail)
 	database.Collection("test_cases").Indexes().CreateOne(context.Background(), indexCode)

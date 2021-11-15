@@ -109,6 +109,10 @@ func main() {
 			printer.GET("", printerController.Get())
 			printer.POST("", printerController.Create())
 		}
+		upgrade := v1.Group("/upgrade")
+		{
+			upgrade.POST("", userController.Upgrade())
+		}
 		v1.POST("/sign-in", authController.SignIn())
 		v1.Use(middlewares.AuthMiddleware())
 

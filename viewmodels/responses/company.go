@@ -10,4 +10,5 @@ type Company struct {
 	Email   string             `bson:"email" json:"email"`
 	Name    string             `bson:"name" json:"name"`
 	Address string             `bson:"address" json:"address"`
+	LogoUrl string             `json:"logo_url" bson:"logo_url"`
 }

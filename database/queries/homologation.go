@@ -220,10 +220,6 @@ func UpdateTestResult(testResult request.TestResultResume, oid primitive.ObjectI
 		"_id":               oid,
 		"test_results.code": testResult.Code,
 	}
-	// OverviewIssue    string       `bson:"overview_issue" json:"overview_issue"`
-	// StepsToReproduce string       `bson:"steps_to_reproduce" json:"steps_to_reproduce"`
-	// ActualResult     string       `bson:"actual_result" json:"actual_result"`
-	// ExpectedResult   string       `bson:"expected_result" json:"expected_result"
 	update := primitive.M{
 		"$set": primitive.M{
 			"test_results.$.overview_issue":     testResult.OverviewIssue,
@@ -293,4 +289,16 @@ func UpdateDocument(documentUrl string, homologationId primitive.ObjectID) (prim
 		},
 	}
 	return filter, update
+}
+func GetHomologationsGroupedByStatus(companyId primitive.ObjectID) []bson.D {
+
+	groupStage := bson.D{
+		primitive.E{Key: "$group", Value: bson.D{
+			primitive.E{Key: "_id", Value: "$current_phase"},
+			primitive.E{Key: "count", Value: bson.D{
+				primitive.E{Key: "$sum", Value: 1},
+			}},
+		}}}
+
+	return mongo.Pipeline{groupStage}
 }

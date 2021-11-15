@@ -21,6 +21,7 @@ type IUserController interface {
 	Get() gin.HandlerFunc
 	GetProfileByID() gin.HandlerFunc
 	ChangePassword() gin.HandlerFunc
+	Upgrade() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
@@ -51,6 +52,32 @@ func (c *userController) Create() gin.HandlerFunc {
 		userID := ctx.MustGet("userID").(string)
 		user.UserID = userID
 		err = c.userService.Create(&user)
+
+		if err != nil {
+			if utils.ErrorDuplicatedData(err) {
+				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicated.Error()})
+				return
+			}
+			handleErrorResponse(ctx, err)
+			return
+		}
+
+		ctx.Status(http.StatusCreated)
+	}
+}
+func (c *userController) Upgrade() gin.HandlerFunc {
+
+	return func(ctx *gin.Context) {
+
+		var user request.User
+
+		err := ctx.ShouldBindJSON(&user)
+
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		err = c.userService.Upgrade(&user)
 
 		if err != nil {
 			if utils.ErrorDuplicatedData(err) {
