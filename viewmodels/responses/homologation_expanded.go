@@ -30,4 +30,5 @@ type HomologationExpanded struct {
 	IsCustomTestPlan bool               `bson:"is_custom_test_plan" json:"is_custom_test_plan"`
 	Status           int                `bson:"status" json:"status"`
 	DocumentUrl      string             `bson:"document_url" json:"document_url"`
+	OsVersion         string             `bson:"os_version" json:"os_version"`
 }

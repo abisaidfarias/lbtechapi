@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -114,6 +115,7 @@ func (r *homologationRepository) GetByInternal(companies []primitive.ObjectID,
 		if err != nil {
 			return nil, err
 		}
+		homologation.OsVersion = homologation.Device.PlatformOs + " " + homologation.OsVersion
 		functions.SetHomologationDatesToNull(homologation)
 		homologations = append(homologations, homologation)
 	}
@@ -135,6 +137,8 @@ func (r *homologationRepository) GetByExternal(companyID primitive.ObjectID,
 		if err != nil {
 			return nil, err
 		}
+		homologation.OsVersion = fmt.Sprintf("%s %s", homologation.Device.PlatformOs,
+			homologation.OsVersion)
 		homologations = append(homologations, &homologation)
 	}
 
