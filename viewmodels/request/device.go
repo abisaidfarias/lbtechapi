@@ -47,5 +47,14 @@ type Device struct {
 	NetworkVowifi          bool     `json:"network_vowifi"`
 	NetworkVilte           bool     `json:"network_vilte"`
 	Network5g              bool     `json:"network_5g"`
+	NetworkCarrierAgg      bool     `json:"network_carrier_agg"`
 	ImageUrl               string   `json:"image_url"`
+	SoftwareCode           string   `json:"software_code"`
+	HardwareCode           string   `json:"hardware_code"`
+	IngCode                string   `json:"ing_code"`
+	LoggingCode            string   `json:"logging_code"`
+	SimSupported           string   `json:"sim_supported"`
+	DualSim                string   `json:"dual_sim"`
+	SimType                string   `json:"sim_type"`
+	Esim                   string   `json:"e_sim"`
 }

@@ -56,7 +56,16 @@ func DeviceRequestToDevice(device *request.Device) *models.Device {
 		NetworkVowifi:          device.NetworkVowifi,
 		NetworkVilte:           device.NetworkVilte,
 		Network5g:              device.Network5g,
+		NetworkCarrierAgg:      device.NetworkCarrierAgg,
 		ImageUrl:               device.ImageUrl,
+		SoftwareCode:           device.SoftwareCode,
+		HardwareCode:           device.HardwareCode,
+		IngCode:                device.IngCode,
+		LoggingCode:            device.LoggingCode,
+		SimSupported:           device.SimSupported,
+		DualSim:                device.DualSim,
+		SimType:                device.SimType,
+		Esim:                   device.Esim,
 	}
 }
 func DeviceToDeviceResponse(device *models.Device) *responses.DeviceExpanded {
@@ -110,6 +119,15 @@ func DeviceToDeviceResponse(device *models.Device) *responses.DeviceExpanded {
 		NetworkVowifi:          device.NetworkVowifi,
 		NetworkVilte:           device.NetworkVilte,
 		Network5g:              device.Network5g,
+		NetworkCarrierAgg:      device.NetworkCarrierAgg,
 		ImageUrl:               device.ImageUrl,
+		SoftwareCode:           device.SoftwareCode,
+		HardwareCode:           device.HardwareCode,
+		IngCode:                device.IngCode,
+		LoggingCode:            device.LoggingCode,
+		SimSupported:           device.SimSupported,
+		DualSim:                device.DualSim,
+		SimType:                device.SimType,
+		Esim:                   device.Esim,
 	}
 }
