@@ -66,6 +66,7 @@ func (s *deviceTrackingService) Get(userID string) ([]responses.Tracking, error)
 		existTracking.Model = deviceTracking.Device.CommercialModel
 		existTracking.ID = deviceTracking.Device.ID
 		existTracking.ImageUrl = deviceTracking.Device.ImageUrl
+		existTracking.TecnicalModel = deviceTracking.Device.TechnicalModel
 		existTracking.DeviceTrackings = append(existTracking.DeviceTrackings, *deviceTracking)
 		trackingGrouped[deviceName] = existTracking
 
