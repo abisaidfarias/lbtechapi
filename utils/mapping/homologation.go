@@ -61,6 +61,9 @@ func HomologationRequestToHomologation(homologation *request.Homologation,
 		IsInternalProject: homologation.IsInternalProject,
 		OsVersion:         homologation.OsVersion,
 		DocumentUrl:       homologation.DocumentUrl,
+		ResultUrl:         homologation.ResultUrl,
+		Carrier:           homologation.Carrier,
+		TestingType:       homologation.TestingType,
 	}
 }
 
@@ -82,5 +85,8 @@ func HomologationRequestToHomologationResume(homologation *request.HomologationR
 		IsInternalProject: homologation.IsInternalProject,
 		OsVersion:         homologation.OsVersion,
 		DocumentUrl:       homologation.DocumentUrl,
+		ResultUrl:         homologation.ResultUrl,
+		Carrier:           homologation.Carrier,
+		TestingType:       homologation.TestingType,
 	}
 }

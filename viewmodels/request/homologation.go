@@ -29,4 +29,7 @@ type Homologation struct {
 	IsInternalProject bool      `bson:"is_internal_project" json:"is_internal_project"`
 	OsVersion         string    `bson:"os_version" json:"os_version" binding:"required"`
 	DocumentUrl       string    `bson:"document_url" json:"document_url"`
+	ResultUrl         string    `bson:"result_url" json:"result_url"`
+	Carrier           string    `bson:"carrier" json:"carrier"`
+	TestingType       string    `bson:"testing_type" json:"testing_type"`
 }

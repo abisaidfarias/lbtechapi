@@ -56,5 +56,5 @@ type Device struct {
 	SimSupported           string   `json:"sim_supported"`
 	DualSim                string   `json:"dual_sim"`
 	SimType                string   `json:"sim_type"`
-	Esim                   string   `json:"e_sim"`
+	Esim                   bool   `json:"e_sim"`
 }

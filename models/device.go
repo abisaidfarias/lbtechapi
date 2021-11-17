@@ -61,5 +61,5 @@ type Device struct {
 	SimSupported           string             `bson:"sim_supported"`
 	DualSim                string             `bson:"dual_sim"`
 	SimType                string             `bson:"sim_type"`
-	Esim                   string             `bson:"e_sim"`
+	Esim                   bool               `bson:"e_sim"`
 }

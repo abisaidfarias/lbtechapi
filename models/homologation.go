@@ -33,4 +33,7 @@ type Homologation struct {
 	IsInternalProject bool               `bson:"is_internal_project"`
 	OsVersion         string             `bson:"os_version,omitempty"`
 	DocumentUrl       string             `bson:"document_url"`
+	ResultUrl         string             `bson:"result_url"`
+	Carrier           string             `bson:"carrier"`
+	TestingType       string             `bson:"testing_type"`
 }

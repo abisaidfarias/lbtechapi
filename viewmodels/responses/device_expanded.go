@@ -59,5 +59,5 @@ type DeviceExpanded struct {
 	SimSupported           string             `bson:"sim_supported" json:"sim_supported"`
 	DualSim                string             `bson:"dual_sim" json:"dual_sim"`
 	SimType                string             `bson:"sim_type" json:"sim_type"`
-	Esim                   string             `bson:"e_sim" json:"e_sim"`
+	Esim                   bool               `bson:"e_sim" json:"e_sim"`
 }
