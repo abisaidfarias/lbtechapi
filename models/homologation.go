@@ -36,4 +36,5 @@ type Homologation struct {
 	ResultUrl         string             `bson:"result_url"`
 	Carrier           string             `bson:"carrier"`
 	TestingType       string             `bson:"testing_type"`
+	Comment           string             `bson:"comment"`
 }

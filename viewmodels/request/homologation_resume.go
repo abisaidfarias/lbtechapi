@@ -24,4 +24,5 @@ type HomologationResume struct {
 	ResultUrl         string    `bson:"result_url" json:"result_url"`
 	Carrier           string    `bson:"carrier" json:"carrier"`
 	TestingType       string    `bson:"testing_type" json:"testing_type"`
+	Comment           string    `bson:"comment" json:"comment"`
 }

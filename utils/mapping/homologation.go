@@ -64,6 +64,7 @@ func HomologationRequestToHomologation(homologation *request.Homologation,
 		ResultUrl:         homologation.ResultUrl,
 		Carrier:           homologation.Carrier,
 		TestingType:       homologation.TestingType,
+		Comment:           homologation.Comment,
 	}
 }
 
@@ -88,5 +89,6 @@ func HomologationRequestToHomologationResume(homologation *request.HomologationR
 		ResultUrl:         homologation.ResultUrl,
 		Carrier:           homologation.Carrier,
 		TestingType:       homologation.TestingType,
+		Comment:           homologation.Comment,
 	}
 }

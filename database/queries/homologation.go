@@ -268,6 +268,8 @@ func UpdatePhaseChange(homologation *models.Homologation, oid primitive.ObjectID
 				{Key: "under_start_date", Value: homologation.UnderStartDate},
 				{Key: "under_end_date", Value: homologation.UnderEndDate},
 				{Key: "completed_date", Value: homologation.CompletedDate},
+				{Key: "result_url", Value: homologation.ResultUrl},
+				{Key: "comment", Value: homologation.Comment},
 			},
 		},
 	}
