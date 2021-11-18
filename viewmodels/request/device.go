@@ -16,26 +16,27 @@ type Device struct {
 	PlatformCpu            string   `json:"platform_cpu"`
 	MemoryRom              string   `json:"memory_rom"`
 	MemoryRam              string   `json:"memory_ram"`
-	MemoryExtended         string   `json:"memory_extended"`
+	MemoryExtended         bool     `json:"memory_extended"`
 	MemoryCpu              string   `json:"memory_cpu"`
 	MemoryType             string   `json:"memory_type"`
 	CameraFront            string   `json:"camera_front"`
 	CameraBack             string   `json:"camera_back"`
-	CommunicationWlan      string   `json:"communication_wlan"`
-	CommunicationGps       string   `json:"communication_gps"`
-	CommunicationNfc       string   `json:"communication_nfc"`
-	CommunicationRadio     string   `json:"communication_radio"`
+	CommunicationWlan      bool     `json:"communication_wlan"`
+	CommunicationGps       bool     `json:"communication_gps"`
+	CommunicationNfc       bool     `json:"communication_nfc"`
+	CommunicationRadio     bool     `json:"communication_radio"`
 	CommunicationUsb       string   `json:"communication_usb"`
-	CommunicationBluetooth string   `json:"communication_blutooth"`
+	CommunicationBluetooth bool     `json:"communication_blutooth"`
 	BatteryType            string   `json:"battery_type"`
 	BatteryCapacity        string   `json:"battery_capacity"`
 	BatteryState           string   `json:"battery_state"`
-	SensorFingerprint      string   `json:"sensor_fingerprint"`
-	SensorProximity        string   `json:"sensor_proximity"`
-	SensorAmbientLight     string   `json:"sensor_ambient_light"`
-	SensorAccelerometer    string   `json:"sensor_accelerometer"`
-	SensorGyroscope        string   `json:"sensor_gyroscope"`
-	SensorHall             string   `json:"sensor_hall"`
+	BatteryInductedCharger bool     `json:"battery_inducted_charger"`
+	SensorFingerprint      bool     `json:"sensor_fingerprint"`
+	SensorProximity        bool     `json:"sensor_proximity"`
+	SensorAmbientLight     bool     `json:"sensor_ambient_light"`
+	SensorAccelerometer    bool     `json:"sensor_accelerometer"`
+	SensorGyroscope        bool     `json:"sensor_gyroscope"`
+	SensorHall             bool     `json:"sensor_hall"`
 	BandGsm                []string `json:"band_gsm"`
 	BandWcdma              []string `json:"band_wcdma"`
 	BandLte                []string `json:"band_lte"`
@@ -56,5 +57,5 @@ type Device struct {
 	SimSupported           string   `json:"sim_supported"`
 	DualSim                string   `json:"dual_sim"`
 	SimType                string   `json:"sim_type"`
-	Esim                   bool   `json:"e_sim"`
+	Esim                   bool     `json:"e_sim"`
 }

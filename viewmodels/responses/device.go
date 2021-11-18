@@ -19,26 +19,27 @@ type Device struct {
 	PlatformCpu            string             `bson:"platform_cpu" json:"platform_cpu"`
 	MemoryRom              string             `bson:"memory_rom" json:"memory_rom"`
 	MemoryRam              string             `bson:"memory_ram" json:"memory_ram"`
-	MemoryExtended         string             `bson:"memory_extended" json:"memory_extended"`
+	MemoryExtended         bool               `bson:"memory_extended" json:"memory_extended"`
 	MemoryCpu              string             `bson:"memory_cpu" json:"memory_cpu"`
 	MemoryType             string             `bson:"memory_type" json:"memory_type"`
 	CameraFront            string             `bson:"camera_front" json:"camera_front"`
 	CameraBack             string             `bson:"camera_back" json:"camera_back"`
-	CommunicationWlan      string             `bson:"communication_wlan" json:"communication_wlan"`
-	CommunicationGps       string             `bson:"communication_gps" json:"communication_gps"`
-	CommunicationNfc       string             `bson:"communication_nfc" json:"communication_nfc"`
-	CommunicationRadio     string             `bson:"communication_radio" json:"communication_radio"`
+	CommunicationWlan      bool               `bson:"communication_wlan" json:"communication_wlan"`
+	CommunicationGps       bool               `bson:"communication_gps" json:"communication_gps"`
+	CommunicationNfc       bool               `bson:"communication_nfc" json:"communication_nfc"`
+	CommunicationRadio     bool               `bson:"communication_radio" json:"communication_radio"`
 	CommunicationUsb       string             `bson:"communication_usb" json:"communication_usb"`
-	CommunicationBluetooth string             `bson:"communication_blutooth" json:"communication_blutooth"`
+	CommunicationBluetooth bool               `bson:"communication_blutooth" json:"communication_blutooth"`
 	BatteryType            string             `bson:"battery_type" json:"battery_type"`
 	BatteryCapacity        string             `bson:"battery_capacity" json:"battery_capacity"`
 	BatteryState           string             `bson:"battery_state" json:"battery_state"`
-	SensorFingerprint      string             `bson:"sensor_fingerprint" json:"sensor_fingerprint"`
-	SensorProximity        string             `bson:"sensor_proximity" json:"sensor_proximity"`
-	SensorAmbientLight     string             `bson:"sensor_ambient_light" json:"sensor_ambient_light"`
-	SensorAccelerometer    string             `bson:"sensor_accelerometer" json:"sensor_accelerometer"`
-	SensorGyroscope        string             `bson:"sensor_gyroscope" json:"sensor_gyroscope"`
-	SensorHall             string             `bson:"sensor_hall" json:"sensor_hall"`
+	BatteryInductedCharger bool               `bson:"battery_inducted_charger" json:"battery_inducted_charger"`
+	SensorFingerprint      bool               `bson:"sensor_fingerprint" json:"sensor_fingerprint"`
+	SensorProximity        bool               `bson:"sensor_proximity" json:"sensor_proximity"`
+	SensorAmbientLight     bool               `bson:"sensor_ambient_light" json:"sensor_ambient_light"`
+	SensorAccelerometer    bool               `bson:"sensor_accelerometer" json:"sensor_accelerometer"`
+	SensorGyroscope        bool               `bson:"sensor_gyroscope" json:"sensor_gyroscope"`
+	SensorHall             bool               `bson:"sensor_hall" json:"sensor_hall"`
 	BandGsm                []string           `bson:"band_gsm" json:"band_gsm"`
 	BandWcdma              []string           `bson:"band_wcdma" json:"band_wcdma"`
 	BandLte                []string           `bson:"band_lte" json:"band_lte"`
@@ -59,5 +60,5 @@ type Device struct {
 	SimSupported           string             `bson:"sim_supported" json:"sim_supported"`
 	DualSim                string             `bson:"dual_sim" json:"dual_sim"`
 	SimType                string             `bson:"sim_type" json:"sim_type"`
-	Esim                   bool             `bson:"e_sim" json:"e_sim"`
+	Esim                   bool               `bson:"e_sim" json:"e_sim"`
 }

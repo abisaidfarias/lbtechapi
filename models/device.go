@@ -21,26 +21,27 @@ type Device struct {
 	PlatformCpu            string             `bson:"platform_cpu"`
 	MemoryRom              string             `bson:"memory_rom"`
 	MemoryRam              string             `bson:"memory_ram"`
-	MemoryExtended         string             `bson:"memory_extended"`
+	MemoryExtended         bool               `bson:"memory_extended"`
 	MemoryCpu              string             `bson:"memory_cpu"`
 	MemoryType             string             `bson:"memory_type"`
 	CameraFront            string             `bson:"camera_front"`
 	CameraBack             string             `bson:"camera_back"`
-	CommunicationWlan      string             `bson:"communication_wlan"`
-	CommunicationGps       string             `bson:"communication_gps"`
-	CommunicationNfc       string             `bson:"communication_nfc"`
-	CommunicationRadio     string             `bson:"communication_radio"`
+	CommunicationWlan      bool               `bson:"communication_wlan"`
+	CommunicationGps       bool               `bson:"communication_gps"`
+	CommunicationNfc       bool               `bson:"communication_nfc"`
+	CommunicationRadio     bool               `bson:"communication_radio"`
 	CommunicationUsb       string             `bson:"communication_usb"`
-	CommunicationBluetooth string             `bson:"communication_blutooth"`
+	CommunicationBluetooth bool               `bson:"communication_blutooth"`
 	BatteryType            string             `bson:"battery_type"`
 	BatteryCapacity        string             `bson:"battery_capacity"`
 	BatteryState           string             `bson:"battery_state"`
-	SensorFingerprint      string             `bson:"sensor_fingerprint"`
-	SensorProximity        string             `bson:"sensor_proximity"`
-	SensorAmbientLight     string             `bson:"sensor_ambient_light"`
-	SensorAccelerometer    string             `bson:"sensor_accelerometer"`
-	SensorGyroscope        string             `bson:"sensor_gyroscope"`
-	SensorHall             string             `bson:"sensor_hall"`
+	BatteryInductedCharger bool               `bson:"inducted_charger"`
+	SensorFingerprint      bool               `bson:"sensor_fingerprint"`
+	SensorProximity        bool               `bson:"sensor_proximity"`
+	SensorAmbientLight     bool               `bson:"sensor_ambient_light"`
+	SensorAccelerometer    bool               `bson:"sensor_accelerometer"`
+	SensorGyroscope        bool               `bson:"sensor_gyroscope"`
+	SensorHall             bool               `bson:"sensor_hall"`
 	BandGsm                []string           `bson:"band_gsm"`
 	BandWcdma              []string           `bson:"band_wcdma"`
 	BandLte                []string           `bson:"band_lte"`
