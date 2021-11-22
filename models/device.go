@@ -35,7 +35,7 @@ type Device struct {
 	BatteryType            string             `bson:"battery_type"`
 	BatteryCapacity        string             `bson:"battery_capacity"`
 	BatteryState           string             `bson:"battery_state"`
-	BatteryInductedCharger bool               `bson:"inducted_charger"`
+	BatteryInductedCharger bool               `bson:"battery_inducted_charger"`
 	SensorFingerprint      bool               `bson:"sensor_fingerprint"`
 	SensorProximity        bool               `bson:"sensor_proximity"`
 	SensorAmbientLight     bool               `bson:"sensor_ambient_light"`

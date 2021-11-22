@@ -67,6 +67,7 @@ func DeviceRequestToDevice(device *request.Device) *models.Device {
 		DualSim:                device.DualSim,
 		SimType:                device.SimType,
 		Esim:                   device.Esim,
+		BatteryInductedCharger: device.BatteryInductedCharger,
 	}
 }
 func DeviceToDeviceResponse(device *models.Device) *responses.DeviceExpanded {
@@ -131,5 +132,6 @@ func DeviceToDeviceResponse(device *models.Device) *responses.DeviceExpanded {
 		DualSim:                device.DualSim,
 		SimType:                device.SimType,
 		Esim:                   device.Esim,
+		BatteryInductedCharger: device.BatteryInductedCharger,
 	}
 }
