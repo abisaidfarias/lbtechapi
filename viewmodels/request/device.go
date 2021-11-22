@@ -41,6 +41,7 @@ type Device struct {
 	BandWcdma              []string `json:"band_wcdma"`
 	BandLte                []string `json:"band_lte"`
 	Band5g                 []string `json:"band_5g"`
+	CarrierAgg             []string `json:"carrier_agg"`
 	NetworkGsm             bool     `json:"network_gsm"`
 	NetworkWcdma           bool     `json:"network_wcdma"`
 	NetworkLte             bool     `json:"network_lte"`

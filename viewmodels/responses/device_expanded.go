@@ -44,6 +44,7 @@ type DeviceExpanded struct {
 	BandWcdma              []string           `bson:"band_wcdma" json:"band_wcdma"`
 	BandLte                []string           `bson:"band_lte" json:"band_lte"`
 	Band5g                 []string           `bson:"band_5g" json:"band_5g"`
+	CarrierAgg             []string           `bson:"carrier_agg" json:"carrier_agg"`
 	NetworkGsm             bool               `bson:"network_gsm" json:"network_gsm"`
 	NetworkWcdma           bool               `bson:"network_wcdma" json:"network_wcdma"`
 	NetworkLte             bool               `bson:"network_lte" json:"network_lte"`

@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"context"
-	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
@@ -58,8 +57,6 @@ func (r *deviceRepository) Get() ([]*responses.DeviceExpanded, error) {
 		if err != nil {
 			return nil, err
 		}
-		device.CommercialModel = fmt.Sprintf("%s %s", device.Brand.Name,
-		device.CommercialModel)
 		devices = append(devices, &device)
 	}
 	cursor.Close(context.TODO())

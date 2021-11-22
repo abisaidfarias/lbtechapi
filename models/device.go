@@ -46,6 +46,7 @@ type Device struct {
 	BandWcdma              []string           `bson:"band_wcdma"`
 	BandLte                []string           `bson:"band_lte"`
 	Band5g                 []string           `bson:"band_5g"`
+	CarrierAgg             []string           `bson:"carrier_agg"`
 	NetworkGsm             bool               `bson:"network_gsm"`
 	NetworkWcdma           bool               `bson:"network_wcdma"`
 	NetworkLte             bool               `bson:"network_lte"`
