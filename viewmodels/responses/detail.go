@@ -17,4 +17,6 @@ type Detail struct {
 	SNconsumible     string             `bson:"SNconsumible,omitempty"`
 	PNconsumible     string             `bson:"PNconsumible,omitempty"`
 	CreatedDate      time.Time          `bson:"created_date"`
+	Rat              string             `bson:"rat"`
+	Level            string             `bson:"level"`
 }

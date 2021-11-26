@@ -35,6 +35,8 @@ func PrinterRequestToPrinter(printer *request.Printer, percentageTonner string) 
 		CreatedDate:      time.Now(),
 		PercentageTonner: percentageTonner,
 		Details:          details,
+		Rat:              printer.Rat,
+		Level:            printer.Level,
 	}
 }
 func PrinterToDetail(printer *models.Printer) models.Detail {
@@ -48,5 +50,7 @@ func PrinterToDetail(printer *models.Printer) models.Detail {
 		PNconsumible:     printer.PNconsumible,
 		PercentageTonner: printer.PercentageTonner,
 		CreatedDate:      printer.CreatedDate,
+		Rat:              printer.Rat,
+		Level:            printer.Level,
 	}
 }

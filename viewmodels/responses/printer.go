@@ -20,4 +20,6 @@ type Printer struct {
 	PercentageTonner string             `bson:"percentage_tonner,omitempty"`
 	Details          []Detail           `bson:"details" json:"details"`
 	CreatedDate      time.Time          `bson:"created_date"`
+	Rat              string             `bson:"rat"`
+	Level            string             `bson:"level"`
 }

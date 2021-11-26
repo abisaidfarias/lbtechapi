@@ -20,4 +20,6 @@ type Printer struct {
 	PNconsumible     string             `bson:"PNconsumible,omitempty"`
 	Details          []Detail           `bson:"details" json:"details"`
 	CreatedDate      time.Time          `bson:"created_date"`
+	Rat              string             `bson:"rat"`
+	Level            string             `bson:"level"`
 }
