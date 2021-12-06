@@ -29,7 +29,8 @@ type IHomologationRepository interface {
 	UpdateTestResult(string, request.TestResultResume) error
 	CreateFailTestResult(string, *models.TestResult) error
 	GetGroupedByTypeCountry(companies []primitive.ObjectID,
-		devices []primitive.ObjectID, countries []primitive.ObjectID) ([]*responses.ChartTypeCountry, error)
+		devices []primitive.ObjectID, countries []primitive.ObjectID,
+		companyId primitive.ObjectID, isInternal bool) ([]*responses.ChartTypeCountry, error)
 	PhaseChange(string, *models.Homologation) error
 	GetGroupedByBrandCountry(companies []primitive.ObjectID,
 		devices []primitive.ObjectID, countries []primitive.ObjectID) ([]*responses.ChartVolumeCountry, error)
@@ -207,9 +208,10 @@ func (r *homologationRepository) PhaseChange(id string, homologation *models.Hom
 }
 
 func (r *homologationRepository) GetGroupedByTypeCountry(companies []primitive.ObjectID,
-	devices []primitive.ObjectID, countries []primitive.ObjectID) ([]*responses.ChartTypeCountry, error) {
+	devices []primitive.ObjectID, countries []primitive.ObjectID,
+	companyId primitive.ObjectID, isInternal bool) ([]*responses.ChartTypeCountry, error) {
 
-	homologationQuery := queries.GetHomologations(companies, devices, countries, true, primitive.ObjectID{})
+	homologationQuery := queries.GetHomologations(companies, devices, countries, isInternal, companyId)
 	groupedQuery := queries.GetHomologationsGroupedCountryApprovalType()
 	sort := queries.SortGroupedCountryApprovalType()
 	homologationQuery = append(homologationQuery, groupedQuery)
