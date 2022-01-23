@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/database/queries"
@@ -15,6 +16,8 @@ type IDeviceTrackingRepository interface {
 	Create(*models.DeviceTracking) error
 	Get(isInternal bool, companyID primitive.ObjectID) ([]*responses.DeviceTracking, error)
 	AddTrakingLog(trackingLog *models.TrackingLog, deviceTranckingID primitive.ObjectID) error
+	GetByCompany(primitive.ObjectID) (*responses.DeviceTracking, error)
+	GetByDevice(primitive.ObjectID) (*responses.DeviceTracking, error)
 }
 
 type deviceTrackingRepository struct {
@@ -63,4 +66,36 @@ func (r *deviceTrackingRepository) AddTrakingLog(trackingLog *models.TrackingLog
 		return err
 	}
 	return nil
+}
+func (r *deviceTrackingRepository) GetByCompany(companyId primitive.ObjectID) (*responses.DeviceTracking, error) {
+
+	var deviceTracking *responses.DeviceTracking
+	err := deviceTrackingCollection.FindOne(context.TODO(),
+		queries.GetDeviceTrackingByCompany(companyId)).Decode(&deviceTracking)
+
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			return nil, nil
+		default:
+			return nil, err
+		}
+	}
+	return deviceTracking, nil
+}
+func (r *deviceTrackingRepository) GetByDevice(deviceId primitive.ObjectID) (*responses.DeviceTracking, error) {
+
+	var deviceTracking *responses.DeviceTracking
+	err := deviceTrackingCollection.FindOne(context.TODO(),
+		queries.GetDeviceTrackingByDevice(deviceId)).Decode(&deviceTracking)
+
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			return nil, nil
+		default:
+			return nil, err
+		}
+	}
+	return deviceTracking, nil
 }

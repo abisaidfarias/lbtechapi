@@ -304,3 +304,12 @@ func GetHomologationsGroupedByStatus(companyId primitive.ObjectID) []bson.D {
 
 	return mongo.Pipeline{groupStage}
 }
+func GetHomologationsByCountry(countryId primitive.ObjectID) primitive.M {
+	return primitive.M{"country": countryId}
+}
+func GetHomologationsByCompany(companyId primitive.ObjectID) primitive.M {
+	return primitive.M{"company": companyId}
+}
+func GetHomologationsByDevice(deviceId primitive.ObjectID) primitive.M {
+	return primitive.M{"device": deviceId}
+}

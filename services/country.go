@@ -5,22 +5,28 @@ import (
 	"github.com/abisaidfarias/lbtechapi/utils/mapping"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // ICountryService is the country service
 type ICountryService interface {
 	Create(*request.Country) error
 	Get() ([]*responses.Country, error)
+	Delete(string) (bool, error)
+	Update(string, *request.Country) error
 }
 
 type countryService struct {
-	countryRepository repositories.ICountryRepository
+	countryRepository      repositories.ICountryRepository
+	homologationRepository repositories.IHomologationRepository
 }
 
 // NewCountryService is a constructor
-func NewCountryService(countryRepository repositories.ICountryRepository) ICountryService {
+func NewCountryService(countryRepository repositories.ICountryRepository,
+	homologationRepository repositories.IHomologationRepository) ICountryService {
 	return &countryService{
-		countryRepository: countryRepository,
+		countryRepository:      countryRepository,
+		homologationRepository: homologationRepository,
 	}
 }
 
@@ -49,4 +55,33 @@ func (s *countryService) Get() ([]*responses.Country, error) {
 	}
 
 	return result, nil
+}
+func (s *countryService) Update(id string, countryRequest *request.Country) error {
+	countryId, _ := primitive.ObjectIDFromHex(id)
+	country, err := mapping.CountryRequestToCountry(countryRequest)
+
+	if err != nil {
+		return err
+	}
+	err = s.countryRepository.Update(countryId, country)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (s *countryService) Delete(id string) (bool, error) {
+	countryId, _ := primitive.ObjectIDFromHex(id)
+
+	homologation, err := s.homologationRepository.GetByCountry(countryId)
+	if err != nil {
+		return false, err
+	}
+	if homologation != nil {
+		return true, err
+	}
+	err = s.countryRepository.Delete(countryId)
+	if err != nil {
+		return false, err
+	}
+	return false, nil
 }

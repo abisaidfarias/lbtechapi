@@ -11,5 +11,6 @@ func CompanyRequestToCompany(company *request.Company) (*models.Company, error) 
 		Name:    company.Name,
 		Email:   company.Email,
 		Address: company.Address,
+		LogoUrl: company.LogoUrl,
 	}, nil
 }

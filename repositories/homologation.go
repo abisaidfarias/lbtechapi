@@ -39,6 +39,9 @@ type IHomologationRepository interface {
 	GetByTestPlan(testPlan primitive.ObjectID) (*responses.Homologation, error)
 	UpdateDocument(string, primitive.ObjectID) error
 	GetByCompanyStatusGrouped(primitive.ObjectID) ([]*responses.DashboardTotal, error)
+	GetByCountry(primitive.ObjectID) (*responses.Homologation, error)
+	GetByCompany(primitive.ObjectID) (*responses.Homologation, error)
+	GetByDevice(primitive.ObjectID) (*responses.Homologation, error)
 }
 type homologationRepository struct {
 }
@@ -333,4 +336,52 @@ func (r *homologationRepository) GetByCompanyStatusGrouped(companyId primitive.O
 		dashboardTotals = append(dashboardTotals, dashboardTotal)
 	}
 	return dashboardTotals, nil
+}
+func (r *homologationRepository) GetByCountry(countryId primitive.ObjectID) (*responses.Homologation, error) {
+
+	var homologation *responses.Homologation
+	err := homologationCollection.FindOne(context.TODO(),
+		queries.GetHomologationsByCountry(countryId)).Decode(&homologation)
+
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			return nil, nil
+		default:
+			return nil, err
+		}
+	}
+	return homologation, nil
+}
+func (r *homologationRepository) GetByCompany(companyId primitive.ObjectID) (*responses.Homologation, error) {
+
+	var homologation *responses.Homologation
+	err := homologationCollection.FindOne(context.TODO(),
+		queries.GetHomologationsByCompany(companyId)).Decode(&homologation)
+
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			return nil, nil
+		default:
+			return nil, err
+		}
+	}
+	return homologation, nil
+}
+func (r *homologationRepository) GetByDevice(deviceId primitive.ObjectID) (*responses.Homologation, error) {
+
+	var homologation *responses.Homologation
+	err := homologationCollection.FindOne(context.TODO(),
+		queries.GetHomologationsByDevice(deviceId)).Decode(&homologation)
+
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			return nil, nil
+		default:
+			return nil, err
+		}
+	}
+	return homologation, nil
 }

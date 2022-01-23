@@ -3,9 +3,11 @@ package repositories
 import (
 	"context"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/abisaidfarias/lbtechapi/database"
+	"github.com/abisaidfarias/lbtechapi/database/queries"
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 )
@@ -13,6 +15,8 @@ import (
 type ICompanyRepository interface {
 	Create(*models.Company) error
 	Get() ([]*responses.Company, error)
+	Update(primitive.ObjectID, *models.Company) error
+	Delete(primitive.ObjectID) error
 }
 
 type companyRepository struct {
@@ -48,4 +52,25 @@ func (r *companyRepository) Get() ([]*responses.Company, error) {
 	}
 	cursor.Close(context.TODO())
 	return companies, nil
+}
+func (r *companyRepository) Update(id primitive.ObjectID, company *models.Company) error {
+
+	filter, update := queries.UpdateCompany(company, id)
+
+	_, err := companyCollection.UpdateOne(context.TODO(), filter, update)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+func (r *companyRepository) Delete(id primitive.ObjectID) error {
+
+	_, err := companyCollection.DeleteOne(context.TODO(), queries.DeleteCountry(id))
+
+	if err != nil {
+		return err
+	}
+	return nil
 }

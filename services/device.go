@@ -14,17 +14,23 @@ type IDeviceService interface {
 	Get() ([]*responses.DeviceExpanded, error)
 	GetById(string) (*responses.Device, error)
 	Update(string, *request.Device) error
-	Delete(string) error
+	Delete(string) (bool, error)
 }
 
 type deviceService struct {
-	deviceRepository repositories.IDeviceRepository
+	deviceRepository         repositories.IDeviceRepository
+	deviceTrackingRepository repositories.IDeviceTrackingRepository
+	homologationRepository   repositories.IHomologationRepository
 }
 
 // NewDeviceService is a constructor
-func NewDeviceService(deviceRepository repositories.IDeviceRepository) IDeviceService {
+func NewDeviceService(deviceRepository repositories.IDeviceRepository,
+	deviceTrackingRepository repositories.IDeviceTrackingRepository,
+	homologationRepository repositories.IHomologationRepository) IDeviceService {
 	return &deviceService{
-		deviceRepository: deviceRepository,
+		deviceRepository:         deviceRepository,
+		deviceTrackingRepository: deviceTrackingRepository,
+		homologationRepository:   homologationRepository,
 	}
 }
 
@@ -74,15 +80,27 @@ func (s *deviceService) Update(id string, deviceRequest *request.Device) error {
 	}
 	return nil
 }
-func (s *deviceService) Delete(id string) error {
-	oid, err := primitive.ObjectIDFromHex(id)
+func (s *deviceService) Delete(id string) (bool, error) {
+	deviceId, _ := primitive.ObjectIDFromHex(id)
+
+	homologation, err := s.homologationRepository.GetByDevice(deviceId)
 	if err != nil {
-		return err
+		return false, err
 	}
-	err = s.deviceRepository.Delete(oid)
+	if homologation != nil {
+		return true, err
+	}
+	deviceTacking, err := s.deviceTrackingRepository.GetByDevice(deviceId)
+	if err != nil {
+		return false, err
+	}
+	if deviceTacking != nil {
+		return true, err
+	}
+	err = s.deviceRepository.Delete(deviceId)
 
 	if err != nil {
-		return err
+		return false, err
 	}
-	return nil
+	return false, nil
 }

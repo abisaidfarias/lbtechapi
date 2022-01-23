@@ -36,4 +36,5 @@ type Homologation struct {
 	Carrier           string             `bson:"carrier" json:"carrier"`
 	TestingType       string             `bson:"testing_type" json:"testing_type"`
 	Comment           string             `bson:"comment" json:"comment"`
+	ApprovalTypeOption string    `bson:"approval_type_option" json:"approval_type_option"`
 }

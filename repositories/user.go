@@ -26,6 +26,7 @@ type IUserRepository interface {
 	ChangePassword(string, string) error
 	GetByIDExpanded(string) (*responses.UserExpanded, error)
 	Updgrade(*models.User) error
+	GetUserByCompany(primitive.ObjectID) (*responses.User, error)
 }
 
 type userRepository struct {
@@ -204,4 +205,20 @@ func (r *userRepository) Updgrade(user *models.User) error {
 	}
 
 	return nil
+}
+func (r *userRepository) GetUserByCompany(companyId primitive.ObjectID) (*responses.User, error) {
+
+	var user *responses.User
+	err := userCollection.FindOne(context.TODO(),
+		queries.GetDeviceTrackingByCompany(companyId)).Decode(&user)
+
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			return nil, nil
+		default:
+			return nil, err
+		}
+	}
+	return user, nil
 }

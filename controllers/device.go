@@ -131,20 +131,20 @@ func (c *deviceController) Update() gin.HandlerFunc {
 		ctx.Status(http.StatusOK)
 	}
 }
-
-// Create creates a case
 func (c *deviceController) Delete() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
+		var id string = ctx.Param("id")
 
-		id := ctx.Param("id")
-
-		err := c.deviceService.Delete(id)
+		hasRelations, err := c.deviceService.Delete(id)
 		if err != nil {
 			handleErrorResponse(ctx, err)
 			return
 		}
-
+		if hasRelations {
+			ctx.Status(http.StatusConflict)
+			return
+		}
 		ctx.Status(http.StatusOK)
 	}
 }

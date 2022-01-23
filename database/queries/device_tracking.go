@@ -68,3 +68,9 @@ func GetDeviceTrackingExpanded(isInternal bool, companyID primitive.ObjectID) []
 	return mongo.Pipeline{lookupCompany, unwindCompany,
 		lookupDevice, unwindDevice, lookupBrand, unwindBrand}
 }
+func GetDeviceTrackingByCompany(companyId primitive.ObjectID) primitive.M {
+	return primitive.M{"company": companyId}
+}
+func GetDeviceTrackingByDevice(deviceId primitive.ObjectID) primitive.M {
+	return primitive.M{"device": deviceId}
+}

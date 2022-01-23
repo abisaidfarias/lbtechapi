@@ -36,20 +36,22 @@ var (
 	profileController controllers.IProfileController  = controllers.NewProfileController(profileService)
 
 	companyRepository repositories.ICompanyRepository = repositories.NewCompanyRepository()
-	companyService    services.ICompanyService        = services.NewCompanyService(companyRepository)
-	companyController controllers.ICompanyController  = controllers.NewCompanyController(companyService)
+	companyService    services.ICompanyService        = services.NewCompanyService(companyRepository, homologationRepository,
+		deviceTrackingRepository, userRepository)
+	companyController controllers.ICompanyController = controllers.NewCompanyController(companyService)
 
 	brandRepository repositories.IBrandRepository = repositories.NewBrandRepository()
 	brandService    services.IBrandService        = services.NewBrandService(brandRepository)
 	brandController controllers.IBrandController  = controllers.NewBrandController(brandService)
 
 	countryRepository repositories.ICountryRepository = repositories.NewCountryRepository()
-	countryService    services.ICountryService        = services.NewCountryService(countryRepository)
+	countryService    services.ICountryService        = services.NewCountryService(countryRepository, homologationRepository)
 	countryController controllers.ICountryController  = controllers.NewCountryController(countryService)
 
 	deviceRepository repositories.IDeviceRepository = repositories.NewDeviceRepository()
-	deviceService    services.IDeviceService        = services.NewDeviceService(deviceRepository)
-	deviceController controllers.IDeviceController  = controllers.NewDeviceController(deviceService)
+	deviceService    services.IDeviceService        = services.NewDeviceService(deviceRepository,
+		deviceTrackingRepository, homologationRepository)
+	deviceController controllers.IDeviceController = controllers.NewDeviceController(deviceService)
 
 	storageService    services.IStorageService       = services.NewStorageService()
 	storageController controllers.IStorageController = controllers.NewStorageController(storageService)
@@ -79,6 +81,10 @@ var (
 	testPlanRepository repositories.ITestPlanRepository = repositories.NewTestPlanRepository()
 	testPlanService    services.ITestPlanService        = services.NewTestPlanService(testPlanRepository, homologationRepository)
 	testPlanController controllers.ITestPlanController  = controllers.NewTestPlanController(testPlanService)
+
+	configurationRepository repositories.IConfigurationRepository = repositories.NewConfigurationRepository()
+	configurationService    services.IConfigurationService        = services.NewConfigurationService(configurationRepository)
+	configurationController controllers.IConfigurationController  = controllers.NewConfigurationController(configurationService)
 )
 
 func main() {
@@ -170,6 +176,8 @@ func main() {
 		{
 			company.POST("", companyController.Create())
 			company.GET("", companyController.Get())
+			company.PUT(":id", companyController.Update())
+			company.DELETE(":id", companyController.Delete())
 		}
 		brand := v1.Group("/brand")
 		{
@@ -180,6 +188,8 @@ func main() {
 		{
 			country.POST("", countryController.Create())
 			country.GET("", countryController.Get())
+			country.PUT(":id", countryController.Update())
+			country.DELETE(":id", countryController.Delete())
 		}
 		storage := v1.Group("/upload")
 		{
@@ -218,6 +228,11 @@ func main() {
 			deviceTracking.POST("", deviceTrackingController.Create())
 			deviceTracking.GET("", deviceTrackingController.Get())
 			deviceTracking.PUT("", deviceTrackingController.AddTrakingLog())
+		}
+		configuration := v1.Group("/configuration")
+		{
+			configuration.POST("", configurationController.Create())
+			configuration.GET("", configurationController.Get())
 		}
 	}
 
