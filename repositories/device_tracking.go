@@ -18,6 +18,7 @@ type IDeviceTrackingRepository interface {
 	AddTrakingLog(trackingLog *models.TrackingLog, deviceTranckingID primitive.ObjectID) error
 	GetByCompany(primitive.ObjectID) (*responses.DeviceTracking, error)
 	GetByDevice(primitive.ObjectID) (*responses.DeviceTracking, error)
+	Delete([]primitive.ObjectID) error
 }
 
 type deviceTrackingRepository struct {
@@ -43,8 +44,8 @@ func (r *deviceTrackingRepository) Create(deviceTracking *models.DeviceTracking)
 // Get returns a list of all test cases
 func (r *deviceTrackingRepository) Get(isInternal bool, companyID primitive.ObjectID) ([]*responses.DeviceTracking, error) {
 
-	cursor, err := deviceTrackingCollection.Aggregate(context.TODO(), 
-		queries.GetDeviceTrackingExpanded(isInternal,companyID))
+	cursor, err := deviceTrackingCollection.Aggregate(context.TODO(),
+		queries.GetDeviceTrackingExpanded(isInternal, companyID))
 	if err != nil {
 		return nil, err
 	}
@@ -98,4 +99,15 @@ func (r *deviceTrackingRepository) GetByDevice(deviceId primitive.ObjectID) (*re
 		}
 	}
 	return deviceTracking, nil
+}
+func (r *deviceTrackingRepository) Delete(deviceTrackingsId []primitive.ObjectID) error {
+
+	_, err := deviceTrackingCollection.DeleteMany(context.TODO(),
+		queries.DeleteDeviceTracking(deviceTrackingsId))
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

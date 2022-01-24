@@ -74,3 +74,12 @@ func GetDeviceTrackingByCompany(companyId primitive.ObjectID) primitive.M {
 func GetDeviceTrackingByDevice(deviceId primitive.ObjectID) primitive.M {
 	return primitive.M{"device": deviceId}
 }
+func DeleteDeviceTracking(ids []primitive.ObjectID) primitive.M {
+
+	filter := primitive.M{
+		"_id": primitive.M{
+			"$in": ids,
+		},
+	}
+	return filter
+}

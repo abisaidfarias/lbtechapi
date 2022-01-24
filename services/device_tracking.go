@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/utils/mapping"
@@ -15,6 +16,7 @@ type IDeviceTrackingService interface {
 	Create(*request.DeviceTracking) error
 	Get(string) ([]responses.Tracking, error)
 	AddTrakingLog(*request.TrackingLogMultiple) error
+	Delete(string) error
 }
 
 type deviceTrackingService struct {
@@ -87,6 +89,21 @@ func (s *deviceTrackingService) AddTrakingLog(trackingLogReq *request.TrackingLo
 		if err != nil {
 			return err
 		}
+	}
+	return nil
+}
+func (s *deviceTrackingService) Delete(ids string) error {
+
+	deviceTrackingSplits := strings.Split(ids, ",")
+
+	var deviceTrackingIds []primitive.ObjectID = []primitive.ObjectID{}
+	for _, id := range deviceTrackingSplits {
+		deviceId, _ := primitive.ObjectIDFromHex(id)
+		deviceTrackingIds = append(deviceTrackingIds, deviceId)
+	}
+	err := s.deviceTrackingRepository.Delete(deviceTrackingIds)
+	if err != nil {
+		return err
 	}
 	return nil
 }

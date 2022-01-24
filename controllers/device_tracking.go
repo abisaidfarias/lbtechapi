@@ -14,6 +14,7 @@ type IDeviceTrackingController interface {
 	Create() gin.HandlerFunc
 	Get() gin.HandlerFunc
 	AddTrakingLog() gin.HandlerFunc
+	Delete() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
@@ -98,6 +99,19 @@ func (c *deviceTrackingController) AddTrakingLog() gin.HandlerFunc {
 			return
 		}
 
+		ctx.Status(http.StatusOK)
+	}
+}
+func (c *deviceTrackingController) Delete() gin.HandlerFunc {
+
+	return func(ctx *gin.Context) {
+		var ids string = ctx.Param("id")
+
+		err := c.deviceTrackingService.Delete(ids)
+		if err != nil {
+			handleErrorResponse(ctx, err)
+			return
+		}
 		ctx.Status(http.StatusOK)
 	}
 }

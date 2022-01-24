@@ -228,6 +228,7 @@ func main() {
 			deviceTracking.POST("", deviceTrackingController.Create())
 			deviceTracking.GET("", deviceTrackingController.Get())
 			deviceTracking.PUT("", deviceTrackingController.AddTrakingLog())
+			deviceTracking.DELETE(":id", deviceTrackingController.Delete())
 		}
 		configuration := v1.Group("/configuration")
 		{
