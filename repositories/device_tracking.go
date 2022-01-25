@@ -19,6 +19,7 @@ type IDeviceTrackingRepository interface {
 	GetByCompany(primitive.ObjectID) (*responses.DeviceTracking, error)
 	GetByDevice(primitive.ObjectID) (*responses.DeviceTracking, error)
 	Delete([]primitive.ObjectID) error
+	Update(string, *models.DeviceTracking) error
 }
 
 type deviceTrackingRepository struct {
@@ -104,6 +105,23 @@ func (r *deviceTrackingRepository) Delete(deviceTrackingsId []primitive.ObjectID
 
 	_, err := deviceTrackingCollection.DeleteMany(context.TODO(),
 		queries.DeleteDeviceTracking(deviceTrackingsId))
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+func (r *deviceTrackingRepository) Update(id string, deviceTracking *models.DeviceTracking) error {
+
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	filter, update := queries.UpdateDeviceTracking(deviceTracking, oid)
+
+	_, err = deviceCollection.UpdateOne(context.TODO(), filter, update)
 
 	if err != nil {
 		return err

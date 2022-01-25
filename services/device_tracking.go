@@ -17,6 +17,7 @@ type IDeviceTrackingService interface {
 	Get(string) ([]responses.Tracking, error)
 	AddTrakingLog(*request.TrackingLogMultiple) error
 	Delete(string) error
+	Update(string, *request.DeviceTracking) error
 }
 
 type deviceTrackingService struct {
@@ -102,6 +103,16 @@ func (s *deviceTrackingService) Delete(ids string) error {
 		deviceTrackingIds = append(deviceTrackingIds, deviceId)
 	}
 	err := s.deviceTrackingRepository.Delete(deviceTrackingIds)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (s *deviceTrackingService) Update(id string, deviceTrackingRequest *request.DeviceTracking) error {
+
+	deviceTracking := mapping.DeviceTrackinRequestToDeviceTrackingUpdate(deviceTrackingRequest)
+
+	err := s.deviceTrackingRepository.Update(id, deviceTracking)
 	if err != nil {
 		return err
 	}

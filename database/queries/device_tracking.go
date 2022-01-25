@@ -83,3 +83,13 @@ func DeleteDeviceTracking(ids []primitive.ObjectID) primitive.M {
 	}
 	return filter
 }
+func UpdateDeviceTracking(deviceTracking *models.DeviceTracking, oid primitive.ObjectID) (primitive.M, primitive.M) {
+
+	filter := primitive.M{
+		"_id": oid,
+	}
+	update := primitive.M{
+		"$set": deviceTracking,
+	}
+	return filter, update
+}
