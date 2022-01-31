@@ -47,28 +47,15 @@ func TrackinLogRequestToTrackingLog(trackingLogReq *request.TrackingLog) *models
 		TrackingDate:        trackingLogReq.TrackingDate,
 	}
 }
-func DeviceTrackinRequestToDeviceTrackingUpdate(deviceTraking *request.DeviceTracking) *models.DeviceTracking {
-	companyID, _ := primitive.ObjectIDFromHex(deviceTraking.Company)
-	deviceID, _ := primitive.ObjectIDFromHex(deviceTraking.Device)
-	country, _ := CountryRequestToCountry(&deviceTraking.TrackingLog.Country)
-	location, _ := LocationRequestToLocation(&deviceTraking.TrackingLog.Location)
-	user := UserResumeToUser(&deviceTraking.TrackingLog.InternalResponsible)
-	trackingLog := models.TrackingLog{
-		Country:             *country,
-		Location:            *location,
-		InternalResponsible: *user,
-		ExternalResponsible: deviceTraking.TrackingLog.ExternalResponsible,
-		Comment:             deviceTraking.TrackingLog.Comment,
-		DocumentUrl:         deviceTraking.TrackingLog.DocumentUrl,
-		TrackingDate:        deviceTraking.TrackingLog.TrackingDate,
-	}
+func DeviceTrackinRequestToDeviceTrackingUpdate(deviceTraking *request.DeviceTrackingExpanded) *models.DeviceTracking {
+	companyID, _ := primitive.ObjectIDFromHex(string(deviceTraking.Company.ID))
+	deviceID, _ := primitive.ObjectIDFromHex(string(deviceTraking.Device.ID))
 	var trakings []models.TrackingLog = []models.TrackingLog{}
 
 	for _, trakingLog := range deviceTraking.TrackingLogs {
 
 		trakings = append(trakings, *TrackinLogRequestToTrackingLog(&trakingLog))
 	}
-	trakings = append(trakings, trackingLog)
 	return &models.DeviceTracking{
 		Company:      companyID,
 		Device:       deviceID,

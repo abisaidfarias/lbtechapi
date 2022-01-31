@@ -17,7 +17,7 @@ type IDeviceTrackingService interface {
 	Get(string) ([]responses.Tracking, error)
 	AddTrakingLog(*request.TrackingLogMultiple) error
 	Delete(string) error
-	Update(string, *request.DeviceTracking) error
+	Update(string, *request.DeviceTrackingExpanded) error
 }
 
 type deviceTrackingService struct {
@@ -108,7 +108,7 @@ func (s *deviceTrackingService) Delete(ids string) error {
 	}
 	return nil
 }
-func (s *deviceTrackingService) Update(id string, deviceTrackingRequest *request.DeviceTracking) error {
+func (s *deviceTrackingService) Update(id string, deviceTrackingRequest *request.DeviceTrackingExpanded) error {
 
 	deviceTracking := mapping.DeviceTrackinRequestToDeviceTrackingUpdate(deviceTrackingRequest)
 

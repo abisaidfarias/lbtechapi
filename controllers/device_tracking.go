@@ -122,7 +122,7 @@ func (c *deviceTrackingController) Update() gin.HandlerFunc {
 
 		id := ctx.Param("id")
 
-		var deviceTracking request.DeviceTracking
+		var deviceTracking request.DeviceTrackingExpanded
 
 		err := ctx.ShouldBindJSON(&deviceTracking)
 

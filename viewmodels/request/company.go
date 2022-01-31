@@ -2,6 +2,7 @@ package request
 
 // Company model
 type Company struct {
+	ID      string `bson:"_id" json:"_id"`
 	Email   string `json:"email"  binding:"required"`
 	Name    string `json:"name"  binding:"required"`
 	Address string `json:"address"  binding:"required"`
