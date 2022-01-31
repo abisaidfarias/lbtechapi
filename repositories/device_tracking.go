@@ -121,7 +121,7 @@ func (r *deviceTrackingRepository) Update(id string, deviceTracking *models.Devi
 
 	filter, update := queries.UpdateDeviceTracking(deviceTracking, oid)
 
-	_, err = deviceCollection.UpdateOne(context.TODO(), filter, update)
+	_, err = deviceTrackingCollection.UpdateOne(context.TODO(), filter, update)
 
 	if err != nil {
 		return err
