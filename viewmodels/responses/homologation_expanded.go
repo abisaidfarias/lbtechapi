@@ -37,4 +37,7 @@ type HomologationExpanded struct {
 	TestingType        string             `bson:"testing_type" json:"testing_type"`
 	Comment            string             `bson:"comment" json:"comment"`
 	ApprovalTypeOption string             `bson:"approval_type_option" json:"approval_type_option"`
+	ApprovalType       string             `bson:"approval_type" json:"approval_type"`
+	ProjectType        string             `bson:"project_type" json:"project_type"`
+	StatusView         string             `bson:"status_view" json:"status_view"`
 }

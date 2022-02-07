@@ -53,3 +53,8 @@ var MimeTypes_value = map[string]string{
 	"application/vnd.openxmlformats-officedocument.wordprocessingml.document":   ".docx",
 	"application/vnd.openxmlformats-officedocument.presentationml.presentation": ".pptx",
 }
+var HomologationStatus_type = map[int]string{
+	0: "Ongoing",
+	1: "Approved",
+	2: "Rejected",
+}

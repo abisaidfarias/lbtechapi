@@ -1,6 +1,10 @@
 package queries
 
 import (
+	"os"
+	"strconv"
+	"time"
+
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"go.mongodb.org/mongo-driver/bson"
@@ -312,4 +316,55 @@ func GetHomologationsByCompany(companyId primitive.ObjectID) primitive.M {
 }
 func GetHomologationsByDevice(deviceId primitive.ObjectID) primitive.M {
 	return primitive.M{"device": deviceId}
+}
+func UpdateHomologation(homologation *models.Homologation, oid primitive.ObjectID) (primitive.M, primitive.D) {
+
+	filter := primitive.M{
+		"_id": oid,
+	}
+	update := primitive.D{
+		{Key: "$set",
+			Value: primitive.D{
+				{Key: "current_phase", Value: homologation.CurrentPhase},
+				{Key: "status", Value: homologation.Status},
+				{Key: "software_version", Value: homologation.SoftwareVersion},
+				{Key: "hardware_version", Value: homologation.HardwareVersion},
+				{Key: "planning_date", Value: homologation.PlanningDate},
+				{Key: "sample_start_date", Value: homologation.SampleStartDate},
+				{Key: "sample_end_date", Value: homologation.SampleEndDate},
+				{Key: "test_start_date", Value: homologation.TestStartDate},
+				{Key: "test_end_date", Value: homologation.TestEndDate},
+				{Key: "under_start_date", Value: homologation.UnderStartDate},
+				{Key: "under_end_date", Value: homologation.UnderEndDate},
+				{Key: "completed_date", Value: homologation.CompletedDate},
+				{Key: "result_url", Value: homologation.ResultUrl},
+				{Key: "comment", Value: homologation.Comment},
+			},
+		},
+	}
+	return filter, update
+}
+func DeleteHomologation(oid primitive.ObjectID) primitive.M {
+
+	return primitive.M{
+		"_id": oid,
+	}
+}
+func DeleteHomologationHierarchy(deviceId primitive.ObjectID,
+	countryId primitive.ObjectID, companyId primitive.ObjectID, isInternal bool) primitive.M {
+
+	return primitive.M{"device": deviceId, "company": companyId,
+		"country": countryId, "is_internal_project": isInternal}
+
+}
+func IntervalTime() primitive.D {
+	var matchStage bson.D
+	var objectStage bson.M
+	monthInterval, _ := strconv.Atoi(os.Getenv("MONTH_INTERVAL"))
+
+	startDate := time.Now().AddDate(0, -monthInterval, 0)
+	endDate := time.Now()
+	objectStage = bson.M{"test_end_date": bson.M{"$gt": startDate, "$lt": endDate}}
+	matchStage = append(matchStage, primitive.E{Key: "$match", Value: objectStage})
+	return matchStage
 }

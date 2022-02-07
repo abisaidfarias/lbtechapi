@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/abisaidfarias/lbtechapi/services"
+	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/gin-gonic/gin"
 )
@@ -19,6 +20,8 @@ type IHomologationController interface {
 	GetHomologationFails() gin.HandlerFunc
 	CreateFailTest() gin.HandlerFunc
 	UpdateDocument() gin.HandlerFunc
+	Delete() gin.HandlerFunc
+	Update() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
@@ -209,4 +212,47 @@ func (c *homologationController) UpdateDocument() gin.HandlerFunc {
 		ctx.Status(http.StatusOK)
 	}
 
+}
+func (c *homologationController) Delete() gin.HandlerFunc {
+
+	return func(ctx *gin.Context) {
+		var id string = ctx.Param("id")
+
+		err := c.homologationService.Delete(id)
+		if err != nil {
+			handleErrorResponse(ctx, err)
+			return
+		}
+		ctx.Status(http.StatusOK)
+	}
+}
+func (c *homologationController) Update() gin.HandlerFunc {
+
+	return func(ctx *gin.Context) {
+
+		var id string = ctx.Param("id")
+
+		var homologation request.Homologation
+
+		err := ctx.ShouldBindJSON(&homologation)
+
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		err = c.homologationService.Update(id, &homologation)
+
+		if err != nil {
+			if utils.ErrorDuplicatedData(err) {
+				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicated.Error()})
+				return
+			}
+			handleErrorResponse(ctx, err)
+			return
+
+		}
+
+		ctx.Status(http.StatusOK)
+	}
 }

@@ -94,3 +94,29 @@ func HomologationRequestToHomologationResume(homologation *request.HomologationR
 		ApprovalTypeOption: homologation.ApprovalTypeOption,
 	}
 }
+func HomologationRequestToHomologationUpdate(homologation *request.Homologation) *models.Homologation {
+
+	companyID, _ := primitive.ObjectIDFromHex(homologation.Company)
+	deviceID, _ := primitive.ObjectIDFromHex(homologation.Device)
+	brandID, _ := primitive.ObjectIDFromHex(homologation.Brand)
+
+	return &models.Homologation{
+		Company:            companyID,
+		Device:             deviceID,
+		SoftwareVersion:    homologation.SoftwareVersion,
+		HardwareVersion:    homologation.HardwareVersion,
+		PlanningDate:       homologation.PlanningDate,
+		SampleStartDate:    homologation.SampleStartDate,
+		SampleEndDate:      homologation.SampleEndDate,
+		TestStartDate:      homologation.TestStartDate,
+		TestEndDate:        homologation.TestEndDate,
+		UnderStartDate:     homologation.UnderStartDate,
+		UnderEndDate:       homologation.UnderEndDate,
+		CompletedDate:      homologation.CompletedDate,
+		Brand:              brandID,
+		IsInternalProject:  homologation.IsInternalProject,
+		OsVersion:          homologation.OsVersion,
+		Carrier:            homologation.Carrier,
+		TestingType:        homologation.TestingType,
+	}
+}

@@ -206,6 +206,8 @@ func main() {
 			homologation.GET(":id/test/fails", homologationController.GetHomologationFails())
 			homologation.POST(":id/failTest", homologationController.CreateFailTest())
 			homologation.PUT(":id/document", homologationController.UpdateDocument())
+			homologation.PUT(":id/homologation", homologationController.Update())
+			homologation.DELETE(":id", homologationController.Delete())
 
 		}
 		dashboard := v1.Group("/dashboard")

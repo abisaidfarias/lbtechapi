@@ -23,6 +23,8 @@ type IHomologationService interface {
 	GetHomologationFails(string) (*responses.TestFails, error)
 	CreateFailTestResult(string, *request.TestResultResume) error
 	UpdateDocument(string, *request.Homologation) error
+	Update(string, *request.Homologation) error
+	Delete(string) error
 }
 
 type homologationService struct {
@@ -259,6 +261,37 @@ func (s *homologationService) UpdateDocument(id string, homologation *request.Ho
 
 	homologationId, _ := primitive.ObjectIDFromHex(id)
 	err := s.homologationRepository.UpdateDocument(homologation.DocumentUrl, homologationId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (s *homologationService) Update(id string, homologationRequest *request.Homologation) error {
+	homologationId, _ := primitive.ObjectIDFromHex(id)
+	homologation := mapping.HomologationRequestToHomologationUpdate(homologationRequest)
+
+	err := s.homologationRepository.Update(homologationId, homologation)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (s *homologationService) Delete(id string) error {
+	homologationId, _ := primitive.ObjectIDFromHex(id)
+
+	homologation, err := s.homologationRepository.GetByID(homologationId)
+	if err != nil {
+		return err
+	}
+	if homologation.Type == enums.HomologationType_value["INITIAL"] {
+		err = s.homologationRepository.DeleteHierarchy(homologation.Device, homologation.Country,
+			homologation.Company, homologation.IsInternalProject)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	err = s.homologationRepository.Delete(homologationId)
 	if err != nil {
 		return err
 	}

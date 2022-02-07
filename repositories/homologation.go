@@ -12,6 +12,7 @@ import (
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/database/queries"
 	"github.com/abisaidfarias/lbtechapi/models"
+	"github.com/abisaidfarias/lbtechapi/utils/enums"
 	"github.com/abisaidfarias/lbtechapi/utils/functions"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
@@ -42,6 +43,9 @@ type IHomologationRepository interface {
 	GetByCountry(primitive.ObjectID) (*responses.Homologation, error)
 	GetByCompany(primitive.ObjectID) (*responses.Homologation, error)
 	GetByDevice(primitive.ObjectID) (*responses.Homologation, error)
+	Update(primitive.ObjectID, *models.Homologation) error
+	Delete(primitive.ObjectID) error
+	DeleteHierarchy(primitive.ObjectID, primitive.ObjectID, primitive.ObjectID, bool) error
 }
 type homologationRepository struct {
 }
@@ -120,6 +124,13 @@ func (r *homologationRepository) GetByInternal(companies []primitive.ObjectID,
 			return nil, err
 		}
 		homologation.OsVersion = homologation.Device.PlatformOs + " " + homologation.OsVersion
+		homologation.ApprovalType = enums.HomologationType_key[homologation.Type]
+		homologation.ProjectType = "External"
+		if homologation.IsInternalProject {
+			homologation.ProjectType = "Internal"
+		}
+		homologation.StatusView = enums.HomologationStatus_type[homologation.Status]
+
 		functions.SetHomologationDatesToNull(homologation)
 		homologations = append(homologations, homologation)
 	}
@@ -216,6 +227,8 @@ func (r *homologationRepository) GetGroupedByTypeCountry(companies []primitive.O
 
 	homologationQuery := queries.GetHomologations(companies, devices, countries, isInternal, companyId)
 	groupedQuery := queries.GetHomologationsGroupedCountryApprovalType()
+	match := queries.IntervalTime()
+	homologationQuery = append(homologationQuery, match)
 	sort := queries.SortGroupedCountryApprovalType()
 	homologationQuery = append(homologationQuery, groupedQuery)
 	homologationQuery = append(homologationQuery, sort)
@@ -384,4 +397,36 @@ func (r *homologationRepository) GetByDevice(deviceId primitive.ObjectID) (*resp
 		}
 	}
 	return homologation, nil
+}
+func (r *homologationRepository) Update(id primitive.ObjectID, homologation *models.Homologation) error {
+
+	filter, update := queries.UpdateHomologation(homologation, id)
+
+	_, err := homologationCollection.UpdateOne(context.TODO(), filter, update)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+func (r *homologationRepository) Delete(id primitive.ObjectID) error {
+
+	_, err := homologationCollection.DeleteOne(context.TODO(), queries.DeleteHomologation(id))
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (r *homologationRepository) DeleteHierarchy(deviceId primitive.ObjectID,
+	countryId primitive.ObjectID, companyId primitive.ObjectID, isInternal bool) error {
+
+	_, err := homologationCollection.DeleteMany(context.TODO(),
+		queries.DeleteHomologationHierarchy(deviceId, countryId, companyId, isInternal))
+
+	if err != nil {
+		return err
+	}
+	return nil
 }

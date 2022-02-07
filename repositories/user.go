@@ -124,11 +124,11 @@ func (r *userRepository) Create(user *models.User) error {
 // Update updates the given that
 func (r *userRepository) Update(id string, user *models.User) error {
 
-	oid, err := primitive.ObjectIDFromHex(id)
+	oid, _ := primitive.ObjectIDFromHex(id)
 
 	filter, update := queries.UpdateUser(user, oid)
 
-	_, err = userCollection.UpdateOne(context.TODO(), filter, update)
+	_, err := userCollection.UpdateOne(context.TODO(), filter, update)
 
 	if err != nil {
 		return err
@@ -139,9 +139,9 @@ func (r *userRepository) Update(id string, user *models.User) error {
 
 // Delete deletes the user
 func (r *userRepository) Delete(id string) error {
-	oid, err := primitive.ObjectIDFromHex(id)
+	oid, _ := primitive.ObjectIDFromHex(id)
 
-	_, err = userCollection.DeleteOne(context.TODO(), queries.DeleteUser(oid))
+	_, err := userCollection.DeleteOne(context.TODO(), queries.DeleteUser(oid))
 
 	if err != nil {
 		return err
@@ -159,7 +159,9 @@ func (r *userRepository) GetProfileByID(oid primitive.ObjectID) (*responses.Prof
 	}
 	var profile *responses.Profile
 	err = profileCollection.FindOne(context.TODO(), queries.GetProfileById(user.Profile)).Decode(&profile)
-
+	if err != nil {
+		return nil, err
+	}
 	return profile, nil
 }
 func (r *userRepository) ChangePassword(hashPassword string, email string) error {
