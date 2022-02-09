@@ -57,4 +57,5 @@ var HomologationStatus_type = map[int]string{
 	0: "Ongoing",
 	1: "Approved",
 	2: "Rejected",
+	3: "Finished",
 }
