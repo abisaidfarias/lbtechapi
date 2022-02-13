@@ -339,6 +339,8 @@ func UpdateHomologation(homologation *models.Homologation, oid primitive.ObjectI
 				{Key: "completed_date", Value: homologation.CompletedDate},
 				{Key: "result_url", Value: homologation.ResultUrl},
 				{Key: "comment", Value: homologation.Comment},
+				{Key: "device", Value: homologation.Device},
+				{Key: "brand", Value: homologation.Brand},
 			},
 		},
 	}
