@@ -8,12 +8,12 @@ var HomologationStatus_value = map[string]int{
 var HomologationType_value = map[string]int{
 	"INITIAL":     0,
 	"MAINTENANCE": 1,
-	"REGRETION":   2,
+	"REGRESSION":  2,
 }
 var HomologationType_key = map[int]string{
 	0: "Initial",
 	1: "Maintenance",
-	2: "Regretion",
+	2: "Regression",
 }
 var HomologationPhase_value = map[string]int{
 	"PLANNING":         0,
