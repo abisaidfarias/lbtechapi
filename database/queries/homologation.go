@@ -296,23 +296,29 @@ func UpdateDocument(documentUrl string, homologationId primitive.ObjectID) (prim
 	}
 	return filter, update
 }
-func GetHomologationsGroupedByStatus(companyId primitive.ObjectID) []bson.D {
+func GetHomologationsGroupedByStatus() bson.D {
 
-	groupStage := bson.D{
+	return bson.D{
 		primitive.E{Key: "$group", Value: bson.D{
 			primitive.E{Key: "_id", Value: "$current_phase"},
 			primitive.E{Key: "count", Value: bson.D{
 				primitive.E{Key: "$sum", Value: 1},
 			}},
-		}}}
-
-	return mongo.Pipeline{groupStage}
+		}},
+	}
 }
 func GetHomologationsByCountry(countryId primitive.ObjectID) primitive.M {
 	return primitive.M{"country": countryId}
 }
 func GetHomologationsByCompany(companyId primitive.ObjectID) primitive.M {
 	return primitive.M{"company": companyId}
+}
+func GetHomologationsByCompanyD(companyId primitive.ObjectID) []bson.D {
+	matchStage := bson.D{
+		primitive.E{Key: "$match", Value: bson.D{
+			primitive.E{Key: "company", Value: companyId},
+		}}}
+	return mongo.Pipeline{matchStage}
 }
 func GetHomologationsByDevice(deviceId primitive.ObjectID) primitive.M {
 	return primitive.M{"device": deviceId}

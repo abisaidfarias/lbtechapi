@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"context"
-	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -125,6 +124,9 @@ func (r *homologationRepository) GetByInternal(companies []primitive.ObjectID,
 		}
 		homologation.OsVersion = homologation.Device.PlatformOs + " " + homologation.OsVersion
 		homologation.ApprovalType = enums.HomologationType_key[homologation.Type]
+		if homologation.Type == enums.HomologationType_value["MAINTENANCE"] {
+			homologation.ApprovalType = homologation.ApprovalTypeOption
+		}
 		homologation.ProjectType = "External"
 		if homologation.IsInternalProject {
 			homologation.ProjectType = "Internal"
@@ -147,14 +149,21 @@ func (r *homologationRepository) GetByExternal(companyID primitive.ObjectID,
 	}
 	var homologations []*responses.HomologationExpanded = []*responses.HomologationExpanded{}
 	for cursor.Next(context.TODO()) {
-		var homologation responses.HomologationExpanded
+		var homologation *responses.HomologationExpanded
 		err := cursor.Decode(&homologation)
 		if err != nil {
 			return nil, err
 		}
-		homologation.OsVersion = fmt.Sprintf("%s %s", homologation.Device.PlatformOs,
-			homologation.OsVersion)
-		homologations = append(homologations, &homologation)
+		homologation.OsVersion = homologation.Device.PlatformOs + " " + homologation.OsVersion
+		homologation.ApprovalType = enums.HomologationType_key[homologation.Type]
+		homologation.ProjectType = "External"
+		if homologation.IsInternalProject {
+			homologation.ProjectType = "Internal"
+		}
+		homologation.StatusView = enums.HomologationStatus_type[homologation.Status]
+
+		functions.SetHomologationDatesToNull(homologation)
+		homologations = append(homologations, homologation)
 	}
 
 	return homologations, nil
@@ -333,7 +342,11 @@ func (r *homologationRepository) UpdateDocument(documentUrl string, homologation
 }
 func (r *homologationRepository) GetByCompanyStatusGrouped(companyId primitive.ObjectID) ([]*responses.DashboardTotal, error) {
 
-	homologationQuery := queries.GetHomologationsGroupedByStatus(companyId)
+	homologationQuery := queries.GetHomologationsByCompanyD(companyId)
+	groupedQuery := queries.GetHomologationsGroupedByStatus()
+
+	homologationQuery = append(homologationQuery, groupedQuery)
+
 	cursor, err := homologationCollection.Aggregate(context.TODO(),
 		homologationQuery)
 	if err != nil {
