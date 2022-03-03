@@ -37,7 +37,7 @@ func (s *dashboardService) Get(userID string) (*responses.DashboardChart, error)
 		return nil, nil
 	}
 	chartTypeCountry, err := s.homologationRepository.GetGroupedByTypeCountry(user.Clients,
-		user.Brands, user.Countries,user.Company,user.IsInternal)
+		user.Brands, user.Countries, user.Company, user.IsInternal)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func (s *dashboardService) GetGeneralInfo(userID string) (*responses.DashboardIn
 
 	t := time.Now()
 	dashboardTotals, err := s.homologationRepository.GetByCompanyStatusGrouped(user.Clients,
-		user.Brands, user.Countries)
+		user.Brands, user.Countries,user.Company, user.IsInternal)
 	if err != nil {
 		return nil, nil
 	}
