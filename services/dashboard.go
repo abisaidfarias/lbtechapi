@@ -44,7 +44,7 @@ func (s *dashboardService) Get(userID string) (*responses.DashboardChart, error)
 	return mapping.TypeCountriesToTypeCountriesCharts(chartTypeCountry), nil
 }
 func (s *dashboardService) GetGeneralInfo(userID string) (*responses.DashboardInfo, error) {
-	user, err := s.userRepository.GetByIDExpanded(userID)
+	user, err := s.userRepository.GetByID(userID)
 	if err != nil {
 		return nil, err
 	}
@@ -53,13 +53,18 @@ func (s *dashboardService) GetGeneralInfo(userID string) (*responses.DashboardIn
 	}
 
 	t := time.Now()
-	dashboardTotals, err := s.homologationRepository.GetByCompanyStatusGrouped(user.Company.ID)
+	dashboardTotals, err := s.homologationRepository.GetByCompanyStatusGrouped(user.Clients,
+		user.Brands, user.Countries)
 	if err != nil {
 		return nil, nil
 	}
+	userExpanded, err := s.userRepository.GetByIDExpanded(userID)
+	if err != nil {
+		return nil, err
+	}
 	response := new(responses.DashboardInfo)
-	response.CompanyName = user.Company.Name
-	response.LogoImage = user.Company.LogoUrl
+	response.CompanyName = userExpanded.Company.Name
+	response.LogoImage = userExpanded.Company.LogoUrl
 	response.Month = t.Month().String()
 	for _, dashboardTotal := range dashboardTotals {
 		if dashboardTotal.CurrentPhase == enums.HomologationPhase_value["PLANNING"] {

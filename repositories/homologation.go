@@ -38,7 +38,8 @@ type IHomologationRepository interface {
 		devices []primitive.ObjectID, countries []primitive.ObjectID) ([]*responses.ChartVolumeType, error)
 	GetByTestPlan(testPlan primitive.ObjectID) (*responses.Homologation, error)
 	UpdateDocument(string, primitive.ObjectID) error
-	GetByCompanyStatusGrouped(primitive.ObjectID) ([]*responses.DashboardTotal, error)
+	GetByCompanyStatusGrouped(companies []primitive.ObjectID,
+		devices []primitive.ObjectID, countries []primitive.ObjectID) ([]*responses.DashboardTotal, error)
 	GetByCountry(primitive.ObjectID) (*responses.Homologation, error)
 	GetByCompany(primitive.ObjectID) (*responses.Homologation, error)
 	GetByDevice(primitive.ObjectID) (*responses.Homologation, error)
@@ -343,13 +344,12 @@ func (r *homologationRepository) UpdateDocument(documentUrl string, homologation
 
 	return nil
 }
-func (r *homologationRepository) GetByCompanyStatusGrouped(companyId primitive.ObjectID) ([]*responses.DashboardTotal, error) {
+func (r *homologationRepository) GetByCompanyStatusGrouped(companies []primitive.ObjectID,
+	devices []primitive.ObjectID, countries []primitive.ObjectID) ([]*responses.DashboardTotal, error) {
 
-	homologationQuery := queries.GetHomologationsByCompanyD(companyId)
+	homologationQuery := queries.GetHomologations(companies, devices, countries, true, primitive.ObjectID{})
 	groupedQuery := queries.GetHomologationsGroupedByStatus()
-
 	homologationQuery = append(homologationQuery, groupedQuery)
-
 	cursor, err := homologationCollection.Aggregate(context.TODO(),
 		homologationQuery)
 	if err != nil {
