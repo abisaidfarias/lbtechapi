@@ -14,7 +14,8 @@ import (
 
 type IDeviceTrackingRepository interface {
 	Create(*models.DeviceTracking) error
-	Get(isInternal bool, companyID primitive.ObjectID) ([]*responses.DeviceTracking, error)
+	Get(isInternal bool, companyID primitive.ObjectID,
+		brands []primitive.ObjectID) ([]*responses.DeviceTracking, error)
 	AddTrakingLog(trackingLog *models.TrackingLog, deviceTranckingID primitive.ObjectID) error
 	GetByCompany(primitive.ObjectID) (*responses.DeviceTracking, error)
 	GetByDevice(primitive.ObjectID) (*responses.DeviceTracking, error)
@@ -43,10 +44,10 @@ func (r *deviceTrackingRepository) Create(deviceTracking *models.DeviceTracking)
 }
 
 // Get returns a list of all test cases
-func (r *deviceTrackingRepository) Get(isInternal bool, companyID primitive.ObjectID) ([]*responses.DeviceTracking, error) {
+func (r *deviceTrackingRepository) Get(isInternal bool, companyID primitive.ObjectID,brands []primitive.ObjectID) ([]*responses.DeviceTracking, error) {
 
 	cursor, err := deviceTrackingCollection.Aggregate(context.TODO(),
-		queries.GetDeviceTrackingExpanded(isInternal, companyID))
+		queries.GetDeviceTrackingExpanded(isInternal, companyID,brands))
 	if err != nil {
 		return nil, err
 	}

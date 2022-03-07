@@ -19,7 +19,7 @@ func AddTrackingLog(trackingLog *models.TrackingLog, oid primitive.ObjectID) (pr
 	}
 	return filter, update
 }
-func GetDeviceTrackingExpanded(isInternal bool, companyID primitive.ObjectID) []bson.D {
+func GetDeviceTrackingExpanded(isInternal bool, companyID primitive.ObjectID,brands []primitive.ObjectID) []bson.D {
 	lookupCompany := bson.D{
 		primitive.E{Key: "$lookup", Value: bson.D{
 			primitive.E{Key: "from", Value: "companies"},
@@ -56,12 +56,22 @@ func GetDeviceTrackingExpanded(isInternal bool, companyID primitive.ObjectID) []
 			primitive.E{Key: "path", Value: "$device.brand"},
 			primitive.E{Key: "preserveNullAndEmptyArrays", Value: true},
 		}}}
+	var objectStage bson.D
+	var matchStage bson.D
+	if len(brands) > 0 {
+
+		var brandStageIn bson.D
+		brandStageIn = append(brandStageIn, primitive.E{Key: "$in", Value: brands})
+		objectStage = append(matchStage, primitive.E{Key: "device.brand._id", Value: brandStageIn})
+	}
 
 	if !isInternal {
-		matchStage := bson.D{
-			primitive.E{Key: "$match", Value: bson.D{
-				primitive.E{Key: "company._id", Value: companyID},
-			}}}
+		objectStage = append(objectStage, primitive.E{Key: "company._id", Value: companyID})
+		matchStage = append(matchStage, primitive.E{Key: "$match", Value: objectStage})
+		// matchStage := bson.D{
+		// 	primitive.E{Key: "$match", Value: bson.D{
+		// 		primitive.E{Key: "company._id", Value: companyID},
+		// 	}}}
 		return mongo.Pipeline{lookupCompany, unwindCompany,
 			lookupDevice, unwindDevice, lookupBrand, unwindBrand, matchStage}
 	}

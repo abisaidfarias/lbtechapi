@@ -208,6 +208,7 @@ func main() {
 			homologation.PUT(":id/document", homologationController.UpdateDocument())
 			homologation.PUT(":id/homologation", homologationController.Update())
 			homologation.DELETE(":id", homologationController.Delete())
+			homologation.POST(":id/export", homologationController.Export())
 
 		}
 		dashboard := v1.Group("/dashboard")

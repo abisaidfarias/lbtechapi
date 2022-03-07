@@ -16,3 +16,4 @@ var HomologationMustBeMaintenanceCode = 102
 var HomologationMustBeRegretion = "This homologation type is incorrect only can be a Regretion."
 var HomologationMustBeRegretionCode = 103
 var OtherCategory = "Others"
+var PAGE = "Sheet1"

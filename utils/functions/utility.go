@@ -62,7 +62,7 @@ func GetBlobName() string {
 
 	return fmt.Sprintf("%s-%v.jpg", t.Format("20060102"), uuid)
 }
-func RandomFileName(mimeType string ) string {
+func RandomFileName(mimeType string) string {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	return fmt.Sprintf("%s%s", strconv.Itoa(r.Int()), mimeType)
 }
@@ -163,8 +163,5 @@ func CompareHashAndPassword(hashedPassword string, incomingPassword []byte) bool
 
 	byteHash := []byte(hashedPassword)
 	err := bcrypt.CompareHashAndPassword(byteHash, incomingPassword)
-	if err != nil {
-		return false
-	}
-	return true
+	return err == nil
 }

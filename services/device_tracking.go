@@ -55,7 +55,7 @@ func (s *deviceTrackingService) Get(userID string) ([]responses.Tracking, error)
 	if err != nil {
 		return nil, err
 	}
-	deviceTrackings, err := s.deviceTrackingRepository.Get(user.IsInternal, user.Company)
+	deviceTrackings, err := s.deviceTrackingRepository.Get(user.IsInternal, user.Company,user.Brands)
 	if err != nil {
 		return nil, err
 	}

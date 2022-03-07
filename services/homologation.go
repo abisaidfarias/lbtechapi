@@ -1,6 +1,9 @@
 package services
 
 import (
+	"bytes"
+	"fmt"
+
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/utils"
@@ -9,6 +12,7 @@ import (
 	"github.com/abisaidfarias/lbtechapi/utils/mapping"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
+	"github.com/xuri/excelize/v2"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -25,6 +29,7 @@ type IHomologationService interface {
 	UpdateDocument(string, *request.Homologation) error
 	Update(string, *request.Homologation) error
 	Delete(string) error
+	Export(string) (bytes.Buffer, error)
 }
 
 type homologationService struct {
@@ -296,4 +301,74 @@ func (s *homologationService) Delete(id string) error {
 		return err
 	}
 	return nil
+}
+func (s *homologationService) Export(userId string) (bytes.Buffer, error) {
+	user, err := s.userRepository.GetByID(userId)
+	var b bytes.Buffer
+	if err != nil {
+		return b, err
+	}
+	var homologations []*responses.HomologationExpanded = []*responses.HomologationExpanded{}
+	if user.IsInternal {
+		homologations, err = s.homologationRepository.GetByInternal(user.Clients,
+			user.Brands, user.Countries)
+		if err != nil {
+			return b, err
+		}
+	} else {
+		homologations, err = s.homologationRepository.GetByExternal(user.Company,
+			user.Brands, user.Countries)
+		if err != nil {
+			return b, err
+		}
+	}
+	file, err := export(homologations)
+	if err != nil {
+		return file, err
+	}
+	return file, nil
+}
+func export(homologations []*responses.HomologationExpanded) (bytes.Buffer, error) {
+	file := excelize.NewFile()
+	categories := enums.ImportExcelHeaders
+	for k, v := range categories {
+		file.SetCellValue(utils.PAGE, k, v)
+	}
+	for index, h := range homologations {
+		cell, _ := excelize.CoordinatesToCellName(1, index+2)
+		file.SetCellValue(utils.PAGE, cell, h.Company.Name)
+		cell, _ = excelize.CoordinatesToCellName(2, index+2)
+		file.SetCellValue(utils.PAGE, cell, h.Country.Name)
+		cell, _ = excelize.CoordinatesToCellName(3, index+2)
+		file.SetCellValue(utils.PAGE, cell, h.Brand.Name)
+		cell, _ = excelize.CoordinatesToCellName(4, index+2)
+		file.SetCellValue(utils.PAGE, cell, h.Device.CommercialModel)
+		cell, _ = excelize.CoordinatesToCellName(5, index+2)
+		file.SetCellValue(utils.PAGE, cell, h.Device.TechnicalModel)
+		cell, _ = excelize.CoordinatesToCellName(6, index+2)
+		file.SetCellValue(utils.PAGE, cell, h.OsVersion)
+		cell, _ = excelize.CoordinatesToCellName(7, index+2)
+		file.SetCellValue(utils.PAGE, cell, h.ApprovalType)
+		cell, _ = excelize.CoordinatesToCellName(8, index+2)
+		file.SetCellValue(utils.PAGE, cell, h.TestPlan.Name)
+		if h.TestStartDate != nil {
+			year, month, day := h.TestStartDate.Date()
+			cell, _ = excelize.CoordinatesToCellName(9, index+2)
+			file.SetCellValue(utils.PAGE, cell, fmt.Sprintf("%d/%d/%d", day, month, year))
+		}
+		if h.TestEndDate != nil {
+			year, month, day := h.TestStartDate.Date()
+			cell, _ = excelize.CoordinatesToCellName(10, index+2)
+			file.SetCellValue(utils.PAGE, cell, fmt.Sprintf("%d/%d/%d", day, month, year))
+		}
+		cell, _ = excelize.CoordinatesToCellName(11, index+2)
+		file.SetCellValue(utils.PAGE, cell, h.ProjectType)
+		cell, _ = excelize.CoordinatesToCellName(12, index+2)
+		file.SetCellValue(utils.PAGE, cell, h.StatusView)
+	}
+	var b bytes.Buffer
+	if err := file.Write(&b); err != nil {
+		return b, err
+	}
+	return b, nil
 }

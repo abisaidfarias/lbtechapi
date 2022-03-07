@@ -59,3 +59,17 @@ var HomologationStatus_type = map[int]string{
 	2: "Rejected",
 	3: "Finished",
 }
+var ImportExcelHeaders = map[string]string{
+	"A1": "Client",
+	"B1": "Country",
+	"C1": "Brand",
+	"D1": "Commercial Model",
+	"E1": "Technical Model",
+	"F1": "Os Version",
+	"G1": "Approval Type",
+	"H1": "Test Plan",
+	"I1": "Test Start Date",
+	"J1": "Test End Date",
+	"K1": "Project Type",
+	"L1": "Status",
+}
