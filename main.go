@@ -208,8 +208,11 @@ func main() {
 			homologation.PUT(":id/document", homologationController.UpdateDocument())
 			homologation.PUT(":id/homologation", homologationController.Update())
 			homologation.DELETE(":id", homologationController.Delete())
-			homologation.POST(":id/export", homologationController.Export())
 
+		}
+		export := v1.Group("/export")
+		{
+			export.GET("/homologation", homologationController.Export())
 		}
 		dashboard := v1.Group("/dashboard")
 		{
@@ -233,6 +236,7 @@ func main() {
 			deviceTracking.PUT("", deviceTrackingController.AddTrakingLog())
 			deviceTracking.DELETE(":id", deviceTrackingController.Delete())
 			deviceTracking.PUT(":id", deviceTrackingController.Update())
+			deviceTracking.POST("advanced-search", deviceTrackingController.AdvancedSearch())
 		}
 		configuration := v1.Group("/configuration")
 		{

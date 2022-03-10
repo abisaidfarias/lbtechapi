@@ -124,7 +124,7 @@ func (r *homologationRepository) GetByInternal(companies []primitive.ObjectID,
 		if err != nil {
 			return nil, err
 		}
-		homologation.OsVersion = homologation.Device.PlatformOs + " " + homologation.OsVersion
+		homologation.OsVersionView = homologation.Device.PlatformOs + " " + homologation.OsVersion
 		homologation.ApprovalType = enums.HomologationType_key[homologation.Type]
 		if homologation.Type == enums.HomologationType_value["MAINTENANCE"] {
 			homologation.ApprovalType = homologation.ApprovalTypeOption
@@ -156,7 +156,7 @@ func (r *homologationRepository) GetByExternal(companyID primitive.ObjectID,
 		if err != nil {
 			return nil, err
 		}
-		homologation.OsVersion = homologation.Device.PlatformOs + " " + homologation.OsVersion
+		homologation.OsVersionView = homologation.Device.PlatformOs + " " + homologation.OsVersion
 		homologation.ApprovalType = enums.HomologationType_key[homologation.Type]
 		if homologation.Type == enums.HomologationType_value["MAINTENANCE"] {
 			homologation.ApprovalType = homologation.ApprovalTypeOption

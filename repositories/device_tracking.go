@@ -9,6 +9,7 @@ import (
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/database/queries"
 	"github.com/abisaidfarias/lbtechapi/models"
+	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 )
 
@@ -21,6 +22,7 @@ type IDeviceTrackingRepository interface {
 	GetByDevice(primitive.ObjectID) (*responses.DeviceTracking, error)
 	Delete([]primitive.ObjectID) error
 	Update(string, *models.DeviceTracking) error
+	AdvancedSearch(*request.SearchOption, primitive.ObjectID, bool) ([]*responses.DeviceTracking, error)
 }
 
 type deviceTrackingRepository struct {
@@ -44,10 +46,10 @@ func (r *deviceTrackingRepository) Create(deviceTracking *models.DeviceTracking)
 }
 
 // Get returns a list of all test cases
-func (r *deviceTrackingRepository) Get(isInternal bool, companyID primitive.ObjectID,brands []primitive.ObjectID) ([]*responses.DeviceTracking, error) {
+func (r *deviceTrackingRepository) Get(isInternal bool, companyID primitive.ObjectID, brands []primitive.ObjectID) ([]*responses.DeviceTracking, error) {
 
 	cursor, err := deviceTrackingCollection.Aggregate(context.TODO(),
-		queries.GetDeviceTrackingExpanded(isInternal, companyID,brands))
+		queries.GetDeviceTrackingExpanded(isInternal, companyID, brands))
 	if err != nil {
 		return nil, err
 	}
@@ -129,4 +131,19 @@ func (r *deviceTrackingRepository) Update(id string, deviceTracking *models.Devi
 	}
 
 	return nil
+}
+func (r *deviceTrackingRepository) AdvancedSearch(searchOption *request.SearchOption,
+	companyId primitive.ObjectID, isInternal bool) ([]*responses.DeviceTracking, error) {
+
+	cursor, err := deviceTrackingCollection.Aggregate(context.TODO(),
+		queries.GetDeviceTrackingAdvancedSearch(companyId, isInternal, searchOption))
+	if err != nil {
+		return nil, err
+	}
+	var deviceTrackings []*responses.DeviceTracking = []*responses.DeviceTracking{}
+	if err = cursor.All(context.TODO(), &deviceTrackings); err != nil {
+		panic(err)
+	}
+	cursor.Close(context.TODO())
+	return deviceTrackings, nil
 }

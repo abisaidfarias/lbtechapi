@@ -18,6 +18,7 @@ type IDeviceTrackingService interface {
 	AddTrakingLog(*request.TrackingLogMultiple) error
 	Delete(string) error
 	Update(string, *request.DeviceTrackingExpanded) error
+	AdvancedSearch(*request.SearchOption, string) ([]responses.Tracking, error)
 }
 
 type deviceTrackingService struct {
@@ -55,7 +56,7 @@ func (s *deviceTrackingService) Get(userID string) ([]responses.Tracking, error)
 	if err != nil {
 		return nil, err
 	}
-	deviceTrackings, err := s.deviceTrackingRepository.Get(user.IsInternal, user.Company,user.Brands)
+	deviceTrackings, err := s.deviceTrackingRepository.Get(user.IsInternal, user.Company, user.Brands)
 	if err != nil {
 		return nil, err
 	}
@@ -117,4 +118,33 @@ func (s *deviceTrackingService) Update(id string, deviceTrackingRequest *request
 		return err
 	}
 	return nil
+}
+func (s *deviceTrackingService) AdvancedSearch(searchOption *request.SearchOption, userId string) ([]responses.Tracking, error) {
+	user, err := s.userRepository.GetByID(userId)
+	if err != nil {
+		return nil, err
+	}
+	deviceTrackings, err := s.deviceTrackingRepository.AdvancedSearch(searchOption, user.Company, user.IsInternal)
+	if err != nil {
+		return nil, err
+	}
+
+	trackingGrouped := make(map[string]responses.Tracking)
+	for _, deviceTracking := range deviceTrackings {
+		existTracking := trackingGrouped["NoDevice"]
+		existTracking.Brand = ""
+		existTracking.Model = ""
+		existTracking.ID = primitive.NilObjectID
+		existTracking.ImageUrl = ""
+		existTracking.TecnicalModel = ""
+		existTracking.DeviceTrackings = append(existTracking.DeviceTrackings, *deviceTracking)
+		trackingGrouped["NoDevice"] = existTracking
+
+	}
+	var trakings []responses.Tracking = []responses.Tracking{}
+	for _, v := range trackingGrouped {
+		trakings = append(trakings, v)
+	}
+
+	return trakings, nil
 }

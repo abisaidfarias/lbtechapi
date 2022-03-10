@@ -16,6 +16,7 @@ type IDeviceTrackingController interface {
 	AddTrakingLog() gin.HandlerFunc
 	Delete() gin.HandlerFunc
 	Update() gin.HandlerFunc
+	AdvancedSearch() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
@@ -145,4 +146,26 @@ func (c *deviceTrackingController) Update() gin.HandlerFunc {
 
 		ctx.Status(http.StatusOK)
 	}
+}
+func (c *deviceTrackingController) AdvancedSearch() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userID := ctx.MustGet("userID").(string)
+		var searchOption *request.SearchOption
+
+		err := ctx.ShouldBindJSON(&searchOption)
+
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		deviceTrackings, err := c.deviceTrackingService.AdvancedSearch(searchOption, userID)
+
+		if err != nil {
+			handleErrorResponse(ctx, err)
+			return
+		}
+
+		ctx.JSON(http.StatusOK, deviceTrackings)
+	}
+
 }
