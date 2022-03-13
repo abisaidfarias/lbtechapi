@@ -19,6 +19,7 @@ type IDeviceTrackingService interface {
 	Delete(string) error
 	Update(string, *request.DeviceTrackingExpanded) error
 	AdvancedSearch(*request.SearchOption, string) ([]responses.Tracking, error)
+	AdvancedSearchOptions(userId string) (responses.SearchOption, error)
 }
 
 type deviceTrackingService struct {
@@ -147,4 +148,43 @@ func (s *deviceTrackingService) AdvancedSearch(searchOption *request.SearchOptio
 	}
 
 	return trakings, nil
+}
+func (s *deviceTrackingService) AdvancedSearchOptions(userId string) (responses.SearchOption, error) {
+
+	user, err := s.userRepository.GetByID(userId)
+	var searchOption responses.SearchOption = responses.SearchOption{}
+	if err != nil {
+		return searchOption, err
+	}
+	deviceTrackings, err := s.deviceTrackingRepository.Get(user.IsInternal, user.Company, user.Brands)
+	if err != nil {
+		return searchOption, err
+	}
+	brandsUnique := make(map[string]bool)
+	modelsUnique := make(map[string]bool)
+	countryUnique := make(map[string]bool)
+	locationUnique := make(map[string]bool)
+	for _, deviceTracking := range deviceTrackings {
+
+		if _, value := brandsUnique[deviceTracking.Device.Brand.Name]; !value {
+			brandsUnique[deviceTracking.Device.Brand.Name] = true
+			searchOption.Brands = append(searchOption.Brands, deviceTracking.Device.Brand.Name)
+		}
+		if _, value := modelsUnique[deviceTracking.Device.CommercialModel]; !value {
+			modelsUnique[deviceTracking.Device.CommercialModel] = true
+			searchOption.CommercialModels = append(searchOption.CommercialModels, deviceTracking.Device.CommercialModel)
+		}
+		for _, trackingLog := range deviceTracking.TrackingLogs {
+			if _, value := locationUnique[trackingLog.Location.Name]; !value {
+				locationUnique[trackingLog.Location.Name] = true
+				searchOption.Locations = append(searchOption.Locations, trackingLog.Location.Name)
+			}
+			if _, value := countryUnique[trackingLog.Country.Name]; !value {
+				countryUnique[trackingLog.Country.Name] = true
+				searchOption.Countries = append(searchOption.Countries, trackingLog.Country.Name)
+			}
+
+		}
+	}
+	return searchOption, nil
 }

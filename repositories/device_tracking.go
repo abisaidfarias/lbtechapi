@@ -23,6 +23,7 @@ type IDeviceTrackingRepository interface {
 	Delete([]primitive.ObjectID) error
 	Update(string, *models.DeviceTracking) error
 	AdvancedSearch(*request.SearchOption, primitive.ObjectID, bool) ([]*responses.DeviceTracking, error)
+	GetByPerson(primitive.ObjectID) (*responses.DeviceTracking, error)
 }
 
 type deviceTrackingRepository struct {
@@ -88,6 +89,7 @@ func (r *deviceTrackingRepository) GetByCompany(companyId primitive.ObjectID) (*
 	}
 	return deviceTracking, nil
 }
+
 func (r *deviceTrackingRepository) GetByDevice(deviceId primitive.ObjectID) (*responses.DeviceTracking, error) {
 
 	var deviceTracking *responses.DeviceTracking
@@ -146,4 +148,20 @@ func (r *deviceTrackingRepository) AdvancedSearch(searchOption *request.SearchOp
 	}
 	cursor.Close(context.TODO())
 	return deviceTrackings, nil
+}
+func (r *deviceTrackingRepository) GetByPerson(personId primitive.ObjectID) (*responses.DeviceTracking, error) {
+
+	var deviceTracking *responses.DeviceTracking
+	err := deviceTrackingCollection.FindOne(context.TODO(),
+		queries.GetDeviceTrackingByPerson(personId)).Decode(&deviceTracking)
+
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			return nil, nil
+		default:
+			return nil, err
+		}
+	}
+	return deviceTracking, nil
 }

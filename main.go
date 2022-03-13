@@ -85,6 +85,10 @@ var (
 	configurationRepository repositories.IConfigurationRepository = repositories.NewConfigurationRepository()
 	configurationService    services.IConfigurationService        = services.NewConfigurationService(configurationRepository)
 	configurationController controllers.IConfigurationController  = controllers.NewConfigurationController(configurationService)
+
+	personRepository repositories.IPersonRepository = repositories.NewPersonRepository()
+	personService    services.IPersonService        = services.NewPersonService(personRepository, deviceTrackingRepository)
+	personController controllers.IPersonController  = controllers.NewPersonController(personService)
 )
 
 func main() {
@@ -237,11 +241,19 @@ func main() {
 			deviceTracking.DELETE(":id", deviceTrackingController.Delete())
 			deviceTracking.PUT(":id", deviceTrackingController.Update())
 			deviceTracking.POST("advanced-search", deviceTrackingController.AdvancedSearch())
+			deviceTracking.GET("search-options", deviceTrackingController.AdvancedSearchOptions())
 		}
 		configuration := v1.Group("/configuration")
 		{
 			configuration.POST("", configurationController.Create())
 			configuration.GET("", configurationController.Get())
+		}
+		person := v1.Group("/person")
+		{
+			person.POST("", personController.Create())
+			person.GET("", personController.Get())
+			person.PUT(":id", personController.Update())
+			person.DELETE(":id", personController.Delete())
 		}
 	}
 

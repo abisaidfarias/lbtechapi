@@ -12,11 +12,12 @@ func DeviceTrackinRequestToDeviceTracking(deviceTraking *request.DeviceTracking,
 	country, _ := CountryRequestToCountry(&deviceTraking.TrackingLog.Country)
 	location, _ := LocationRequestToLocation(&deviceTraking.TrackingLog.Location)
 	user := UserResumeToUser(&deviceTraking.TrackingLog.InternalResponsible)
+	person, _ := PersonRequestToPerson(&deviceTraking.TrackingLog.Person)
 	trackingLog := models.TrackingLog{
 		Country:             *country,
 		Location:            *location,
 		InternalResponsible: *user,
-		ExternalResponsible: deviceTraking.TrackingLog.ExternalResponsible,
+		Person:              *person,
 		Comment:             deviceTraking.TrackingLog.Comment,
 		DocumentUrl:         deviceTraking.TrackingLog.DocumentUrl,
 		TrackingDate:        deviceTraking.TrackingLog.TrackingDate,
@@ -36,12 +37,13 @@ func TrackinLogRequestToTrackingLog(trackingLogReq *request.TrackingLog) *models
 	country, _ := CountryRequestToCountry(&trackingLogReq.Country)
 	location, _ := LocationRequestToLocation(&trackingLogReq.Location)
 	user := UserResumeToUser(&trackingLogReq.InternalResponsible)
+	person, _ := PersonRequestToPerson(&trackingLogReq.Person)
 
 	return &models.TrackingLog{
 		Country:             *country,
 		Location:            *location,
 		InternalResponsible: *user,
-		ExternalResponsible: trackingLogReq.ExternalResponsible,
+		Person:              *person,
 		Comment:             trackingLogReq.Comment,
 		DocumentUrl:         trackingLogReq.DocumentUrl,
 		TrackingDate:        trackingLogReq.TrackingDate,

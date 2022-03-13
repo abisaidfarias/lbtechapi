@@ -121,6 +121,11 @@ func initDB() *mongo.Database {
 			"imei": 1,
 		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
 	}
+	indexPersonName := mongo.IndexModel{
+		Keys: bson.M{
+			"name": 1,
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
+	}
 	database.Collection("users").Indexes().CreateOne(context.Background(), indexEmail)
 	database.Collection("test_cases").Indexes().CreateOne(context.Background(), indexCode)
 	database.Collection("test_categories").Indexes().CreateOne(context.Background(), indexTestCategoryName)
@@ -133,6 +138,7 @@ func initDB() *mongo.Database {
 	database.Collection("printers").Indexes().CreateOne(context.Background(), indexPrinterSerial)
 	database.Collection("locations").Indexes().CreateOne(context.Background(), indexLocationName)
 	database.Collection("device_trackings").Indexes().CreateOne(context.Background(), indexImei)
+	database.Collection("persons").Indexes().CreateOne(context.Background(), indexPersonName)
 	return database
 }
 func GetMongoDBClient() *mongo.Client {

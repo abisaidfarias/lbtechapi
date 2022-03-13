@@ -81,6 +81,9 @@ func GetDeviceTrackingByCompany(companyId primitive.ObjectID) primitive.M {
 func GetDeviceTrackingByDevice(deviceId primitive.ObjectID) primitive.M {
 	return primitive.M{"device": deviceId}
 }
+func GetDeviceTrackingByPerson(personId primitive.ObjectID) primitive.M {
+	return primitive.M{"device_tracking.tracking_logs.person": personId}
+}
 func DeleteDeviceTracking(ids []primitive.ObjectID) primitive.M {
 
 	filter := primitive.M{
@@ -140,24 +143,32 @@ func GetDeviceTrackingAdvancedSearch(companyID primitive.ObjectID, isInternal bo
 	var objectStage bson.D
 	var matchStage bson.D
 	var hasStage = false
-	if len(searchOption.Brand) > 0 {
+	if len(searchOption.Brands) > 0 {
+		var brandStageIn bson.D
+		brandStageIn = append(brandStageIn, primitive.E{Key: "$in", Value: searchOption.Brands})
 		objectStage = append(objectStage, primitive.E{Key: "device.brand.name",
-			Value: searchOption.Brand})
+			Value: brandStageIn})
 		hasStage = true
 	}
-	if len(searchOption.CommercialModel) > 0 {
+	if len(searchOption.CommercialModels) > 0 {
+		var modelStageIn bson.D
+		modelStageIn = append(modelStageIn, primitive.E{Key: "$in", Value: searchOption.CommercialModels})
 		objectStage = append(objectStage, primitive.E{Key: "device.commercial_model",
-			Value: searchOption.CommercialModel})
+			Value: modelStageIn})
 		hasStage = true
 	}
-	if len(searchOption.Country) > 0 {
+	if len(searchOption.Countries) > 0 {
+		var countryStageIn bson.D
+		countryStageIn = append(countryStageIn, primitive.E{Key: "$in", Value: searchOption.Countries})
 		objectStage = append(objectStage, primitive.E{Key: "tracking_logs.country.name",
-			Value: searchOption.Country})
+			Value: countryStageIn})
 		hasStage = true
 	}
-	if len(searchOption.Location) > 0 {
+	if len(searchOption.Locations) > 0 {
+		var locationStageIn bson.D
+		locationStageIn = append(locationStageIn, primitive.E{Key: "$in", Value: searchOption.Locations})
 		objectStage = append(objectStage, primitive.E{Key: "tracking_logs.location.name",
-			Value: searchOption.Location})
+			Value: locationStageIn})
 		hasStage = true
 	}
 	if !isInternal {
