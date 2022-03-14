@@ -23,7 +23,11 @@ func GetDevicesExpanded() []bson.D {
 			primitive.E{Key: "path", Value: "$brand"},
 			primitive.E{Key: "preserveNullAndEmptyArrays", Value: true},
 		}}}
-	return mongo.Pipeline{lookupStage, unwindStage}
+	sort := bson.D{
+		primitive.E{Key: "$sort", Value: bson.D{
+			primitive.E{Key: "commercial_model", Value: -1},
+		}}}
+	return mongo.Pipeline{lookupStage, unwindStage, sort}
 }
 func UpdateDevice(device *models.Device, oid primitive.ObjectID) (primitive.M, primitive.M) {
 

@@ -366,6 +366,7 @@ func export(homologations []*responses.HomologationExpanded) (bytes.Buffer, erro
 		cell, _ = excelize.CoordinatesToCellName(12, index+2)
 		file.SetCellValue(utils.PAGE, cell, h.StatusView)
 	}
+
 	var b bytes.Buffer
 	if err := file.Write(&b); err != nil {
 		return b, err
