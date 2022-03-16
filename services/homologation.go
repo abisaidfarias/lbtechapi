@@ -29,7 +29,7 @@ type IHomologationService interface {
 	UpdateDocument(string, *request.Homologation) error
 	Update(string, *request.Homologation) error
 	Delete(string) error
-	Export(string) (bytes.Buffer, error)
+	ExportHomologation(string) (bytes.Buffer, error)
 }
 
 type homologationService struct {
@@ -302,7 +302,7 @@ func (s *homologationService) Delete(id string) error {
 	}
 	return nil
 }
-func (s *homologationService) Export(userId string) (bytes.Buffer, error) {
+func (s *homologationService) ExportHomologation(userId string) (bytes.Buffer, error) {
 	user, err := s.userRepository.GetByID(userId)
 	var b bytes.Buffer
 	if err != nil {
@@ -322,15 +322,15 @@ func (s *homologationService) Export(userId string) (bytes.Buffer, error) {
 			return b, err
 		}
 	}
-	file, err := export(homologations)
+	file, err := exportHomologationFile(homologations)
 	if err != nil {
 		return file, err
 	}
 	return file, nil
 }
-func export(homologations []*responses.HomologationExpanded) (bytes.Buffer, error) {
+func exportHomologationFile(homologations []*responses.HomologationExpanded) (bytes.Buffer, error) {
 	file := excelize.NewFile()
-	categories := enums.ImportExcelHeaders
+	categories := enums.ImportExcelHomologationHeaders
 	for k, v := range categories {
 		file.SetCellValue(utils.PAGE, k, v)
 	}

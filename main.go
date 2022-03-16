@@ -216,7 +216,8 @@ func main() {
 		}
 		export := v1.Group("/export")
 		{
-			export.GET("/homologation", homologationController.Export())
+			export.GET("/homologation", homologationController.ExportHomologation())
+			export.POST("/device-tracking", deviceTrackingController.ExportDeviceTracking())
 		}
 		dashboard := v1.Group("/dashboard")
 		{

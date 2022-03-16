@@ -24,7 +24,7 @@ type IHomologationController interface {
 	UpdateDocument() gin.HandlerFunc
 	Delete() gin.HandlerFunc
 	Update() gin.HandlerFunc
-	Export() gin.HandlerFunc
+	ExportHomologation() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
@@ -259,11 +259,11 @@ func (c *homologationController) Update() gin.HandlerFunc {
 		ctx.Status(http.StatusOK)
 	}
 }
-func (c *homologationController) Export() gin.HandlerFunc {
+func (c *homologationController) ExportHomologation() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 		userID := ctx.MustGet("userID").(string)
-		file, err := c.homologationService.Export(userID)
+		file, err := c.homologationService.ExportHomologation(userID)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, err.Error())
 			return

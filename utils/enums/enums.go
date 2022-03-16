@@ -59,7 +59,7 @@ var HomologationStatus_type = map[int]string{
 	2: "Rejected",
 	3: "Finished",
 }
-var ImportExcelHeaders = map[string]string{
+var ImportExcelHomologationHeaders = map[string]string{
 	"A1": "Client",
 	"B1": "Country",
 	"C1": "Brand",
@@ -72,4 +72,15 @@ var ImportExcelHeaders = map[string]string{
 	"J1": "Test End Date",
 	"K1": "Project Type",
 	"L1": "Status",
+}
+var ImportExcelDeviceTrackinHeaders = map[string]string{
+	"A1": "Imei",
+	"B1": "Brand",
+	"C1": "Commercial Model",
+	"D1": "Client",
+	"E1": "Country",
+	"F1": "Location",
+	"G1": "Responsible",
+	"H1": "External Responsible",
+	"I1": "Tracking Date",
 }

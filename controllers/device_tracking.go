@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/abisaidfarias/lbtechapi/services"
 	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
@@ -18,6 +20,7 @@ type IDeviceTrackingController interface {
 	Update() gin.HandlerFunc
 	AdvancedSearch() gin.HandlerFunc
 	AdvancedSearchOptions() gin.HandlerFunc
+	ExportDeviceTracking() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
@@ -160,7 +163,6 @@ func (c *deviceTrackingController) AdvancedSearch() gin.HandlerFunc {
 			return
 		}
 		deviceTrackings, err := c.deviceTrackingService.AdvancedSearch(searchOption, userID)
-
 		if err != nil {
 			handleErrorResponse(ctx, err)
 			return
@@ -173,6 +175,7 @@ func (c *deviceTrackingController) AdvancedSearch() gin.HandlerFunc {
 func (c *deviceTrackingController) AdvancedSearchOptions() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		userID := ctx.MustGet("userID").(string)
+
 		options, err := c.deviceTrackingService.AdvancedSearchOptions(userID)
 
 		if err != nil {
@@ -183,4 +186,30 @@ func (c *deviceTrackingController) AdvancedSearchOptions() gin.HandlerFunc {
 		ctx.JSON(http.StatusOK, options)
 	}
 
+}
+func (c *deviceTrackingController) ExportDeviceTracking() gin.HandlerFunc {
+
+	return func(ctx *gin.Context) {
+		userID := ctx.MustGet("userID").(string)
+		var searchOption *request.SearchOption
+
+		err := ctx.ShouldBindJSON(&searchOption)
+
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		file, err := c.deviceTrackingService.ExportDeviceTracking(searchOption, userID)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, err.Error())
+			return
+		}
+		downloadName := fmt.Sprintf("%s%s", time.Now().UTC().Format("01-02-2006 15:04:05"), ".xlsx")
+		ctx.Header("Content-Description", "File Transfer")
+		ctx.Header("Content-Disposition", "attachment; filename="+downloadName)
+		ctx.Header("Content-Type", "application/octet-stream")
+		ctx.Header("Content-Transfer-Encoding", "binary")
+		ctx.Data(http.StatusOK, "application/octet-stream", file.Bytes())
+		ctx.Status(http.StatusOK)
+	}
 }

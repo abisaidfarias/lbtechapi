@@ -1,13 +1,17 @@
 package services
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 
 	"github.com/abisaidfarias/lbtechapi/repositories"
+	"github.com/abisaidfarias/lbtechapi/utils"
+	"github.com/abisaidfarias/lbtechapi/utils/enums"
 	"github.com/abisaidfarias/lbtechapi/utils/mapping"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
+	"github.com/xuri/excelize/v2"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -20,6 +24,7 @@ type IDeviceTrackingService interface {
 	Update(string, *request.DeviceTrackingExpanded) error
 	AdvancedSearch(*request.SearchOption, string) ([]responses.Tracking, error)
 	AdvancedSearchOptions(userId string) (responses.SearchOption, error)
+	ExportDeviceTracking(*request.SearchOption, string) (bytes.Buffer, error)
 }
 
 type deviceTrackingService struct {
@@ -187,4 +192,57 @@ func (s *deviceTrackingService) AdvancedSearchOptions(userId string) (responses.
 		}
 	}
 	return searchOption, nil
+}
+func (s *deviceTrackingService) ExportDeviceTracking(searchOption *request.SearchOption, userId string) (bytes.Buffer, error) {
+	user, err := s.userRepository.GetByID(userId)
+	var b bytes.Buffer
+	if err != nil {
+		return b, err
+	}
+	deviceTrackings, err := s.deviceTrackingRepository.AdvancedSearch(searchOption, user.ID, user.IsInternal)
+	if err != nil {
+		return b, err
+	}
+	file, err := exportFileDeviceTracking(deviceTrackings)
+	if err != nil {
+		return file, err
+	}
+	return file, nil
+}
+func exportFileDeviceTracking(deviceTrackings []*responses.DeviceTracking) (bytes.Buffer, error) {
+	file := excelize.NewFile()
+	categories := enums.ImportExcelDeviceTrackinHeaders
+	for k, v := range categories {
+		file.SetCellValue(utils.PAGE, k, v)
+	}
+	for index, d := range deviceTrackings {
+		cell, _ := excelize.CoordinatesToCellName(1, index+2)
+		file.SetCellValue(utils.PAGE, cell, d.Imei)
+		cell, _ = excelize.CoordinatesToCellName(2, index+2)
+		file.SetCellValue(utils.PAGE, cell, d.Device.Brand.Name)
+		cell, _ = excelize.CoordinatesToCellName(3, index+2)
+		file.SetCellValue(utils.PAGE, cell, d.Device.CommercialModel)
+		cell, _ = excelize.CoordinatesToCellName(4, index+2)
+		file.SetCellValue(utils.PAGE, cell, d.Company.Name)
+
+		lastTrackingRegister := d.TrackingLogs[len(d.TrackingLogs)-1]
+		cell, _ = excelize.CoordinatesToCellName(5, index+2)
+		file.SetCellValue(utils.PAGE, cell, lastTrackingRegister.Country.Name)
+		cell, _ = excelize.CoordinatesToCellName(6, index+2)
+		file.SetCellValue(utils.PAGE, cell, lastTrackingRegister.Location.Name)
+		cell, _ = excelize.CoordinatesToCellName(7, index+2)
+		file.SetCellValue(utils.PAGE, cell, lastTrackingRegister.InternalResponsible.Name)
+		cell, _ = excelize.CoordinatesToCellName(8, index+2)
+		file.SetCellValue(utils.PAGE, cell, lastTrackingRegister.Person.Name)
+
+		year, month, day := lastTrackingRegister.TrackingDate.Date()
+		cell, _ = excelize.CoordinatesToCellName(9, index+2)
+		file.SetCellValue(utils.PAGE, cell, fmt.Sprintf("%d/%d/%d", day, month, year))
+	}
+
+	var b bytes.Buffer
+	if err := file.Write(&b); err != nil {
+		return b, err
+	}
+	return b, nil
 }
