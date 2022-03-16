@@ -13,7 +13,7 @@ import (
 )
 
 type IPersonRepository interface {
-	Create(*models.Person) error
+	Create(*models.Person) (*primitive.ObjectID, error)
 	Get() ([]*responses.Person, error)
 	Update(primitive.ObjectID, *models.Person) error
 	Delete(primitive.ObjectID) error
@@ -29,14 +29,16 @@ func NewPersonRepository() IPersonRepository {
 var personCollection = database.GetInstance().Collection("persons")
 
 // Create a new tet case
-func (r *personRepository) Create(person *models.Person) error {
+func (r *personRepository) Create(person *models.Person) (*primitive.ObjectID, error) {
 
-	_, err := personCollection.InsertOne(context.TODO(), person)
+	res, err := personCollection.InsertOne(context.TODO(), person)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	id := res.InsertedID.(primitive.ObjectID)
+	return &id, nil
 }
 
 // Get returns a list of all test cases

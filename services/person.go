@@ -10,7 +10,7 @@ import (
 
 // IPersonService is the person service
 type IPersonService interface {
-	Create(*request.Person) error
+	Create(*request.Person) (string, error)
 	Get() ([]*responses.Person, error)
 	Delete(string) (bool, error)
 	Update(string, *request.Person) error
@@ -31,19 +31,19 @@ func NewPersonService(personRepository repositories.IPersonRepository,
 }
 
 // Create creates a new cateogry
-func (s *personService) Create(personRequest *request.Person) error {
+func (s *personService) Create(personRequest *request.Person) (string, error) {
 
 	person, err := mapping.PersonRequestToPerson(personRequest)
 	if err != nil {
-		return err
+		return "", err
 	}
-	err = s.personRepository.Create(person)
+	id, err := s.personRepository.Create(person)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return id.Hex(), nil
 }
 
 // Get gets a list of all categories

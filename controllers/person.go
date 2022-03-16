@@ -43,7 +43,7 @@ func (c *personController) Create() gin.HandlerFunc {
 			return
 		}
 
-		err = c.personService.Create(&person)
+		id, err := c.personService.Create(&person)
 
 		if err != nil {
 			if utils.ErrorDuplicatedData(err) {
@@ -55,7 +55,8 @@ func (c *personController) Create() gin.HandlerFunc {
 			return
 		}
 
-		ctx.Status(http.StatusCreated)
+		ctx.JSON(http.StatusCreated, gin.H{"id": id})
+
 	}
 }
 
