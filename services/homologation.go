@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/repositories"
@@ -30,6 +31,7 @@ type IHomologationService interface {
 	Update(string, *request.Homologation) error
 	Delete(string) error
 	ExportHomologation(string) (bytes.Buffer, error)
+	ExportFailTest(string) (bytes.Buffer, error)
 }
 
 type homologationService struct {
@@ -330,7 +332,7 @@ func (s *homologationService) ExportHomologation(userId string) (bytes.Buffer, e
 }
 func exportHomologationFile(homologations []*responses.HomologationExpanded) (bytes.Buffer, error) {
 	file := excelize.NewFile()
-	categories := enums.ImportExcelHomologationHeaders
+	categories := enums.ExcelHomologationHeaders
 	for k, v := range categories {
 		file.SetCellValue(utils.PAGE, k, v)
 	}
@@ -365,6 +367,88 @@ func exportHomologationFile(homologations []*responses.HomologationExpanded) (by
 		file.SetCellValue(utils.PAGE, cell, h.ProjectType)
 		cell, _ = excelize.CoordinatesToCellName(12, index+2)
 		file.SetCellValue(utils.PAGE, cell, h.StatusView)
+	}
+
+	var b bytes.Buffer
+	if err := file.Write(&b); err != nil {
+		return b, err
+	}
+	return b, nil
+}
+func (s *homologationService) ExportFailTest(id string) (bytes.Buffer, error) {
+
+	homologationID, _ := primitive.ObjectIDFromHex(id)
+	homologation, err := s.homologationRepository.GetByIdExpanded(homologationID)
+	var b bytes.Buffer
+	if err != nil {
+		return b, err
+	}
+	file, err := exportFailsFile(homologation)
+	if err != nil {
+		return file, err
+	}
+	return file, nil
+}
+func exportFailsFile(homologation *responses.HomologationExpanded) (bytes.Buffer, error) {
+	file := excelize.NewFile()
+	categories := enums.ExcelFailsHeaders
+
+	cell, _ := excelize.CoordinatesToCellName(1, 1)
+	file.SetCellValue(utils.PAGE, cell, utils.COMPANY)
+	cell, _ = excelize.CoordinatesToCellName(2, 1)
+	file.SetCellValue(utils.PAGE, cell, homologation.Company.Name)
+
+	cell, _ = excelize.CoordinatesToCellName(1, 2)
+	file.SetCellValue(utils.PAGE, cell, utils.SOFTWARE_VERSION)
+	cell, _ = excelize.CoordinatesToCellName(2, 2)
+	file.SetCellValue(utils.PAGE, cell, homologation.SoftwareVersion)
+
+	cell, _ = excelize.CoordinatesToCellName(1, 3)
+	file.SetCellValue(utils.PAGE, cell, utils.TECHNICAL_MODEL)
+	cell, _ = excelize.CoordinatesToCellName(2, 3)
+	file.SetCellValue(utils.PAGE, cell, homologation.Device.TechnicalModel)
+
+	cell, _ = excelize.CoordinatesToCellName(1, 4)
+	file.SetCellValue(utils.PAGE, cell, utils.BRAND)
+	cell, _ = excelize.CoordinatesToCellName(2, 4)
+	file.SetCellValue(utils.PAGE, cell, homologation.Brand.Name)
+
+	cell, _ = excelize.CoordinatesToCellName(1, 5)
+	file.SetCellValue(utils.PAGE, cell, utils.COUNTRY)
+	cell, _ = excelize.CoordinatesToCellName(2, 5)
+	file.SetCellValue(utils.PAGE, cell, homologation.Country.Name)
+
+	for k, v := range categories {
+		file.SetCellValue(utils.PAGE, k, v)
+	}
+	index := 7
+	for _, t := range homologation.TestResults {
+		if t.Result == enums.TestResult_value["FAIL"] {
+			cell, _ := excelize.CoordinatesToCellName(1, index)
+			file.SetCellValue(utils.PAGE, cell, t.Code)
+			cell, _ = excelize.CoordinatesToCellName(2, index)
+			file.SetCellValue(utils.PAGE, cell, t.OverviewIssue)
+			cell, _ = excelize.CoordinatesToCellName(3, index)
+			file.SetCellValue(utils.PAGE, cell, t.ActualResult)
+			cell, _ = excelize.CoordinatesToCellName(4, index)
+			file.SetCellValue(utils.PAGE, cell, t.ExpectedResult)
+			cell, _ = excelize.CoordinatesToCellName(5, index)
+			file.SetCellValue(utils.PAGE, cell, t.StepsToReproduce)
+			cell, _ = excelize.CoordinatesToCellName(6, index)
+			file.SetCellValue(utils.PAGE, cell, enums.TestFailureFrequency_key[t.IssueFrequency])
+			cell, _ = excelize.CoordinatesToCellName(7, index)
+			file.SetCellValue(utils.PAGE, cell, enums.TestFailureSeverity_key[t.IssueSeverity])
+			var hyperlinks string
+			for _, link := range t.Hyperlinks {
+				hyperlinks = hyperlinks + "," + link.Link
+			}
+			cell, _ = excelize.CoordinatesToCellName(8, index)
+			file.SetCellValue(utils.PAGE, cell, hyperlinks)
+			images := strings.Join(t.Images[:], ",")
+			cell, _ = excelize.CoordinatesToCellName(9, index)
+			file.SetCellValue(utils.PAGE, cell, images)
+			index++
+		}
 	}
 
 	var b bytes.Buffer

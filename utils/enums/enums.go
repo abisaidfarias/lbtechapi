@@ -59,7 +59,7 @@ var HomologationStatus_type = map[int]string{
 	2: "Rejected",
 	3: "Finished",
 }
-var ImportExcelHomologationHeaders = map[string]string{
+var ExcelHomologationHeaders = map[string]string{
 	"A1": "Client",
 	"B1": "Country",
 	"C1": "Brand",
@@ -73,7 +73,7 @@ var ImportExcelHomologationHeaders = map[string]string{
 	"K1": "Project Type",
 	"L1": "Status",
 }
-var ImportExcelDeviceTrackinHeaders = map[string]string{
+var ExcelDeviceTrackinHeaders = map[string]string{
 	"A1": "Imei",
 	"B1": "Brand",
 	"C1": "Commercial Model",
@@ -83,4 +83,25 @@ var ImportExcelDeviceTrackinHeaders = map[string]string{
 	"G1": "Responsible",
 	"H1": "External Responsible",
 	"I1": "Tracking Date",
+}
+var ExcelFailsHeaders = map[string]string{
+	"A6": "Code",
+	"B6": "Issue Overview",
+	"C6": "Actual Result",
+	"D6": "Expected Result",
+	"E6": "Steps To Reproduce",
+	"F6": "Issue Frecuency",
+	"G6": "Issue Severity",
+	"H6": "Hiperlinks",
+	"I6": "Images",
+}
+var TestFailureSeverity_key = map[int]string{
+	0: "High",
+	1: "Medium",
+	2: "Low",
+}
+var TestFailureFrequency_key = map[int]string{
+	0: "Always",
+	1: "Random",
+	2: "Once",
 }

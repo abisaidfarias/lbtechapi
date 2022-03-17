@@ -47,6 +47,7 @@ type IHomologationRepository interface {
 	Update(primitive.ObjectID, *models.Homologation) error
 	Delete(primitive.ObjectID) error
 	DeleteHierarchy(primitive.ObjectID, primitive.ObjectID, primitive.ObjectID, bool) error
+	GetByIdExpanded(primitive.ObjectID) (*responses.HomologationExpanded, error)
 }
 type homologationRepository struct {
 }
@@ -447,4 +448,20 @@ func (r *homologationRepository) DeleteHierarchy(deviceId primitive.ObjectID,
 		return err
 	}
 	return nil
+}
+func (r *homologationRepository) GetByIdExpanded(homologationID primitive.ObjectID) (*responses.HomologationExpanded, error) {
+
+	cursor, err := homologationCollection.Aggregate(context.TODO(),
+		queries.GetHomologationExpandedById(homologationID))
+	if err != nil {
+		return nil, err
+	}
+	//var homologations []*responses.HomologationExpanded = []*responses.HomologationExpanded{}
+	for cursor.Next(context.TODO()) {
+		var homologation *responses.HomologationExpanded
+		err := cursor.Decode(&homologation)
+		return homologation, err
+	}
+	cursor.Close(context.TODO())
+	return nil, nil
 }

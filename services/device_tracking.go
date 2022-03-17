@@ -211,7 +211,7 @@ func (s *deviceTrackingService) ExportDeviceTracking(searchOption *request.Searc
 }
 func exportFileDeviceTracking(deviceTrackings []*responses.DeviceTracking) (bytes.Buffer, error) {
 	file := excelize.NewFile()
-	categories := enums.ImportExcelDeviceTrackinHeaders
+	categories := enums.ExcelDeviceTrackinHeaders
 	for k, v := range categories {
 		file.SetCellValue(utils.PAGE, k, v)
 	}

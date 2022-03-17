@@ -218,6 +218,7 @@ func main() {
 		{
 			export.GET("/homologation", homologationController.ExportHomologation())
 			export.POST("/device-tracking", deviceTrackingController.ExportDeviceTracking())
+			export.POST("/fail-test/:id", homologationController.ExportFailTest())
 		}
 		dashboard := v1.Group("/dashboard")
 		{

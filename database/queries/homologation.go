@@ -21,6 +21,78 @@ func GetHomologationValidations(deviceId primitive.ObjectID,
 func GetHomologationById(oid primitive.ObjectID) primitive.M {
 	return primitive.M{"_id": oid}
 }
+func GetHomologationExpandedById(oid primitive.ObjectID) []bson.D {
+	lookupStageDevice := bson.D{
+		primitive.E{Key: "$lookup", Value: bson.D{
+			primitive.E{Key: "from", Value: "devices"},
+			primitive.E{Key: "localField", Value: "device"},
+			primitive.E{Key: "foreignField", Value: "_id"},
+			primitive.E{Key: "as", Value: "device"},
+		}}}
+	unwindStageDevice := bson.D{
+		primitive.E{Key: "$unwind", Value: bson.D{
+			primitive.E{Key: "path", Value: "$device"},
+			primitive.E{Key: "preserveNullAndEmptyArrays", Value: true},
+		}}}
+	lookupStageCompany := bson.D{
+		primitive.E{Key: "$lookup", Value: bson.D{
+			primitive.E{Key: "from", Value: "companies"},
+			primitive.E{Key: "localField", Value: "company"},
+			primitive.E{Key: "foreignField", Value: "_id"},
+			primitive.E{Key: "as", Value: "company"},
+		}}}
+	unwindStageCompany := bson.D{
+		primitive.E{Key: "$unwind", Value: bson.D{
+			primitive.E{Key: "path", Value: "$company"},
+			primitive.E{Key: "preserveNullAndEmptyArrays", Value: true},
+		}}}
+	lookupStageCountry := bson.D{
+		primitive.E{Key: "$lookup", Value: bson.D{
+			primitive.E{Key: "from", Value: "countries"},
+			primitive.E{Key: "localField", Value: "country"},
+			primitive.E{Key: "foreignField", Value: "_id"},
+			primitive.E{Key: "as", Value: "country"},
+		}}}
+	unwindStageCountry := bson.D{
+		primitive.E{Key: "$unwind", Value: bson.D{
+			primitive.E{Key: "path", Value: "$country"},
+			primitive.E{Key: "preserveNullAndEmptyArrays", Value: true},
+		}}}
+	lookupStageTestPlan := bson.D{
+		primitive.E{Key: "$lookup", Value: bson.D{
+			primitive.E{Key: "from", Value: "test_plans"},
+			primitive.E{Key: "localField", Value: "test_plan"},
+			primitive.E{Key: "foreignField", Value: "_id"},
+			primitive.E{Key: "as", Value: "test_plan"},
+		}}}
+	unwindStageTestPlan := bson.D{
+		primitive.E{Key: "$unwind", Value: bson.D{
+			primitive.E{Key: "path", Value: "$test_plan"},
+			primitive.E{Key: "preserveNullAndEmptyArrays", Value: true},
+		}}}
+	lookupStageBrand := bson.D{
+		primitive.E{Key: "$lookup", Value: bson.D{
+			primitive.E{Key: "from", Value: "brands"},
+			primitive.E{Key: "localField", Value: "brand"},
+			primitive.E{Key: "foreignField", Value: "_id"},
+			primitive.E{Key: "as", Value: "brand"},
+		}}}
+	unwindStageBrand := bson.D{
+		primitive.E{Key: "$unwind", Value: bson.D{
+			primitive.E{Key: "path", Value: "$brand"},
+			primitive.E{Key: "preserveNullAndEmptyArrays", Value: true},
+		}}}
+	var objectStage bson.D
+	var matchStage bson.D
+	objectStage = append(objectStage, primitive.E{Key: "_id", Value: oid})
+	matchStage = append(matchStage, primitive.E{Key: "$match", Value: objectStage})
+
+	return mongo.Pipeline{lookupStageDevice, unwindStageDevice,
+		lookupStageCompany, unwindStageCompany,
+		lookupStageCountry, unwindStageCountry,
+		lookupStageTestPlan, unwindStageTestPlan,
+		lookupStageBrand, unwindStageBrand, matchStage}
+}
 func GetHomologations(companies []primitive.ObjectID,
 	brands []primitive.ObjectID, countries []primitive.ObjectID,
 	isInternal bool, companyID primitive.ObjectID) []bson.D {

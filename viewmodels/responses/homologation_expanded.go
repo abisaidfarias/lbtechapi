@@ -41,4 +41,5 @@ type HomologationExpanded struct {
 	ProjectType        string             `bson:"project_type" json:"project_type"`
 	StatusView         string             `bson:"status_view" json:"status_view"`
 	OsVersionView      string             `bson:"os_version_view" json:"os_version_view"`
+	TestResults        []TestResult       `bson:"test_results,omitempty"`
 }
