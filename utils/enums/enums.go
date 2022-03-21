@@ -93,7 +93,6 @@ var ExcelFailsHeaders = map[string]string{
 	"F6": "Issue Frecuency",
 	"G6": "Issue Severity",
 	"H6": "Hiperlinks",
-	"I6": "Images",
 }
 var TestFailureSeverity_key = map[int]string{
 	0: "High",

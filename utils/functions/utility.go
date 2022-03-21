@@ -1,14 +1,19 @@
 package functions
 
 import (
+	"bytes"
+	"crypto/tls"
+	"errors"
 	"fmt"
 	"math/rand"
+	"net"
+	"net/smtp"
 	"os"
 	"strconv"
 	"time"
 
 	"github.com/abisaidfarias/lbtechapi/models"
-	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
+	utils "github.com/abisaidfarias/lbtechapi/utils"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofrs/uuid"
@@ -164,4 +169,74 @@ func CompareHashAndPassword(hashedPassword string, incomingPassword []byte) bool
 	byteHash := []byte(hashedPassword)
 	err := bcrypt.CompareHashAndPassword(byteHash, incomingPassword)
 	return err == nil
+}
+func SendNotifications(to []string) {
+
+	from := os.Getenv("EMAIL_FROM")
+	password := os.Getenv("EMAIL_PASSWORD")
+
+	smtpHost := os.Getenv("SMTP_CLIENTE")
+	smtpPort := os.Getenv("EMAIL_PORT")
+
+	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%s", smtpHost, smtpPort))
+	if err != nil {
+		return
+	}
+
+	c, err := smtp.NewClient(conn, smtpHost)
+	if err != nil {
+		println(err)
+	}
+
+	tlsconfig := &tls.Config{
+		ServerName: smtpHost,
+	}
+
+	if err = c.StartTLS(tlsconfig); err != nil {
+		println(err)
+	}
+
+	auth := LoginAuth(from, password)
+
+	if err = c.Auth(auth); err != nil {
+		println(err)
+	}
+
+	var body bytes.Buffer
+
+	body.Write([]byte(fmt.Sprintf("Subject: This is a test subject \n%s\n\n", utils.MIME_HEADERS)))
+
+	// Sending email.
+	err = smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, body.Bytes())
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+}
+
+type loginAuth struct {
+	username, password string
+}
+
+func LoginAuth(username, password string) smtp.Auth {
+	return &loginAuth{username, password}
+}
+
+func (a *loginAuth) Start(server *smtp.ServerInfo) (string, []byte, error) {
+	return "LOGIN", []byte(a.username), nil
+}
+
+func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
+	if more {
+		switch string(fromServer) {
+		case "Username:":
+			return []byte(a.username), nil
+		case "Password:":
+			return []byte(a.password), nil
+		default:
+			return nil, errors.New("Unknown from server")
+		}
+	}
+	return nil, nil
 }

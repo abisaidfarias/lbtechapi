@@ -1,5 +1,7 @@
 package utils
 
+import "errors"
+
 // ErrorInvalidCredentials Invalid credentials"
 var BaseUrlAzureBlob = "https://%s.blob.core.windows.net/%s"
 
@@ -21,4 +23,6 @@ var COMPANY = "Company"
 var SOFTWARE_VERSION = "Sw Version"
 var TECHNICAL_MODEL = "Technical Model"
 var BRAND = "Brand"
-var COUNTRY = "Cpuntry"
+var COUNTRY = "Country"
+var MIME_HEADERS = "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
+var ErrorInvalidCredentials = errors.New("invalid credentials")

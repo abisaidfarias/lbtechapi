@@ -3,7 +3,6 @@ package services
 import (
 	"bytes"
 	"fmt"
-	"strings"
 
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/repositories"
@@ -82,6 +81,10 @@ func (s *homologationService) Create(homologationRequest *request.Homologation) 
 		categories, companyID, deviceID, countryID, testPlanID, brandID)
 
 	err = s.homologationRepository.Create(homologation)
+
+	if len(homologationRequest.Notifications) > 0 {
+		go functions.SendNotifications(homologationRequest.Notifications)
+	}
 
 	if err != nil {
 		return nil, err
@@ -444,9 +447,6 @@ func exportFailsFile(homologation *responses.HomologationExpanded) (bytes.Buffer
 			}
 			cell, _ = excelize.CoordinatesToCellName(8, index)
 			file.SetCellValue(utils.PAGE, cell, hyperlinks)
-			images := strings.Join(t.Images[:], ",")
-			cell, _ = excelize.CoordinatesToCellName(9, index)
-			file.SetCellValue(utils.PAGE, cell, images)
 			index++
 		}
 	}
