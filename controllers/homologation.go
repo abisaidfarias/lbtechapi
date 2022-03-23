@@ -26,6 +26,7 @@ type IHomologationController interface {
 	Update() gin.HandlerFunc
 	ExportHomologation() gin.HandlerFunc
 	ExportFailTest() gin.HandlerFunc
+	UpdateFailTest() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
@@ -293,6 +294,36 @@ func (c *homologationController) ExportFailTest() gin.HandlerFunc {
 		ctx.Header("Content-Type", "application/octet-stream")
 		ctx.Header("Content-Transfer-Encoding", "binary")
 		ctx.Data(http.StatusOK, "application/octet-stream", file.Bytes())
+		ctx.Status(http.StatusOK)
+	}
+}
+func (c *homologationController) UpdateFailTest() gin.HandlerFunc {
+
+	return func(ctx *gin.Context) {
+
+		var id string = ctx.Param("id")
+
+		var homologation request.Homologation
+
+		err := ctx.ShouldBindJSON(&homologation)
+
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		err = c.homologationService.UpdateFailTest(id, &homologation)
+
+		if err != nil {
+			if utils.ErrorDuplicatedData(err) {
+				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicated.Error()})
+				return
+			}
+			handleErrorResponse(ctx, err)
+			return
+
+		}
+
 		ctx.Status(http.StatusOK)
 	}
 }

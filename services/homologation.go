@@ -31,6 +31,7 @@ type IHomologationService interface {
 	Delete(string) error
 	ExportHomologation(string) (bytes.Buffer, error)
 	ExportFailTest(string) (bytes.Buffer, error)
+	UpdateFailTest(string, *request.Homologation) error
 }
 
 type homologationService struct {
@@ -456,4 +457,14 @@ func exportFailsFile(homologation *responses.HomologationExpanded) (bytes.Buffer
 		return b, err
 	}
 	return b, nil
+}
+func (s *homologationService) UpdateFailTest(id string, homologationRequest *request.Homologation) error {
+	homologationId, _ := primitive.ObjectIDFromHex(id)
+	homologation := mapping.HomologationRequestToHomologationUpdate(homologationRequest)
+
+	err := s.homologationRepository.UpdateFailTest(homologationId, homologation)
+	if err != nil {
+		return err
+	}
+	return nil
 }

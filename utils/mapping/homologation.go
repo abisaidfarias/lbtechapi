@@ -100,6 +100,42 @@ func HomologationRequestToHomologationUpdate(homologation *request.Homologation)
 	deviceID, _ := primitive.ObjectIDFromHex(homologation.Device)
 	brandID, _ := primitive.ObjectIDFromHex(homologation.Brand)
 
+	var testResults []models.TestResult
+	for _, testResulRequest := range homologation.TestResults {
+
+		var testResult models.TestResult
+		testResult.Code = testResulRequest.Code
+		testResult.Description = testResulRequest.Description
+		testResult.Expected = testResulRequest.Expected
+		testResult.IsActive = testResulRequest.IsActive
+		testResult.Name = testResulRequest.Name
+		testResult.ActualResult = testResulRequest.ActualResult
+		testResult.ExpectedResult = testResulRequest.ExpectedResult
+		testResult.Images = testResulRequest.Images
+		testResult.IssueFrequency = testResulRequest.IssueFrequency
+		testResult.IssueSeverity = testResulRequest.IssueSeverity
+		testResult.OverviewIssue = testResulRequest.OverviewIssue
+		testResult.Result = testResulRequest.Result
+		testResult.StepsToReproduce = testResulRequest.StepsToReproduce
+		testResult.Value = testResulRequest.Value
+
+		var hyperlinks []models.Hyperlink = []models.Hyperlink{}
+		for _, hyperlinkRequest := range testResulRequest.Hyperlinks {
+			var hyperlink models.Hyperlink
+			hyperlink.Description = hyperlinkRequest.Description
+			hyperlink.Link = hyperlinkRequest.Link
+			hyperlinks = append(hyperlinks, hyperlink)
+		}
+		testResult.Hyperlinks = hyperlinks
+		var testCategory models.TestCategory
+		categoryID, _ := primitive.ObjectIDFromHex(testResulRequest.TestCategory.ID)
+		testCategory.ID = categoryID
+		testCategory.Description = testResulRequest.TestCategory.Description
+		testCategory.Name = testResulRequest.TestCategory.Name
+		testResult.TestCategory = testCategory
+		testResults = append(testResults, testResult)
+	}
+
 	return &models.Homologation{
 		Company:           companyID,
 		Device:            deviceID,
@@ -119,5 +155,6 @@ func HomologationRequestToHomologationUpdate(homologation *request.Homologation)
 		Carrier:           homologation.Carrier,
 		TestingType:       homologation.TestingType,
 		CurrentPhase:      homologation.CurrentPhase,
+		TestResults:       testResults,
 	}
 }
