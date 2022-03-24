@@ -100,8 +100,31 @@ func HomologationRequestToHomologationUpdate(homologation *request.Homologation)
 	deviceID, _ := primitive.ObjectIDFromHex(homologation.Device)
 	brandID, _ := primitive.ObjectIDFromHex(homologation.Brand)
 
+	return &models.Homologation{
+		Company:           companyID,
+		Device:            deviceID,
+		SoftwareVersion:   homologation.SoftwareVersion,
+		HardwareVersion:   homologation.HardwareVersion,
+		PlanningDate:      homologation.PlanningDate,
+		SampleStartDate:   homologation.SampleStartDate,
+		SampleEndDate:     homologation.SampleEndDate,
+		TestStartDate:     time.Time{},
+		TestEndDate:       time.Time{},
+		UnderStartDate:    time.Time{},
+		UnderEndDate:      time.Time{},
+		CompletedDate:     time.Time{},
+		Brand:             brandID,
+		IsInternalProject: homologation.IsInternalProject,
+		OsVersion:         homologation.OsVersion,
+		Carrier:           homologation.Carrier,
+		TestingType:       homologation.TestingType,
+		CurrentPhase:      homologation.CurrentPhase,
+	}
+}
+func TestResultsRequestToTestResults(testResultsRequest []request.TestResult) []models.TestResult {
+
 	var testResults []models.TestResult
-	for _, testResulRequest := range homologation.TestResults {
+	for _, testResulRequest := range testResultsRequest {
 
 		var testResult models.TestResult
 		testResult.Code = testResulRequest.Code
@@ -135,26 +158,5 @@ func HomologationRequestToHomologationUpdate(homologation *request.Homologation)
 		testResult.TestCategory = testCategory
 		testResults = append(testResults, testResult)
 	}
-
-	return &models.Homologation{
-		Company:           companyID,
-		Device:            deviceID,
-		SoftwareVersion:   homologation.SoftwareVersion,
-		HardwareVersion:   homologation.HardwareVersion,
-		PlanningDate:      homologation.PlanningDate,
-		SampleStartDate:   homologation.SampleStartDate,
-		SampleEndDate:     homologation.SampleEndDate,
-		TestStartDate:     time.Time{},
-		TestEndDate:       time.Time{},
-		UnderStartDate:    time.Time{},
-		UnderEndDate:      time.Time{},
-		CompletedDate:     time.Time{},
-		Brand:             brandID,
-		IsInternalProject: homologation.IsInternalProject,
-		OsVersion:         homologation.OsVersion,
-		Carrier:           homologation.Carrier,
-		TestingType:       homologation.TestingType,
-		CurrentPhase:      homologation.CurrentPhase,
-		TestResults:       testResults,
-	}
+	return testResults
 }

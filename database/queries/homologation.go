@@ -450,7 +450,7 @@ func IntervalTime() primitive.D {
 	matchStage = append(matchStage, primitive.E{Key: "$match", Value: objectStage})
 	return matchStage
 }
-func UpdateFailTest(homologation *models.Homologation, oid primitive.ObjectID) (primitive.M, primitive.D) {
+func UpdateFailTest(testResults []models.TestResult, oid primitive.ObjectID) (primitive.M, primitive.D) {
 
 	filter := primitive.M{
 		"_id": oid,
@@ -458,7 +458,7 @@ func UpdateFailTest(homologation *models.Homologation, oid primitive.ObjectID) (
 	update := primitive.D{
 		{Key: "$set",
 			Value: primitive.D{
-				{Key: "test_results", Value: homologation.TestResults},
+				{Key: "test_results", Value: testResults},
 			},
 		},
 	}

@@ -303,16 +303,16 @@ func (c *homologationController) UpdateFailTest() gin.HandlerFunc {
 
 		var id string = ctx.Param("id")
 
-		var homologation request.Homologation
+		var testFail request.TestFails
 
-		err := ctx.ShouldBindJSON(&homologation)
+		err := ctx.ShouldBindJSON(&testFail)
 
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		err = c.homologationService.UpdateFailTest(id, &homologation)
+		err = c.homologationService.UpdateFailTest(id, testFail.TestResults)
 
 		if err != nil {
 			if utils.ErrorDuplicatedData(err) {

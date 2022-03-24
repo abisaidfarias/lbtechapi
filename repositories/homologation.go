@@ -48,7 +48,7 @@ type IHomologationRepository interface {
 	Delete(primitive.ObjectID) error
 	DeleteHierarchy(primitive.ObjectID, primitive.ObjectID, primitive.ObjectID, bool) error
 	GetByIdExpanded(primitive.ObjectID) (*responses.HomologationExpanded, error)
-	UpdateFailTest(primitive.ObjectID, *models.Homologation) error
+	UpdateFailTest(primitive.ObjectID, []models.TestResult) error
 }
 type homologationRepository struct {
 }
@@ -457,7 +457,6 @@ func (r *homologationRepository) GetByIdExpanded(homologationID primitive.Object
 	if err != nil {
 		return nil, err
 	}
-	//var homologations []*responses.HomologationExpanded = []*responses.HomologationExpanded{}
 	for cursor.Next(context.TODO()) {
 		var homologation *responses.HomologationExpanded
 		err := cursor.Decode(&homologation)
@@ -466,9 +465,9 @@ func (r *homologationRepository) GetByIdExpanded(homologationID primitive.Object
 	cursor.Close(context.TODO())
 	return nil, nil
 }
-func (r *homologationRepository) UpdateFailTest(id primitive.ObjectID,homologation *models.Homologation) error {
+func (r *homologationRepository) UpdateFailTest(id primitive.ObjectID, testResults []models.TestResult) error {
 
-	filter, update := queries.UpdateFailTest(homologation, id)
+	filter, update := queries.UpdateFailTest(testResults, id)
 
 	_, err := homologationCollection.UpdateOne(context.TODO(), filter, update)
 
