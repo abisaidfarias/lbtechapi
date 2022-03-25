@@ -6,9 +6,9 @@ import (
 
 // Company model
 type DeviceTracking struct {
-	ID           primitive.ObjectID `bson:"_id" json:"_id"`
-	Company      Company            `bson:"company" json:"company"`
-	Device       DeviceResume       `bson:"device" json:"device"`
-	Imei         string             `bson:"imei" json:"imei"`
-	TrackingLogs []TrackingLog      `bson:"tracking_logs" json:"tracking_logs"`
+	ID           primitive.ObjectID `bson:"_id,omitempty"`
+	Company      primitive.ObjectID `bson:"company,omitempty"`
+	Device       primitive.ObjectID `bson:"device,omitempty"`
+	Imei         string             `bson:"imei,omitempty"`
+	TrackingLogs []TrackingLog      `bson:"tracking_logs"`
 }

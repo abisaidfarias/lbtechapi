@@ -209,7 +209,7 @@ func (s *deviceTrackingService) ExportDeviceTracking(searchOption *request.Searc
 	}
 	return file, nil
 }
-func exportFileDeviceTracking(deviceTrackings []*responses.DeviceTracking) (bytes.Buffer, error) {
+func exportFileDeviceTracking(deviceTrackings []*responses.DeviceTrackingExpanded) (bytes.Buffer, error) {
 	file := excelize.NewFile()
 	categories := enums.ExcelDeviceTrackinHeaders
 	for k, v := range categories {
