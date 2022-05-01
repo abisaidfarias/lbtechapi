@@ -68,6 +68,7 @@ func (s *deviceTrackingService) Get(userID string) ([]responses.Tracking, error)
 	}
 
 	trackingGrouped := make(map[string]responses.Tracking)
+	var newTrakingLogs []responses.TrackingLog = []responses.TrackingLog{}
 	for _, deviceTracking := range deviceTrackings {
 		deviceName := fmt.Sprintf("%s %s",
 			deviceTracking.Device.Brand.Name, deviceTracking.Device.CommercialModel)
@@ -77,9 +78,18 @@ func (s *deviceTrackingService) Get(userID string) ([]responses.Tracking, error)
 		existTracking.ID = deviceTracking.Device.ID
 		existTracking.ImageUrl = deviceTracking.Device.ImageUrl
 		existTracking.TecnicalModel = deviceTracking.Device.TechnicalModel
+
+		for _, tracking := range deviceTracking.TrackingLogs {
+			var newTrackingLog responses.TrackingLog = tracking
+			if len(tracking.ExternalResponsible) > 0 {
+				newTrackingLog.Person.Name = newTrackingLog.ExternalResponsible
+			}
+			newTrakingLogs = append(newTrakingLogs, newTrackingLog)
+		}
+
+		deviceTracking.TrackingLogs = newTrakingLogs
 		existTracking.DeviceTrackings = append(existTracking.DeviceTrackings, *deviceTracking)
 		trackingGrouped[deviceName] = existTracking
-
 	}
 	var trakings []responses.Tracking = []responses.Tracking{}
 	for _, v := range trackingGrouped {
@@ -136,6 +146,7 @@ func (s *deviceTrackingService) AdvancedSearch(searchOption *request.SearchOptio
 	}
 
 	trackingGrouped := make(map[string]responses.Tracking)
+	var newTrakingLogs []responses.TrackingLog = []responses.TrackingLog{}
 	for _, deviceTracking := range deviceTrackings {
 		existTracking := trackingGrouped["NoDevice"]
 		existTracking.Brand = ""
@@ -143,6 +154,16 @@ func (s *deviceTrackingService) AdvancedSearch(searchOption *request.SearchOptio
 		existTracking.ID = primitive.NilObjectID
 		existTracking.ImageUrl = ""
 		existTracking.TecnicalModel = ""
+
+		for _, tracking := range deviceTracking.TrackingLogs {
+			var newTrackingLog responses.TrackingLog = tracking
+			if len(tracking.ExternalResponsible) > 0 {
+				newTrackingLog.Person.Name = newTrackingLog.ExternalResponsible
+			}
+			newTrakingLogs = append(newTrakingLogs, newTrackingLog)
+		}
+
+		deviceTracking.TrackingLogs = newTrakingLogs
 		existTracking.DeviceTrackings = append(existTracking.DeviceTrackings, *deviceTracking)
 		trackingGrouped["NoDevice"] = existTracking
 

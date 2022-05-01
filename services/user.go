@@ -25,6 +25,8 @@ type IUserService interface {
 	Delete(string) error
 	ChangePassword(string, request.ChangePassword) error
 	Upgrade(*request.User) error
+	GetInternalUser() ([]*responses.User, error)
+	GetUsersByCompany(string) ([]*responses.User, error)
 }
 type userService struct {
 	userRepository repositories.IUserRepository
@@ -162,4 +164,23 @@ func (s *userService) ChangePassword(email string, changePassword request.Change
 		return err
 	}
 	return nil
+}
+func (s *userService) GetInternalUser() ([]*responses.User, error) {
+
+	users, err := s.userRepository.GetInternalUser()
+
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+func (s *userService) GetUsersByCompany(id string) ([]*responses.User, error) {
+
+	company, _ := primitive.ObjectIDFromHex(id)
+	users, err := s.userRepository.GetUsersByCompany(company)
+
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
 }

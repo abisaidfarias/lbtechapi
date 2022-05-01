@@ -89,6 +89,10 @@ var (
 	personRepository repositories.IPersonRepository = repositories.NewPersonRepository()
 	personService    services.IPersonService        = services.NewPersonService(personRepository, deviceTrackingRepository)
 	personController controllers.IPersonController  = controllers.NewPersonController(personService)
+
+	notificationRepository repositories.INotificationRepository = repositories.NewNotificationRepository()
+	notificationService    services.INotificationService        = services.NewNotificationService(notificationRepository)
+	notificationController controllers.INotificationController  = controllers.NewNotificationController(notificationService)
 )
 
 func main() {
@@ -134,6 +138,8 @@ func main() {
 			users.PUT(":id", userController.Update())
 			users.DELETE(":id", userController.Delete())
 			users.PUT(":id/changePassword", userController.ChangePassword())
+			users.GET("/company/:id", userController.GetUserByCompany())
+			users.GET("/internal", userController.GetByInternal())
 		}
 
 		categories := v1.Group("/test-categories")
@@ -257,6 +263,11 @@ func main() {
 			person.GET("", personController.Get())
 			person.PUT(":id", personController.Update())
 			person.DELETE(":id", personController.Delete())
+		}
+		notification := v1.Group("/notification")
+		{
+			notification.POST("", notificationController.Create())
+			notification.GET("/company/:id", notificationController.GetByCompany())
 		}
 	}
 

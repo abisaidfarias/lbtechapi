@@ -22,6 +22,8 @@ type IUserController interface {
 	GetProfileByID() gin.HandlerFunc
 	ChangePassword() gin.HandlerFunc
 	Upgrade() gin.HandlerFunc
+	GetByInternal() gin.HandlerFunc
+	GetUserByCompany() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
@@ -234,6 +236,38 @@ func (c *userController) ChangePassword() gin.HandlerFunc {
 		}
 
 		ctx.Status(http.StatusOK)
+	}
+
+}
+func (c *userController) GetByInternal() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		users, err := c.userService.GetInternalUser()
+
+		if err != nil {
+			handleErrorResponse(ctx, err)
+			return
+		}
+
+		ctx.JSON(http.StatusOK, users)
+
+	}
+
+}
+func (c *userController) GetUserByCompany() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		companyId := ctx.Param("id")
+
+		users, err := c.userService.GetUsersByCompany(companyId)
+
+		if err != nil {
+			handleErrorResponse(ctx, err)
+			return
+		}
+
+		ctx.JSON(http.StatusOK, users)
+
 	}
 
 }

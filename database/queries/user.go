@@ -126,3 +126,9 @@ func ChangePassword(email string, hashPassword string) (primitive.M, primitive.M
 	}
 	return filter, update
 }
+func GetUsersByCompany(companyId primitive.ObjectID) primitive.M {
+	return primitive.M{"company": companyId}
+}
+func GetInternalUsers() primitive.M {
+	return primitive.M{"is_internal": true}
+}

@@ -98,7 +98,7 @@ func (r *profileRepository) Update(id string, profile *models.Profile) error {
 	return nil
 }
 func (r *profileRepository) Delete(id string) (bool, error) {
-	oid, err := primitive.ObjectIDFromHex(id)
+	oid, _ := primitive.ObjectIDFromHex(id)
 
 	cursor, err := userCollection.Find(context.TODO(), queries.GetUsersProfileId(id))
 	if err != nil {

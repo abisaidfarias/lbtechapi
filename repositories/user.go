@@ -27,6 +27,8 @@ type IUserRepository interface {
 	GetByIDExpanded(string) (*responses.UserExpanded, error)
 	Updgrade(*models.User) error
 	GetUserByCompany(primitive.ObjectID) (*responses.User, error)
+	GetInternalUser() ([]*responses.User, error)
+	GetUsersByCompany(primitive.ObjectID) ([]*responses.User, error)
 }
 
 type userRepository struct {
@@ -223,4 +225,34 @@ func (r *userRepository) GetUserByCompany(companyId primitive.ObjectID) (*respon
 		}
 	}
 	return user, nil
+}
+func (r *userRepository) GetUsersByCompany(companyId primitive.ObjectID) ([]*responses.User, error) {
+
+	cursor, err := userCollection.Find(context.TODO(),
+		queries.GetUsersByCompany(companyId))
+
+	if err != nil {
+		panic(err)
+	}
+	var users []*responses.User = []*responses.User{}
+	if err = cursor.All(context.TODO(), &users); err != nil {
+		panic(err)
+	}
+	cursor.Close(context.TODO())
+	return users, nil
+}
+func (r *userRepository) GetInternalUser() ([]*responses.User, error) {
+
+	cursor, err := userCollection.Find(context.TODO(),
+		queries.GetInternalUsers())
+
+	if err != nil {
+		panic(err)
+	}
+	var users []*responses.User = []*responses.User{}
+	if err = cursor.All(context.TODO(), &users); err != nil {
+		panic(err)
+	}
+	cursor.Close(context.TODO())
+	return users, nil
 }

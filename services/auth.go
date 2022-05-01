@@ -54,5 +54,6 @@ func (s *authService) SignIn(credentials *request.AuthCredentials) (*responses.A
 		Token:    token,
 		Name:     user.Name,
 		LastName: user.LastName,
+		Company:  user.Company,
 	}, nil
 }

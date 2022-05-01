@@ -104,3 +104,8 @@ var TestFailureFrequency_key = map[int]string{
 	1: "Random",
 	2: "Once",
 }
+var NotificationType_value = map[string]int{
+	"COMPANY":  0,
+	"INTERNAL": 1,
+	"MANUAL":   2,
+}

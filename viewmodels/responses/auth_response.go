@@ -12,4 +12,5 @@ type AuthResponse struct {
 	Token    string             `json:"token" bson:"token"`
 	Name     string             `json:"name" bson:"name"`
 	LastName string             `json:"lastName" bson:"lastName"`
+	Company  primitive.ObjectID `json:"company" bson:"company"`
 }
