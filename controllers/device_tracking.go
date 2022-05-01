@@ -189,6 +189,7 @@ func (c *deviceTrackingController) AdvancedSearchOptions() gin.HandlerFunc {
 }
 func (c *deviceTrackingController) ExportDeviceTracking() gin.HandlerFunc {
 
+	
 	return func(ctx *gin.Context) {
 		userID := ctx.MustGet("userID").(string)
 		var searchOption *request.SearchOption

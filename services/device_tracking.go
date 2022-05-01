@@ -68,7 +68,7 @@ func (s *deviceTrackingService) Get(userID string) ([]responses.Tracking, error)
 	}
 
 	trackingGrouped := make(map[string]responses.Tracking)
-	var newTrakingLogs []responses.TrackingLog = []responses.TrackingLog{}
+	// var newTrakingLogs []responses.TrackingLog = []responses.TrackingLog{}
 	for _, deviceTracking := range deviceTrackings {
 		deviceName := fmt.Sprintf("%s %s",
 			deviceTracking.Device.Brand.Name, deviceTracking.Device.CommercialModel)
@@ -79,16 +79,16 @@ func (s *deviceTrackingService) Get(userID string) ([]responses.Tracking, error)
 		existTracking.ImageUrl = deviceTracking.Device.ImageUrl
 		existTracking.TecnicalModel = deviceTracking.Device.TechnicalModel
 
-		for _, tracking := range deviceTracking.TrackingLogs {
-			var newTrackingLog responses.TrackingLog = tracking
-			if len(tracking.ExternalResponsible) > 0 {
-				newTrackingLog.Person.Name = newTrackingLog.ExternalResponsible
-			}
-			newTrakingLogs = append(newTrakingLogs, newTrackingLog)
-		}
+		// for _, tracking := range deviceTracking.TrackingLogs {
+		// 	var newTrackingLog responses.TrackingLog = tracking
+		// 	if len(tracking.ExternalResponsible) > 0 {
+		// 		newTrackingLog.Person.Name = newTrackingLog.ExternalResponsible
+		// 	}
+		// 	newTrakingLogs = append(newTrakingLogs, newTrackingLog)
+		// }
 
-		deviceTracking.TrackingLogs = newTrakingLogs
-		existTracking.DeviceTrackings = append(existTracking.DeviceTrackings, *deviceTracking)
+		// deviceTracking.TrackingLogs = newTrakingLogs
+		// existTracking.DeviceTrackings = append(existTracking.DeviceTrackings, *deviceTracking)
 		trackingGrouped[deviceName] = existTracking
 	}
 	var trakings []responses.Tracking = []responses.Tracking{}
