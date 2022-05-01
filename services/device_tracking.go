@@ -146,7 +146,7 @@ func (s *deviceTrackingService) AdvancedSearch(searchOption *request.SearchOptio
 	}
 
 	trackingGrouped := make(map[string]responses.Tracking)
-	var newTrakingLogs []responses.TrackingLog = []responses.TrackingLog{}
+	// var newTrakingLogs []responses.TrackingLog = []responses.TrackingLog{}
 	for _, deviceTracking := range deviceTrackings {
 		existTracking := trackingGrouped["NoDevice"]
 		existTracking.Brand = ""
@@ -155,15 +155,15 @@ func (s *deviceTrackingService) AdvancedSearch(searchOption *request.SearchOptio
 		existTracking.ImageUrl = ""
 		existTracking.TecnicalModel = ""
 
-		for _, tracking := range deviceTracking.TrackingLogs {
-			var newTrackingLog responses.TrackingLog = tracking
-			if len(tracking.ExternalResponsible) > 0 {
-				newTrackingLog.Person.Name = newTrackingLog.ExternalResponsible
-			}
-			newTrakingLogs = append(newTrakingLogs, newTrackingLog)
-		}
+		// for _, tracking := range deviceTracking.TrackingLogs {
+		// 	var newTrackingLog responses.TrackingLog = tracking
+		// 	if len(tracking.ExternalResponsible) > 0 {
+		// 		newTrackingLog.Person.Name = newTrackingLog.ExternalResponsible
+		// 	}
+		// 	newTrakingLogs = append(newTrakingLogs, newTrackingLog)
+		// }
 
-		deviceTracking.TrackingLogs = newTrakingLogs
+		// deviceTracking.TrackingLogs = newTrakingLogs
 		existTracking.DeviceTrackings = append(existTracking.DeviceTrackings, *deviceTracking)
 		trackingGrouped["NoDevice"] = existTracking
 
