@@ -88,7 +88,7 @@ func (s *deviceTrackingService) Get(userID string) ([]responses.Tracking, error)
 		// }
 
 		// deviceTracking.TrackingLogs = newTrakingLogs
-		// existTracking.DeviceTrackings = append(existTracking.DeviceTrackings, *deviceTracking)
+		existTracking.DeviceTrackings = append(existTracking.DeviceTrackings, *deviceTracking)
 		trackingGrouped[deviceName] = existTracking
 	}
 	var trakings []responses.Tracking = []responses.Tracking{}
