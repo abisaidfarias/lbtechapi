@@ -21,6 +21,8 @@ func NotificationRequestToNotification(notification *request.Notification) *mode
 
 	return &models.Notification{
 		Company:            companyId,
-		NotificationEmails: notificationEmails,		
+		NotificationEmails: notificationEmails,
+		Name:               notification.Name,
+		LastName:           notification.LastName,
 	}
 }

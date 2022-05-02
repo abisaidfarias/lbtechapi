@@ -9,4 +9,6 @@ type Notification struct {
 	ID                 primitive.ObjectID  `bson:"_id,omitempty"`
 	Company            primitive.ObjectID  `bson:"company,omitempty"`
 	NotificationEmails []NotificationEmail `bson:"notification_emails,omitempty" json:"notification_emails"`
+	Name               string              `bson:"name,omitempty"`
+	LastName           string              `bson:"lastName,omitempty"`
 }
