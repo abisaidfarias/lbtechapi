@@ -128,7 +128,9 @@ func (r *homologationRepository) GetByInternal(companies []primitive.ObjectID,
 		}
 		homologation.OsVersionView = homologation.Device.PlatformOs + " " + homologation.OsVersion
 		homologation.ApprovalType = enums.HomologationType_key[homologation.Type]
-		if homologation.Type == enums.HomologationType_value["MAINTENANCE"] {
+		if homologation.Type == enums.HomologationType_value["MAINTENANCE"] &&
+			len(homologation.ApprovalTypeOption) > 0 {
+
 			homologation.ApprovalType = homologation.ApprovalTypeOption
 		}
 		homologation.ProjectType = "External"

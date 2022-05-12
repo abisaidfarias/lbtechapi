@@ -16,6 +16,8 @@ func NotificationRequestToNotification(notification *request.Notification) *mode
 		var newNotificaionEmail models.NotificationEmail
 		newNotificaionEmail.Email = notificationEmail.Email
 		newNotificaionEmail.Type = notificationEmail.Type
+		newNotificaionEmail.Name = notificationEmail.Name
+		newNotificaionEmail.LastName = notificationEmail.LastName
 		notificationEmails = append(notificationEmails, newNotificaionEmail)
 	}
 
