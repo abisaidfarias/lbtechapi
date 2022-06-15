@@ -57,7 +57,8 @@ var (
 	storageController controllers.IStorageController = controllers.NewStorageController(storageService)
 
 	homologationRepository repositories.IHomologationRepository = repositories.NewHomologationRepository()
-	homologationService    services.IHomologationService        = services.NewHomologationService(homologationRepository, testCategoryRepository, userRepository)
+	homologationService    services.IHomologationService        = services.NewHomologationService(homologationRepository, testCategoryRepository,
+		 userRepository,notificationRepository,brandRepository,deviceRepository,countryRepository)
 	homologationController controllers.IHomologationController  = controllers.NewHomologationController(homologationService)
 
 	dashboardService    services.IDashboardService       = services.NewDashboardService(homologationRepository, userRepository)

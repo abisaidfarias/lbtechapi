@@ -22,6 +22,13 @@ var HomologationPhase_value = map[string]int{
 	"UNDER_EVALUATION": 3,
 	"COMPLETE":         4,
 }
+var HomologationPhase_key = map[int]string{
+	0: "Planning Date",
+	1: "Sample Reception Date",
+	2: "Testing Start Date",
+	3: "Testing End Date",
+	4: "Homologation Process Finishes",
+}
 var TestResult_value = map[string]int{
 	"NORUN": 0,
 	"NA":    1,
@@ -108,4 +115,9 @@ var NotificationType_value = map[string]int{
 	"COMPANY":  0,
 	"INTERNAL": 1,
 	"MANUAL":   2,
+}
+
+var HomologationTemplatePath = map[string]string{
+	"Create": "utils/htmlMessageTemplate/createHomologation.html",
+	"Phase":  "utils/htmlMessageTemplate/createHomologation.html",
 }

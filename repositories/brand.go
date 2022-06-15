@@ -7,6 +7,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/abisaidfarias/lbtechapi/database"
+	"github.com/abisaidfarias/lbtechapi/database/queries"
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 )
@@ -14,6 +15,7 @@ import (
 type IBrandRepository interface {
 	Create(*models.Brand) (*primitive.ObjectID, error)
 	Get() ([]*responses.Brand, error)
+	GetById(string) (*responses.Brand, error)
 }
 
 type brandRepository struct {
@@ -51,4 +53,22 @@ func (r *brandRepository) Get() ([]*responses.Brand, error) {
 	}
 	cursor.Close(context.TODO())
 	return brands, nil
+}
+func (r *brandRepository) GetById(id string) (*responses.Brand, error) {
+	oid, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var result responses.Brand
+
+	err = brandCollection.FindOne(context.TODO(),
+		queries.GetBrandById(oid)).Decode(&result)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
 }

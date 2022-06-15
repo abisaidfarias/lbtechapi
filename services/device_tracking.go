@@ -8,6 +8,7 @@ import (
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/utils"
 	"github.com/abisaidfarias/lbtechapi/utils/enums"
+	//"github.com/abisaidfarias/lbtechapi/utils/functions"
 	"github.com/abisaidfarias/lbtechapi/utils/mapping"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
@@ -51,6 +52,7 @@ func (s *deviceTrackingService) Create(deviceTrackingRequest *request.DeviceTrac
 		if err != nil {
 			return err
 		}
+		//go functions.SendNotifications(deviceTracking.Company,false,"PRUEBA")
 
 	}
 	return nil
@@ -133,6 +135,7 @@ func (s *deviceTrackingService) Update(id string, deviceTrackingRequest *request
 	if err != nil {
 		return err
 	}
+	//go functions.SendNotifications(deviceTracking.Company,false,"PRUEBA")
 	return nil
 }
 func (s *deviceTrackingService) AdvancedSearch(searchOption *request.SearchOption, userId string) ([]responses.Tracking, error) {

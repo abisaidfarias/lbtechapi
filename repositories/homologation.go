@@ -25,7 +25,6 @@ type IHomologationRepository interface {
 		[]primitive.ObjectID) ([]*responses.HomologationExpanded, error)
 	GetByExternal(primitive.ObjectID, []primitive.ObjectID,
 		[]primitive.ObjectID) ([]*responses.HomologationExpanded, error)
-	GetByID(primitive.ObjectID) (*responses.Homologation, error)
 	UpdateTestResult(string, request.TestResultResume) error
 	CreateFailTestResult(string, *models.TestResult) error
 	GetGroupedByTypeCountry(companies []primitive.ObjectID,
@@ -177,11 +176,11 @@ func (r *homologationRepository) GetByExternal(companyID primitive.ObjectID,
 
 	return homologations, nil
 }
-func (r *homologationRepository) GetByID(homologationID primitive.ObjectID) (*responses.Homologation, error) {
+func (r *homologationRepository) GetByID(homologationID primitive.ObjectID) (*responses.HomologationExpanded, error) {
 
-	var homologation *responses.Homologation
+	var homologation *responses.HomologationExpanded
 	err := homologationCollection.FindOne(context.TODO(),
-		queries.GetHomologationById(homologationID)).Decode(&homologation)
+		queries.GetHomologationExpandedById(homologationID)).Decode(&homologation)
 	if err != nil {
 		return nil, err
 	}

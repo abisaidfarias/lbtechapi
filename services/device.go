@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/abisaidfarias/lbtechapi/repositories"
+	//"github.com/abisaidfarias/lbtechapi/utils/functions"
 	"github.com/abisaidfarias/lbtechapi/utils/mapping"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
@@ -44,6 +45,7 @@ func (s *deviceService) Create(deviceRequest *request.Device) (*responses.Device
 	if err != nil {
 		return nil, err
 	}
+	//go functions.SendNotifications(primitive.NilObjectID, true, "PRUEBA")
 	return deviceResponse, nil
 }
 
@@ -78,6 +80,7 @@ func (s *deviceService) Update(id string, deviceRequest *request.Device) error {
 	if err != nil {
 		return err
 	}
+	//go functions.SendNotifications(primitive.NilObjectID, true, "PRUEBA")
 	return nil
 }
 func (s *deviceService) Delete(id string) (bool, error) {

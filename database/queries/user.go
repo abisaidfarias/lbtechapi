@@ -132,3 +132,22 @@ func GetUsersByCompany(companyId primitive.ObjectID) primitive.M {
 func GetInternalUsers() primitive.M {
 	return primitive.M{"is_internal": true}
 }
+func GetUserExpandedInternal() []bson.D {
+	lookupStageCompany := bson.D{
+		primitive.E{Key: "$lookup", Value: bson.D{
+			primitive.E{Key: "from", Value: "companies"},
+			primitive.E{Key: "localField", Value: "company"},
+			primitive.E{Key: "foreignField", Value: "_id"},
+			primitive.E{Key: "as", Value: "company"},
+		}}}
+	unwindStageCompany := bson.D{
+		primitive.E{Key: "$unwind", Value: bson.D{
+			primitive.E{Key: "path", Value: "$company"},
+			primitive.E{Key: "preserveNullAndEmptyArrays", Value: false},
+		}}}
+	matchStage := bson.D{
+		primitive.E{Key: "$match", Value: bson.D{
+			primitive.E{Key: "is_internal", Value: true},
+		}}}
+	return mongo.Pipeline{lookupStageCompany, unwindStageCompany, matchStage}
+}

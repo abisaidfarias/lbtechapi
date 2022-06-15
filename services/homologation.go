@@ -32,22 +32,35 @@ type IHomologationService interface {
 	ExportHomologation(string) (bytes.Buffer, error)
 	ExportFailTest(string) (bytes.Buffer, error)
 	UpdateFailTest(string, []request.TestResult) error
+	HomologationNotification(*request.Homologation, primitive.ObjectID, string)
 }
 
 type homologationService struct {
 	homologationRepository repositories.IHomologationRepository
 	testCategoryRepository repositories.ITestCategoryRepository
 	userRepository         repositories.IUserRepository
+	notificationRepository repositories.INotificationRepository
+	brandRepository        repositories.IBrandRepository
+	deviceRepository       repositories.IDeviceRepository
+	countryRepository      repositories.ICountryRepository
 }
 
 // NewHomologationService is a constructor
 func NewHomologationService(homologationRepository repositories.IHomologationRepository,
 	testCategoryRepository repositories.ITestCategoryRepository,
-	userRepository repositories.IUserRepository) IHomologationService {
+	userRepository repositories.IUserRepository,
+	notificationRepository repositories.INotificationRepository,
+	brandRepository repositories.IBrandRepository,
+	deviceRepository repositories.IDeviceRepository,
+	countryRepository repositories.ICountryRepository) IHomologationService {
 	return &homologationService{
 		homologationRepository: homologationRepository,
 		testCategoryRepository: testCategoryRepository,
 		userRepository:         userRepository,
+		notificationRepository: notificationRepository,
+		brandRepository:        brandRepository,
+		deviceRepository:       deviceRepository,
+		countryRepository:      countryRepository,
 	}
 }
 
@@ -83,13 +96,12 @@ func (s *homologationService) Create(homologationRequest *request.Homologation) 
 
 	err = s.homologationRepository.Create(homologation)
 
-	if len(homologationRequest.Notifications) > 0 {
-		go functions.SendNotifications(homologationRequest.Notifications)
-	}
-
 	if err != nil {
 		return nil, err
 	}
+
+	go s.HomologationNotification(homologationRequest, companyID, utils.CREATE)
+
 	return nil, nil
 }
 func (s *homologationService) Get(userID string) ([]*responses.HomologationExpanded, error) {
@@ -118,7 +130,7 @@ func (s *homologationService) Get(userID string) ([]*responses.HomologationExpan
 func (s *homologationService) GetReport(id string) (*responses.HomologationReport, error) {
 
 	homologationID, _ := primitive.ObjectIDFromHex(id)
-	homologation, err := s.homologationRepository.GetByID(homologationID)
+	homologation, err := s.homologationRepository.GetByIdExpanded(homologationID)
 
 	if err != nil || homologation == nil {
 		return nil, err
@@ -153,7 +165,7 @@ func (s *homologationService) GetReport(id string) (*responses.HomologationRepor
 func (s *homologationService) GetCategoriesWithTest(id string) (map[string]responses.CategoryExpanded, error) {
 
 	homologationID, _ := primitive.ObjectIDFromHex(id)
-	homologation, err := s.homologationRepository.GetByID(homologationID)
+	homologation, err := s.homologationRepository.GetByIdExpanded(homologationID)
 
 	if err != nil || homologation == nil {
 		return nil, err
@@ -213,12 +225,18 @@ func (s *homologationService) PhaseChange(id string, homologationRequest *reques
 	if err != nil {
 		return err
 	}
+	homologationId, _ := primitive.ObjectIDFromHex(id)
+	homologationResponse, _ := s.homologationRepository.GetByIdExpanded(homologationId)
+	homologationR := mapping.HomologationResponseToHomologationRequest(*homologationResponse)
+	homologationR.Status = homologation.Status
+	go s.HomologationNotification(&homologationR, homologationResponse.Company.ID, utils.PHASE)
+
 	return nil
 }
 func (s *homologationService) GetHomologationFails(id string) (*responses.TestFails, error) {
 
 	homologationID, _ := primitive.ObjectIDFromHex(id)
-	homologation, err := s.homologationRepository.GetByID(homologationID)
+	homologation, err := s.homologationRepository.GetByIdExpanded(homologationID)
 	if err != nil {
 		return nil, err
 	}
@@ -266,6 +284,10 @@ func (s *homologationService) CreateFailTestResult(id string, testResultRequest 
 	if err != nil {
 		return err
 	}
+
+	//homologationId, _ := primitive.ObjectIDFromHex(id)
+	//homologation, _ := s.homologationRepository.GetByID(homologationId)
+	//go functions.SendNotifications(homologation.Company, false, "PRUEBA")
 	return nil
 }
 func (s *homologationService) UpdateDocument(id string, homologation *request.Homologation) error {
@@ -285,18 +307,19 @@ func (s *homologationService) Update(id string, homologationRequest *request.Hom
 	if err != nil {
 		return err
 	}
+	//go functions.SendNotifications(homologation.Company, false, "PRUEBA")
 	return nil
 }
 func (s *homologationService) Delete(id string) error {
 	homologationId, _ := primitive.ObjectIDFromHex(id)
 
-	homologation, err := s.homologationRepository.GetByID(homologationId)
+	homologation, err := s.homologationRepository.GetByIdExpanded(homologationId)
 	if err != nil {
 		return err
 	}
 	if homologation.Type == enums.HomologationType_value["INITIAL"] {
-		err = s.homologationRepository.DeleteHierarchy(homologation.Device, homologation.Country,
-			homologation.Company, homologation.IsInternalProject)
+		err = s.homologationRepository.DeleteHierarchy(homologation.Device.ID, homologation.Country.ID,
+			homologation.Company.ID, homologation.IsInternalProject)
 		if err != nil {
 			return err
 		}
@@ -468,4 +491,106 @@ func (s *homologationService) UpdateFailTest(id string, testResultRequests []req
 		return err
 	}
 	return nil
+}
+
+func (s *homologationService) HomologationNotification(homologation *request.Homologation,
+	companyId primitive.ObjectID, key string) {
+
+	toList, isEmpty := functions.GetEmails(false, companyId)
+	if isEmpty {
+		return
+	}
+	country, err := s.countryRepository.GetById(homologation.Country)
+	if err != nil {
+		return
+	}
+	device, err := s.deviceRepository.GetById(homologation.Device)
+	if err != nil {
+		return
+	}
+	brand, err := s.brandRepository.GetById(homologation.Brand)
+	if err != nil {
+		return
+	}
+	projectType := "External"
+	if homologation.IsInternalProject {
+		projectType = "Internal"
+	}
+	planningDate := "N/A"
+	if !homologation.PlanningDate.IsZero() {
+
+		planningDate = fmt.Sprintf("%02d/%02d/%d",
+			homologation.PlanningDate.Day(), homologation.PlanningDate.Month(),
+			homologation.PlanningDate.Year())
+	}
+	sampleStartDate := "N/A"
+	if !homologation.SampleStartDate.IsZero() {
+		sampleStartDate = fmt.Sprintf("%02d/%02d/%d",
+			homologation.SampleStartDate.Day(), homologation.SampleStartDate.Month(),
+			homologation.SampleStartDate.Year())
+	}
+	sampleEndDate := "N/A"
+	if !homologation.SampleEndDate.IsZero() {
+		sampleEndDate = fmt.Sprintf("%02d/%02d/%d",
+			homologation.SampleEndDate.Day(), homologation.SampleEndDate.Month(),
+			homologation.SampleEndDate.Year())
+	}
+	testStartDate := "N/A"
+	if !homologation.TestStartDate.IsZero() {
+		testStartDate = fmt.Sprintf("%02d/%02d/%d",
+			homologation.TestStartDate.Day(), homologation.TestStartDate.Month(),
+			homologation.TestStartDate.Year())
+	}
+	testEndDate := "N/A"
+	if !homologation.TestEndDate.IsZero() {
+		testEndDate = fmt.Sprintf("%02d/%02d/%d",
+			homologation.TestEndDate.Day(), homologation.TestEndDate.Month(),
+			homologation.TestEndDate.Year())
+	}
+	underStartDate := "N/A"
+	if !homologation.UnderStartDate.IsZero() {
+		underStartDate = fmt.Sprintf("%02d/%02d/%d",
+			homologation.UnderStartDate.Day(), homologation.UnderStartDate.Month(),
+			homologation.UnderStartDate.Year())
+	}
+	underEndDate := "N/A"
+	if !homologation.UnderEndDate.IsZero() {
+		underEndDate = fmt.Sprintf("%02d/%02d/%d",
+			homologation.UnderEndDate.Day(), homologation.UnderEndDate.Month(),
+			homologation.UnderEndDate.Year())
+	}
+	resultDate := "N/A"
+	if !homologation.CompletedDate.IsZero() {
+		resultDate = fmt.Sprintf("%02d/%02d/%d",
+			homologation.CompletedDate.Day(), homologation.CompletedDate.Month(),
+			homologation.CompletedDate.Year())
+	}
+	var subject string
+	var mainMessage string
+
+	switch key {
+
+	case utils.CREATE:
+		subject = fmt.Sprintf("Subject: New homologation process was created %s %s %s",
+			country.Name, brand.Name, device.CommercialModel)
+		mainMessage = utils.CREATE_MAIN_MESSAGE
+	case utils.PHASE:
+		mainMessage, subject = functions.GetNotificationMessageAndSubject(homologation, country.Name,
+			brand.Name, device.CommercialModel)
+	default:
+		return
+	}
+
+	body, err := functions.GetBodyMessage(subject, mainMessage, projectType, brand.Name,
+		device.TechnicalModel, device.CommercialModel,
+		homologation.SoftwareVersion, homologation.OsVersion,
+		country.Name, homologation.Type, homologation.Carrier,
+		homologation.TestingType, planningDate, sampleStartDate,
+		sampleEndDate, testStartDate, testEndDate, underStartDate,
+		underEndDate, resultDate, enums.HomologationTemplatePath[key])
+
+	if err != nil {
+		return
+	}
+	functions.SendNotifications(toList, body)
 }

@@ -160,3 +160,34 @@ func TestResultsRequestToTestResults(testResultsRequest []request.TestResult) []
 	}
 	return testResults
 }
+func HomologationResponseToHomologationRequest(homologation responses.HomologationExpanded) request.Homologation {
+
+	return request.Homologation{
+		Company:            homologation.Company.ID.Hex(),
+		Device:             homologation.Device.ID.Hex(),
+		Country:            homologation.Country.ID.Hex(),
+		SoftwareVersion:    homologation.SoftwareVersion,
+		HardwareVersion:    homologation.HardwareVersion,
+		Type:               homologation.Type,
+		CurrentPhase:       homologation.CurrentPhase,
+		PlanningDate:       *homologation.PlanningDate,
+		SampleStartDate:    *homologation.SampleStartDate,
+		SampleEndDate:      *homologation.SampleEndDate,
+		TestStartDate:      *homologation.TestStartDate,
+		TestEndDate:        *homologation.TestEndDate,
+		UnderStartDate:     *homologation.UnderStartDate,
+		UnderEndDate:       *homologation.UnderEndDate,
+		CompletedDate:      *homologation.CompletedDate,
+		IsCustomTestPlan:   homologation.IsCustomTestPlan,
+		Status:             enums.HomologationStatus_value["IN_PROGRESS"],
+		Brand:              homologation.Device.Brand,
+		IsInternalProject:  homologation.IsInternalProject,
+		OsVersion:          homologation.OsVersion,
+		DocumentUrl:        homologation.DocumentUrl,
+		ResultUrl:          homologation.ResultUrl,
+		Carrier:            homologation.Carrier,
+		TestingType:        homologation.TestingType,
+		Comment:            homologation.Comment,
+		ApprovalTypeOption: homologation.ApprovalTypeOption,
+	}
+}

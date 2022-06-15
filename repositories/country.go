@@ -17,6 +17,7 @@ type ICountryRepository interface {
 	Get() ([]*responses.Country, error)
 	Update(primitive.ObjectID, *models.Country) error
 	Delete(primitive.ObjectID) error
+	GetById(string) (*responses.Country, error)
 }
 
 type countryRepository struct {
@@ -73,4 +74,22 @@ func (r *countryRepository) Delete(id primitive.ObjectID) error {
 		return err
 	}
 	return nil
+}
+func (r *countryRepository) GetById(id string) (*responses.Country, error) {
+	oid, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var result responses.Country
+
+	err = countryCollection.FindOne(context.TODO(),
+		queries.GetCountryById(oid)).Decode(&result)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
 }

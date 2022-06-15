@@ -21,3 +21,6 @@ func DeleteCountry(oid primitive.ObjectID) primitive.M {
 		"_id": oid,
 	}
 }
+func GetCountryById(oid primitive.ObjectID) primitive.M {
+	return primitive.M{"_id": oid}
+}
