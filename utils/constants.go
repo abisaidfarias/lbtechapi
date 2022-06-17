@@ -28,6 +28,7 @@ var MIME_HEADERS = "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8
 var ErrorInvalidCredentials = errors.New("invalid credentials")
 var CREATE = "Create"
 var PHASE = "Phase"
+var TRACKING_MOVE = "MOVEMENT"
 var EDIT = "Edit"
 var CREATE_MAIN_MESSAGE = "The following Homologation process has been created on date"
 var PLANNING_MAIN_MESSAGE = "The following Homologation process is planning to start on date"
@@ -38,3 +39,7 @@ var UNDER_MAIN_MESSAGE = "Testing process has been finished and is Under Decisio
 var FINISHED_MAIN_MESSAGE = "Homologation process has been finished and not apply carrier decision on date"
 var APPROVED_MAIN_MESSAGE = "Homologation process has been APPROVED for the Carrier on date"
 var REJECTED_MAIN_MESSAGE = "Homologation process has been REJECTED for the Carrier on date"
+var CREATE_TRACKING_MAIN_MESSAGE = "New Sample(s) arrives to our Laboratory/Office on date"
+var MOVE_TRACKING_MAIN_MESSAGE = "Following Sample(s) has been moved of location on date"
+var TEMPLATE_TRACKING_PATH = "utils/htmlMessageTemplate/device_tracking.html"
+var TEMPLATE_HOMOLOGATION_PATH = "utils/htmlMessageTemplate/createHomologation.html"

@@ -24,6 +24,7 @@ type IDeviceTrackingRepository interface {
 	Update(string, *models.DeviceTracking) error
 	AdvancedSearch(*request.SearchOption, primitive.ObjectID, bool) ([]*responses.DeviceTrackingExpanded, error)
 	GetByPerson(primitive.ObjectID) (*responses.DeviceTracking, error)
+	GetById(string) (*responses.DeviceTracking, error)
 }
 
 type deviceTrackingRepository struct {
@@ -165,4 +166,22 @@ func (r *deviceTrackingRepository) GetByPerson(personId primitive.ObjectID) (*re
 		}
 	}
 	return deviceTracking, nil
+}
+func (r *deviceTrackingRepository) GetById(id string) (*responses.DeviceTracking, error) {
+	oid, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var result responses.DeviceTracking
+
+	err = deviceTrackingCollection.FindOne(context.TODO(),
+		queries.GetDeviceTrackingById(oid)).Decode(&result)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
 }

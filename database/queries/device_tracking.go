@@ -183,3 +183,6 @@ func GetDeviceTrackingAdvancedSearch(companyID primitive.ObjectID, isInternal bo
 		lookupDevice, unwindDevice, lookupBrand, unwindBrand}
 
 }
+func GetDeviceTrackingById(oid primitive.ObjectID) primitive.M {
+	return primitive.M{"_id": oid}
+}

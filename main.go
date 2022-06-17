@@ -58,8 +58,8 @@ var (
 
 	homologationRepository repositories.IHomologationRepository = repositories.NewHomologationRepository()
 	homologationService    services.IHomologationService        = services.NewHomologationService(homologationRepository, testCategoryRepository,
-		 userRepository,notificationRepository,brandRepository,deviceRepository,countryRepository)
-	homologationController controllers.IHomologationController  = controllers.NewHomologationController(homologationService)
+		userRepository, notificationRepository, brandRepository, deviceRepository, countryRepository)
+	homologationController controllers.IHomologationController = controllers.NewHomologationController(homologationService)
 
 	dashboardService    services.IDashboardService       = services.NewDashboardService(homologationRepository, userRepository)
 	dashboardController controllers.IDashboardController = controllers.NewDashboardController(dashboardService)
@@ -76,8 +76,9 @@ var (
 	locationController controllers.ILocationController  = controllers.NewLocationController(locationService)
 
 	deviceTrackingRepository repositories.IDeviceTrackingRepository = repositories.NewDeviceTrackingRepository()
-	deviceTrackingService    services.IDeviceTrackingService        = services.NewDeviceTrackingService(deviceTrackingRepository, userRepository)
-	deviceTrackingController controllers.IDeviceTrackingController  = controllers.NewDeviceTrackingController(deviceTrackingService)
+	deviceTrackingService    services.IDeviceTrackingService        = services.NewDeviceTrackingService(deviceTrackingRepository,
+		userRepository, companyRepository, brandRepository, deviceRepository, countryRepository)
+	deviceTrackingController controllers.IDeviceTrackingController = controllers.NewDeviceTrackingController(deviceTrackingService)
 
 	testPlanRepository repositories.ITestPlanRepository = repositories.NewTestPlanRepository()
 	testPlanService    services.ITestPlanService        = services.NewTestPlanService(testPlanRepository, homologationRepository)

@@ -581,13 +581,13 @@ func (s *homologationService) HomologationNotification(homologation *request.Hom
 		return
 	}
 
-	body, err := functions.GetBodyMessage(subject, mainMessage, projectType, brand.Name,
+	body, err := functions.GetHomologationBodyMessage(subject, mainMessage, projectType, brand.Name,
 		device.TechnicalModel, device.CommercialModel,
 		homologation.SoftwareVersion, homologation.OsVersion,
 		country.Name, homologation.Type, homologation.Carrier,
 		homologation.TestingType, planningDate, sampleStartDate,
 		sampleEndDate, testStartDate, testEndDate, underStartDate,
-		underEndDate, resultDate, enums.HomologationTemplatePath[key])
+		underEndDate, resultDate, utils.TEMPLATE_HOMOLOGATION_PATH)
 
 	if err != nil {
 		return

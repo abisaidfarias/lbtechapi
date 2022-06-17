@@ -17,6 +17,7 @@ type ICompanyRepository interface {
 	Get() ([]*responses.Company, error)
 	Update(primitive.ObjectID, *models.Company) error
 	Delete(primitive.ObjectID) error
+	GetById(string) (*responses.Company, error)
 }
 
 type companyRepository struct {
@@ -73,4 +74,22 @@ func (r *companyRepository) Delete(id primitive.ObjectID) error {
 		return err
 	}
 	return nil
+}
+func (r *companyRepository) GetById(id string) (*responses.Company, error) {
+	oid, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var result responses.Company
+
+	err = companyCollection.FindOne(context.TODO(),
+		queries.GetCompanyById(oid)).Decode(&result)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
 }

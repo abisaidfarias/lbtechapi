@@ -8,6 +8,8 @@ import (
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/utils"
 	"github.com/abisaidfarias/lbtechapi/utils/enums"
+	"github.com/abisaidfarias/lbtechapi/utils/functions"
+
 	//"github.com/abisaidfarias/lbtechapi/utils/functions"
 	"github.com/abisaidfarias/lbtechapi/utils/mapping"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
@@ -31,14 +33,26 @@ type IDeviceTrackingService interface {
 type deviceTrackingService struct {
 	deviceTrackingRepository repositories.IDeviceTrackingRepository
 	userRepository           repositories.IUserRepository
+	companyRepository        repositories.ICompanyRepository
+	brandRepository          repositories.IBrandRepository
+	deviceRepository         repositories.IDeviceRepository
+	countryRepository        repositories.ICountryRepository
 }
 
 // NewDeviceTrackingService is a constructor
 func NewDeviceTrackingService(deviceTrackingRepository repositories.IDeviceTrackingRepository,
-	userRepository repositories.IUserRepository) IDeviceTrackingService {
+	userRepository repositories.IUserRepository,
+	companyRepository repositories.ICompanyRepository,
+	brandRepository repositories.IBrandRepository,
+	deviceRepository repositories.IDeviceRepository,
+	countryRepository repositories.ICountryRepository) IDeviceTrackingService {
 	return &deviceTrackingService{
 		deviceTrackingRepository: deviceTrackingRepository,
 		userRepository:           userRepository,
+		companyRepository:        companyRepository,
+		brandRepository:          brandRepository,
+		deviceRepository:         deviceRepository,
+		countryRepository:        countryRepository,
 	}
 }
 
@@ -52,9 +66,14 @@ func (s *deviceTrackingService) Create(deviceTrackingRequest *request.DeviceTrac
 		if err != nil {
 			return err
 		}
-		//go functions.SendNotifications(deviceTracking.Company,false,"PRUEBA")
-
 	}
+	companyId, _ := primitive.ObjectIDFromHex(deviceTrackingRequest.Company)
+
+	go s.DeviceTrackingNotification(deviceTrackingRequest.Imeis,
+		deviceTrackingRequest.TrackingLog.Country.Name, deviceTrackingRequest.Device,
+		deviceTrackingRequest.TrackingLog.InternalResponsible.Name, deviceTrackingRequest.TrackingLog.Person.Name,
+		deviceTrackingRequest.TrackingLog.Comment, deviceTrackingRequest.TrackingLog.Location.Name, companyId, utils.CREATE)
+
 	return nil
 }
 
@@ -101,15 +120,17 @@ func (s *deviceTrackingService) Get(userID string) ([]responses.Tracking, error)
 	return trakings, nil
 }
 func (s *deviceTrackingService) AddTrakingLog(trackingLogReq *request.TrackingLogMultiple) error {
-
+	var devicesTrackingsId []string
 	for _, id := range trackingLogReq.DeviceTrackings {
 		deviceTranckingID, _ := primitive.ObjectIDFromHex(id)
+		devicesTrackingsId = append(devicesTrackingsId, id)
 		trackingLog := mapping.TrackinLogRequestToTrackingLog(&trackingLogReq.TrackingLog)
 		err := s.deviceTrackingRepository.AddTrakingLog(trackingLog, deviceTranckingID)
 		if err != nil {
 			return err
 		}
 	}
+	go s.MoveTrackingNotification(devicesTrackingsId, trackingLogReq.TrackingLog)
 	return nil
 }
 func (s *deviceTrackingService) Delete(ids string) error {
@@ -135,7 +156,6 @@ func (s *deviceTrackingService) Update(id string, deviceTrackingRequest *request
 	if err != nil {
 		return err
 	}
-	//go functions.SendNotifications(deviceTracking.Company,false,"PRUEBA")
 	return nil
 }
 func (s *deviceTrackingService) AdvancedSearch(searchOption *request.SearchOption, userId string) ([]responses.Tracking, error) {
@@ -269,4 +289,72 @@ func exportFileDeviceTracking(deviceTrackings []*responses.DeviceTrackingExpande
 		return b, err
 	}
 	return b, nil
+}
+func (s *deviceTrackingService) DeviceTrackingNotification(imeis []string,
+	country string, deviceId string, internal string,
+	external string, comment string, location string,
+	companyId primitive.ObjectID, key string) {
+
+	toList, isEmpty := functions.GetEmails(false, companyId)
+	if isEmpty {
+		return
+	}
+	device, err := s.deviceRepository.GetById(deviceId)
+	if err != nil {
+		return
+	}
+	brand, err := s.brandRepository.GetById(device.Brand)
+	if err != nil {
+		return
+	}
+	company, err := s.companyRepository.GetById(companyId.Hex())
+	if err != nil {
+		return
+	}
+
+	var subject string
+	var mainMessage string
+
+	switch key {
+
+	case utils.CREATE:
+		subject = fmt.Sprintf("Subject: New Sample(s) received in LB Technology in %s %s %s",
+			country, brand.Name, device.CommercialModel)
+		mainMessage = utils.CREATE_TRACKING_MAIN_MESSAGE
+	case utils.TRACKING_MOVE:
+		subject = fmt.Sprintf("Subject: Sample(s) has been moved of location of %s %s %s",
+			country, brand.Name, device.CommercialModel)
+		mainMessage = utils.MOVE_TRACKING_MAIN_MESSAGE
+	default:
+		return
+	}
+
+	body, err := functions.GetTrackingBodyMessage(subject, mainMessage, company.Name, brand.Name,
+		device.TechnicalModel, device.CommercialModel, internal,
+		external, country, location, strings.Join(imeis[:], ","),
+		comment, utils.TEMPLATE_TRACKING_PATH)
+
+	if err != nil {
+		return
+	}
+	functions.SendNotifications(toList, body)
+}
+func (s *deviceTrackingService) MoveTrackingNotification(deviceTrackingsId []string, trackingLog request.TrackingLog) {
+
+	companyGrouped := make(map[primitive.ObjectID][]string)
+	var deviceId string
+	for _, id := range deviceTrackingsId {
+		deviceTracking, _ := s.deviceTrackingRepository.GetById(id)
+		value := companyGrouped[deviceTracking.Company]
+		value = append(value, deviceTracking.Imei)
+		companyGrouped[deviceTracking.Company] = value
+		deviceId = deviceTracking.Device.Hex()
+	}
+	for companyId, imeis := range companyGrouped {
+
+		s.DeviceTrackingNotification(imeis, trackingLog.Country.Name,
+			deviceId, trackingLog.InternalResponsible.Name,
+			trackingLog.Person.Name, trackingLog.Comment, trackingLog.Location.Name,
+			companyId, utils.TRACKING_MOVE)
+	}
 }

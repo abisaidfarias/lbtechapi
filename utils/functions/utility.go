@@ -279,7 +279,7 @@ func GetEmails(isInternal bool, companyId primitive.ObjectID) ([]string, bool) {
 	}
 	return toList, false
 }
-func GetBodyMessage(subject string, mainMessge string, projectType string, brand string, technicalModel string,
+func GetHomologationBodyMessage(subject string, mainMessge string, projectType string, brand string, technicalModel string,
 	commercialModel string, softwareVersion string, osVersion string, country string,
 	approvalType int, carrier string, testingType string, planningDate string,
 	sampleStartDate string, sampleEndDate string, testStartDate string,
@@ -338,6 +338,51 @@ func GetBodyMessage(subject string, mainMessge string, projectType string, brand
 		UnderStart:      underStartDate,
 		UnderEndDate:    underEndDate,
 		ResultDate:      resultDate,
+	})
+
+	return body, nil
+}
+func GetTrackingBodyMessage(subject string, mainMessge string, client string,
+	brand string, technicalModel string, commercialModel string,
+	responsible string, externalResponsible string, country string,
+	location string, imeis string, comment string, templatePath string) (bytes.Buffer, error) {
+
+	var body bytes.Buffer
+	body.Write([]byte(fmt.Sprintf("%s \n%s\n\n", subject, utils.MIME_HEADERS)))
+
+	t, err := template.ParseFiles(templatePath)
+	if err != nil {
+		return body, err
+	}
+	if err != nil {
+		return body, err
+	}
+	t.Execute(&body, struct {
+		MainMessage         string
+		Date                string
+		Client              string
+		Brand               string
+		TechnicalModel      string
+		CommercialModel     string
+		Responsible         string
+		ExternalResponsible string
+		Country             string
+		Location            string
+		IMEI                string
+		Comments            string
+	}{
+		MainMessage:         mainMessge,
+		Date:                fmt.Sprintf("%02d/%02d/%d", time.Now().Day(), time.Now().Month(), time.Now().Year()),
+		Client:              client,
+		Brand:               brand,
+		TechnicalModel:      technicalModel,
+		CommercialModel:     commercialModel,
+		Responsible:         responsible,
+		ExternalResponsible: externalResponsible,
+		Country:             country,
+		Location:            location,
+		IMEI:                imeis,
+		Comments:            comment,
 	})
 
 	return body, nil
