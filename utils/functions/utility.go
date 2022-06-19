@@ -178,36 +178,6 @@ func CompareHashAndPassword(hashedPassword string, incomingPassword []byte) bool
 }
 func SendNotifications(toList []string, body bytes.Buffer) {
 
-	// var toList []string
-	// if !isInternal {
-	// 	notificationCollection := database.GetInstance().Collection("notifications")
-
-	// 	var notification *responses.Notification
-	// 	err := notificationCollection.FindOne(context.TODO(),
-	// 		queries.GetNotifictionByCompany(companyId)).Decode(&notification)
-	// 	if err != nil {
-	// 		return
-	// 	}
-	// 	for _, user := range notification.NotificationEmails {
-	// 		toList = append(toList, user.Email)
-	// 	}
-	// } else {
-	// 	userCollection := database.GetInstance().Collection("users")
-
-	// 	var user *responses.UserExpanded
-
-	// 	cursor, err := userCollection.Aggregate(context.TODO(), queries.GetUserExpandedInternal())
-	// 	if err != nil {
-	// 		return
-	// 	}
-	// 	for cursor.Next(context.TODO()) {
-	// 		cursor.Decode(&user)
-	// 		toList = append(toList, user.Email)
-	// 	}
-	// }
-	// if len(toList) == 0 {
-	// 	return
-	// }
 	from := os.Getenv("EMAIL_FROM")
 	password := os.Getenv("EMAIL_PASSWORD")
 
@@ -408,7 +378,7 @@ func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
 		case "Password:":
 			return []byte(a.password), nil
 		default:
-			return nil, errors.New("Unknown from server")
+			return nil, errors.New("Unknown From Server")
 		}
 	}
 	return nil, nil
@@ -464,4 +434,71 @@ func GetNotificationMessageAndSubject(homologation *request.Homologation,
 		}
 	}
 	return mainMessage, subject
+}
+func GetFailBodyMessage(subject string, mainMessge string, client string, country string,
+	brand string, technicalModel string, commercialModel string,
+	softwareVersion string, osVersion string, approvalType int,
+	projectType string, testCode string, testName string,
+	issueOverview string, actualResult string,
+	stepToReproduce string, expectedResult string, issueFrecuency int,
+	issueSeverity int, hiperLink string, descriptionLink string,
+	templatePath string) (bytes.Buffer, error) {
+
+	var body bytes.Buffer
+	body.Write([]byte(fmt.Sprintf("%s \n%s\n\n", subject, utils.MIME_HEADERS)))
+
+	t, err := template.ParseFiles(templatePath)
+	if err != nil {
+		return body, err
+	}
+	if err != nil {
+		return body, err
+	}
+	t.Execute(&body, struct {
+		MainMessage     string
+		Date            string
+		Client          string
+		Country         string
+		Brand           string
+		TechnicalModel  string
+		CommercialModel string
+		SoftwareVersion string
+		OSversion       string
+		ApprovalType    string
+		ProjectType     string
+		TestCode        string
+		TestName        string
+		IssueOverview   string
+		ActualResult    string
+		StepToReproduce string
+		ExpectedResult  string
+		IssueFrecuency  string
+		IssueSeverity   string
+		Hiperlink       string
+		LinkDescription string
+	}{
+		MainMessage:     mainMessge,
+		Date:            fmt.Sprintf("%02d/%02d/%d", time.Now().Day(), time.Now().Month(), time.Now().Year()),
+		ProjectType:     projectType,
+		Brand:           brand,
+		TechnicalModel:  technicalModel,
+		CommercialModel: commercialModel,
+		SoftwareVersion: softwareVersion,
+		OSversion:       osVersion,
+		Country:         country,
+		ApprovalType:    enums.HomologationType_key[approvalType],
+		Client:          client,
+		TestCode:        testCode,
+		TestName:        testName,
+		IssueOverview:   issueOverview,
+		ActualResult:    actualResult,
+		StepToReproduce: stepToReproduce,
+		ExpectedResult:  expectedResult,
+		IssueFrecuency:  enums.TestFailureFrequency_key[issueFrecuency],
+		IssueSeverity:   enums.TestFailureSeverity_key[issueSeverity],
+		Hiperlink:       hiperLink,
+		LinkDescription: descriptionLink,
+	})
+
+	return body, nil
 }

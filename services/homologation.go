@@ -285,9 +285,9 @@ func (s *homologationService) CreateFailTestResult(id string, testResultRequest 
 		return err
 	}
 
-	//homologationId, _ := primitive.ObjectIDFromHex(id)
-	//homologation, _ := s.homologationRepository.GetByID(homologationId)
-	//go functions.SendNotifications(homologation.Company, false, "PRUEBA")
+	homologationId, _ := primitive.ObjectIDFromHex(id)
+	homologation, _ := s.homologationRepository.GetByIdExpanded(homologationId)
+	go s.FailNotification(homologation, *testResultRequest, utils.CREATE)
 	return nil
 }
 func (s *homologationService) UpdateDocument(id string, homologation *request.Homologation) error {
@@ -588,6 +588,42 @@ func (s *homologationService) HomologationNotification(homologation *request.Hom
 		homologation.TestingType, planningDate, sampleStartDate,
 		sampleEndDate, testStartDate, testEndDate, underStartDate,
 		underEndDate, resultDate, utils.TEMPLATE_HOMOLOGATION_PATH)
+
+	if err != nil {
+		return
+	}
+	functions.SendNotifications(toList, body)
+}
+func (s *homologationService) FailNotification(homologation *responses.HomologationExpanded, failtTest request.TestResultResume, key string) {
+
+	toList, isEmpty := functions.GetEmails(false, homologation.Company.ID)
+	if isEmpty {
+		return
+	}
+	projectType := "External"
+	if homologation.IsInternalProject {
+		projectType = "Internal"
+	}
+	var subject string
+	var mainMessage string
+
+	switch key {
+
+	case utils.CREATE:
+		subject = fmt.Sprintf("Subject: New Issue has been created for %s %s",
+			homologation.Brand.Name, homologation.Device.CommercialModel)
+		mainMessage = utils.CREATE_FAIL_MAIN_MESSAGE
+	default:
+		return
+	}
+
+	body, err := functions.GetFailBodyMessage(subject, mainMessage, homologation.Company.Name,
+		homologation.Country.Name, homologation.Brand.Name,
+		homologation.Device.TechnicalModel, homologation.Device.CommercialModel,
+		homologation.SoftwareVersion, homologation.OsVersion,
+		homologation.Type, projectType, failtTest.Code, failtTest.Name, failtTest.OverviewIssue, failtTest.ActualResult,
+		failtTest.StepsToReproduce, failtTest.ExpectedResult, failtTest.IssueFrequency,
+		failtTest.IssueSeverity, "hiperlinks", "description", utils.TEMPLATE_FAIL_PATH)
 
 	if err != nil {
 		return
