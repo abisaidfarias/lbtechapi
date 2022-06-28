@@ -502,3 +502,126 @@ func GetFailBodyMessage(subject string, mainMessge string, client string, countr
 
 	return body, nil
 }
+func GetDeviceBodyMessage(subject string, mainMessge string, brand string,
+	deviceRequest request.Device, templatePath string) (bytes.Buffer, error) {
+
+	var body bytes.Buffer
+	body.Write([]byte(fmt.Sprintf("%s \n%s\n\n", subject, utils.MIME_HEADERS)))
+
+	t, err := template.ParseFiles(templatePath)
+	if err != nil {
+		return body, err
+	}
+	if err != nil {
+		return body, err
+	}
+	t.Execute(&body, struct {
+		MainMessage            string
+		Date                   string
+		Type                   string
+		Brand                  string
+		CommercialModel        string
+		TechnicalModel         string
+		DisplayType            string
+		DisplaySize            string
+		DisplayResolution      string
+		PlatformOs             string
+		PlatformChipsetBrand   string
+		PlatformChipsetModel   string
+		PlatformCpu            string
+		MemoryRom              string
+		MemoryRam              string
+		MemoryExtended         string
+		MemoryCpu              string
+		MemoryType             string
+		CameraFront            string
+		CameraBack             string
+		CommunicationWlan      string
+		CommunicationGps       string
+		CommunicationNfc       string
+		CommunicationRadio     string
+		CommunicationUsb       string
+		CommunicationBluetooth string
+		BatteryType            string
+		BatteryCapacity        string
+		BatteryState           string
+		BatteryInductedCharger string
+		SensorFingerprint      string
+		SensorProximity        string
+		SensorAmbientLight     string
+		SensorAccelerometer    string
+		SensorGyroscope        string
+		SensorHall             string
+		NetworkGsm             string
+		NetworkWcdma           string
+		NetworkLte             string
+		NetworkVolte           string
+		NetworkVowifi          string
+		NetworkVilte           string
+		Network5g              string
+		NetworkCarrierAgg      string
+		ImageUrl               string
+		SoftwareCode           string
+		HardwareCode           string
+		IngCode                string
+		LoggingCode            string
+		SimSupported           string
+		SimType                string
+		Esim                   string
+	}{
+		MainMessage:            mainMessge,
+		Date:                   fmt.Sprintf("%02d/%02d/%d", time.Now().Day(), time.Now().Month(), time.Now().Year()),
+		Type:                   deviceRequest.Type,
+		Brand:                  brand,
+		CommercialModel:        deviceRequest.CommercialModel,
+		TechnicalModel:         deviceRequest.TechnicalModel,
+		DisplayType:            deviceRequest.DisplayType,
+		DisplaySize:            deviceRequest.DisplaySize,
+		DisplayResolution:      deviceRequest.DisplayResolution,
+		PlatformOs:             deviceRequest.PlatformOs,
+		PlatformChipsetBrand:   deviceRequest.PlatformChipsetBrand,
+		PlatformChipsetModel:   deviceRequest.PlatformChipsetModel,
+		PlatformCpu:            deviceRequest.PlatformCpu,
+		MemoryRom:              deviceRequest.MemoryRom,
+		MemoryRam:              deviceRequest.MemoryRam,
+		MemoryExtended:         strconv.FormatBool(deviceRequest.MemoryExtended),
+		MemoryCpu:              deviceRequest.MemoryCpu,
+		MemoryType:             deviceRequest.MemoryType,
+		CameraFront:            deviceRequest.CameraFront,
+		CameraBack:             deviceRequest.CameraBack,
+		CommunicationWlan:      strconv.FormatBool(deviceRequest.CommunicationWlan),
+		CommunicationGps:       strconv.FormatBool(deviceRequest.CommunicationGps),
+		CommunicationNfc:       strconv.FormatBool(deviceRequest.CommunicationNfc),
+		CommunicationRadio:     strconv.FormatBool(deviceRequest.CommunicationRadio),
+		CommunicationUsb:       deviceRequest.CommunicationUsb,
+		CommunicationBluetooth: strconv.FormatBool(deviceRequest.CommunicationBluetooth),
+		BatteryType:            deviceRequest.BatteryType,
+		BatteryCapacity:        deviceRequest.BatteryCapacity,
+		BatteryState:           deviceRequest.BatteryState,
+		BatteryInductedCharger: strconv.FormatBool(deviceRequest.BatteryInductedCharger),
+		SensorFingerprint:      strconv.FormatBool(deviceRequest.SensorFingerprint),
+		SensorProximity:        strconv.FormatBool(deviceRequest.SensorProximity),
+		SensorAmbientLight:     strconv.FormatBool(deviceRequest.SensorAmbientLight),
+		SensorAccelerometer:    strconv.FormatBool(deviceRequest.SensorAccelerometer),
+		SensorGyroscope:        strconv.FormatBool(deviceRequest.SensorGyroscope),
+		SensorHall:             strconv.FormatBool(deviceRequest.SensorHall),
+		NetworkGsm:             strconv.FormatBool(deviceRequest.NetworkGsm),
+		NetworkWcdma:           strconv.FormatBool(deviceRequest.NetworkWcdma),
+		NetworkLte:             strconv.FormatBool(deviceRequest.NetworkLte),
+		NetworkVolte:           strconv.FormatBool(deviceRequest.NetworkVolte),
+		NetworkVowifi:          strconv.FormatBool(deviceRequest.NetworkVowifi),
+		NetworkVilte:           strconv.FormatBool(deviceRequest.NetworkVilte),
+		Network5g:              strconv.FormatBool(deviceRequest.Network5g),
+		NetworkCarrierAgg:      strconv.FormatBool(deviceRequest.NetworkCarrierAgg),
+		ImageUrl:               deviceRequest.ImageUrl,
+		SoftwareCode:           deviceRequest.SoftwareCode,
+		HardwareCode:           deviceRequest.HardwareCode,
+		IngCode:                deviceRequest.IngCode,
+		LoggingCode:            deviceRequest.LoggingCode,
+		SimSupported:           deviceRequest.SimSupported,
+		SimType:                deviceRequest.SimType,
+		Esim:                   strconv.FormatBool(deviceRequest.Esim),
+	})
+
+	return body, nil
+}

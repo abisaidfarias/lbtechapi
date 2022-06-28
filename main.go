@@ -50,7 +50,7 @@ var (
 
 	deviceRepository repositories.IDeviceRepository = repositories.NewDeviceRepository()
 	deviceService    services.IDeviceService        = services.NewDeviceService(deviceRepository,
-		deviceTrackingRepository, homologationRepository)
+		deviceTrackingRepository, homologationRepository, brandRepository)
 	deviceController controllers.IDeviceController = controllers.NewDeviceController(deviceService)
 
 	storageService    services.IStorageService       = services.NewStorageService()
