@@ -318,11 +318,11 @@ func (s *deviceTrackingService) DeviceTrackingNotification(imeis []string,
 	switch key {
 
 	case utils.CREATE:
-		subject = fmt.Sprintf("Subject: New Sample(s) received in LB Technology in %s %s %s",
+		subject = fmt.Sprintf("Subject: New Sample(s) received at LB Technology for %s %s %s",
 			country, brand.Name, device.CommercialModel)
 		mainMessage = utils.CREATE_TRACKING_MAIN_MESSAGE
 	case utils.TRACKING_MOVE:
-		subject = fmt.Sprintf("Subject: Sample(s) has been moved of location of %s %s %s",
+		subject = fmt.Sprintf("Subject: Sample(s) has been moved of location to %s %s %s",
 			country, brand.Name, device.CommercialModel)
 		mainMessage = utils.MOVE_TRACKING_MAIN_MESSAGE
 	default:

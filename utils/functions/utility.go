@@ -428,7 +428,7 @@ func GetNotificationMessageAndSubject(homologation *request.Homologation,
 			return utils.REJECTED_MAIN_MESSAGE, subject
 		}
 		if enums.HomologationStatus_type[homologation.Status] == "Finished" {
-			subject = fmt.Sprintf("Subject: Homologation Process Finishes %s %s %s",
+			subject = fmt.Sprintf("Subject: Homologation Process Finished %s %s %s",
 				country, brand, commercialModel)
 			return utils.FINISHED_MAIN_MESSAGE, subject
 		}
