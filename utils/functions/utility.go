@@ -315,7 +315,8 @@ func GetHomologationBodyMessage(subject string, mainMessge string, projectType s
 func GetTrackingBodyMessage(subject string, mainMessge string, client string,
 	brand string, technicalModel string, commercialModel string,
 	responsible string, externalResponsible string, country string,
-	location string, imeis string, comment string, templatePath string) (bytes.Buffer, error) {
+	location string, imeis string, comment string, date time.Time,
+	templatePath string) (bytes.Buffer, error) {
 
 	var body bytes.Buffer
 	body.Write([]byte(fmt.Sprintf("%s \n%s\n\n", subject, utils.MIME_HEADERS)))
@@ -342,7 +343,7 @@ func GetTrackingBodyMessage(subject string, mainMessge string, client string,
 		Comments            string
 	}{
 		MainMessage:         mainMessge,
-		Date:                fmt.Sprintf("%02d/%02d/%d", time.Now().Day(), time.Now().Month(), time.Now().Year()),
+		Date:                fmt.Sprintf("%02d/%02d/%d", date.Day(), date.Month(), date.Year()),
 		Client:              client,
 		Brand:               brand,
 		TechnicalModel:      technicalModel,

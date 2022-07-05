@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/utils"
@@ -69,10 +70,15 @@ func (s *deviceTrackingService) Create(deviceTrackingRequest *request.DeviceTrac
 	}
 	companyId, _ := primitive.ObjectIDFromHex(deviceTrackingRequest.Company)
 
+	name := fmt.Sprintf("%s %s", deviceTrackingRequest.TrackingLog.InternalResponsible.Name,
+		deviceTrackingRequest.TrackingLog.InternalResponsible.LastName)
 	go s.DeviceTrackingNotification(deviceTrackingRequest.Imeis,
-		deviceTrackingRequest.TrackingLog.Country.Name, deviceTrackingRequest.Device,
-		deviceTrackingRequest.TrackingLog.InternalResponsible.Name, deviceTrackingRequest.TrackingLog.Person.Name,
-		deviceTrackingRequest.TrackingLog.Comment, deviceTrackingRequest.TrackingLog.Location.Name, companyId, utils.CREATE)
+		deviceTrackingRequest.TrackingLog.Country.Name,
+		deviceTrackingRequest.Device, name,
+		deviceTrackingRequest.TrackingLog.Person.Name,
+		deviceTrackingRequest.TrackingLog.Comment,
+		deviceTrackingRequest.TrackingLog.Location.Name, companyId,
+		deviceTrackingRequest.TrackingLog.TrackingDate, utils.CREATE)
 
 	return nil
 }
@@ -293,7 +299,7 @@ func exportFileDeviceTracking(deviceTrackings []*responses.DeviceTrackingExpande
 func (s *deviceTrackingService) DeviceTrackingNotification(imeis []string,
 	country string, deviceId string, internal string,
 	external string, comment string, location string,
-	companyId primitive.ObjectID, key string) {
+	companyId primitive.ObjectID, date time.Time, key string) {
 
 	toList, isEmpty := functions.GetEmails(false, companyId)
 	if isEmpty {
@@ -332,7 +338,7 @@ func (s *deviceTrackingService) DeviceTrackingNotification(imeis []string,
 	body, err := functions.GetTrackingBodyMessage(subject, mainMessage, company.Name, brand.Name,
 		device.TechnicalModel, device.CommercialModel, internal,
 		external, country, location, strings.Join(imeis[:], ","),
-		comment, utils.TEMPLATE_TRACKING_PATH)
+		comment, date, utils.TEMPLATE_TRACKING_PATH)
 
 	if err != nil {
 		return
@@ -351,10 +357,11 @@ func (s *deviceTrackingService) MoveTrackingNotification(deviceTrackingsId []str
 		deviceId = deviceTracking.Device.Hex()
 	}
 	for companyId, imeis := range companyGrouped {
-
+		name := fmt.Sprintf("%s %s", trackingLog.InternalResponsible.Name,
+			trackingLog.InternalResponsible.LastName)
 		s.DeviceTrackingNotification(imeis, trackingLog.Country.Name,
-			deviceId, trackingLog.InternalResponsible.Name,
-			trackingLog.Person.Name, trackingLog.Comment, trackingLog.Location.Name,
-			companyId, utils.TRACKING_MOVE)
+			deviceId, name, trackingLog.Person.Name,
+			trackingLog.Comment, trackingLog.Location.Name,
+			companyId, trackingLog.TrackingDate, utils.TRACKING_MOVE)
 	}
 }
