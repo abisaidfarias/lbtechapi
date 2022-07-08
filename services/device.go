@@ -16,10 +16,10 @@ import (
 
 // IDeviceService is the test case service interface
 type IDeviceService interface {
-	Create(*request.Device) (*responses.DeviceExpanded, error)
+	Create(*request.Device, string) (*responses.DeviceExpanded, error)
 	Get() ([]*responses.DeviceExpanded, error)
 	GetById(string) (*responses.Device, error)
-	Update(string, *request.Device) error
+	Update(string, *request.Device, string) error
 	Delete(string) (bool, error)
 }
 
@@ -28,23 +28,26 @@ type deviceService struct {
 	deviceTrackingRepository repositories.IDeviceTrackingRepository
 	homologationRepository   repositories.IHomologationRepository
 	brandRepository          repositories.IBrandRepository
+	userRepository           repositories.IUserRepository
 }
 
 // NewDeviceService is a constructor
 func NewDeviceService(deviceRepository repositories.IDeviceRepository,
 	deviceTrackingRepository repositories.IDeviceTrackingRepository,
 	homologationRepository repositories.IHomologationRepository,
-	brandRepository repositories.IBrandRepository) IDeviceService {
+	brandRepository repositories.IBrandRepository,
+	userRepository repositories.IUserRepository) IDeviceService {
 	return &deviceService{
 		deviceRepository:         deviceRepository,
 		deviceTrackingRepository: deviceTrackingRepository,
 		homologationRepository:   homologationRepository,
 		brandRepository:          brandRepository,
+		userRepository:           userRepository,
 	}
 }
 
 // Create creates a new test case
-func (s *deviceService) Create(deviceRequest *request.Device) (*responses.DeviceExpanded, error) {
+func (s *deviceService) Create(deviceRequest *request.Device, userID string) (*responses.DeviceExpanded, error) {
 
 	device := mapping.DeviceRequestToDevice(deviceRequest)
 
@@ -53,7 +56,7 @@ func (s *deviceService) Create(deviceRequest *request.Device) (*responses.Device
 	if err != nil {
 		return nil, err
 	}
-	go s.DeviceNotification(*deviceRequest, utils.CREATE)
+	go s.DeviceNotification(*deviceRequest, utils.CREATE, userID)
 	return deviceResponse, nil
 }
 
@@ -80,7 +83,7 @@ func (s *deviceService) GetById(id string) (*responses.Device, error) {
 }
 
 // Update updates a test case
-func (s *deviceService) Update(id string, deviceRequest *request.Device) error {
+func (s *deviceService) Update(id string, deviceRequest *request.Device, userID string) error {
 
 	device := mapping.DeviceRequestToDevice(deviceRequest)
 
@@ -88,7 +91,7 @@ func (s *deviceService) Update(id string, deviceRequest *request.Device) error {
 	if err != nil {
 		return err
 	}
-	go s.DeviceNotification(*deviceRequest, utils.EDIT)
+	go s.DeviceNotification(*deviceRequest, utils.EDIT, userID)
 	return nil
 }
 func (s *deviceService) Delete(id string) (bool, error) {
@@ -115,12 +118,17 @@ func (s *deviceService) Delete(id string) (bool, error) {
 	}
 	return false, nil
 }
-func (s *deviceService) DeviceNotification(device request.Device, key string) {
+func (s *deviceService) DeviceNotification(device request.Device, key string,userID string) {
 
 	toList, isEmpty := functions.GetEmails(true, primitive.NewObjectID())
 	if isEmpty {
 		return
 	}
+	user, err := s.userRepository.GetByID(userID)
+	if err != nil {
+		return
+	}
+	userName := fmt.Sprintf("%s %s", user.Name, user.LastName)
 	brand, err := s.brandRepository.GetById(device.Brand)
 	if err != nil {
 		return
@@ -143,7 +151,7 @@ func (s *deviceService) DeviceNotification(device request.Device, key string) {
 	}
 
 	body, err := functions.GetDeviceBodyMessage(subject, mainMessage, brand.Name,
-		device, utils.TEMPLATE_DEVICE_PATH)
+		device, utils.TEMPLATE_DEVICE_PATH,userName)
 
 	if err != nil {
 		return

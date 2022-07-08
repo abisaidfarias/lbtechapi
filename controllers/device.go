@@ -37,7 +37,7 @@ func (c *deviceController) Create() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 		var device request.Device
-
+		userID := ctx.MustGet("userID").(string)
 		err := ctx.ShouldBindJSON(&device)
 
 		if err != nil {
@@ -45,7 +45,7 @@ func (c *deviceController) Create() gin.HandlerFunc {
 			return
 		}
 
-		deviceResponse, err := c.deviceService.Create(&device)
+		deviceResponse, err := c.deviceService.Create(&device, userID)
 
 		if err != nil {
 			if utils.ErrorDuplicatedData(err) {
@@ -106,7 +106,7 @@ func (c *deviceController) Update() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		id := ctx.Param("id")
-
+		userID := ctx.MustGet("userID").(string)
 		var device request.Device
 
 		err := ctx.ShouldBindJSON(&device)
@@ -116,7 +116,7 @@ func (c *deviceController) Update() gin.HandlerFunc {
 			return
 		}
 
-		err = c.deviceService.Update(id, &device)
+		err = c.deviceService.Update(id, &device, userID)
 
 		if err != nil {
 			if utils.ErrorDuplicatedData(err) {

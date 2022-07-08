@@ -47,7 +47,7 @@ func (c *homologationController) Create() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		var homologation request.Homologation
-
+		userID := ctx.MustGet("userID").(string)
 		err := ctx.ShouldBindJSON(&homologation)
 
 		if err != nil {
@@ -55,7 +55,7 @@ func (c *homologationController) Create() gin.HandlerFunc {
 			return
 		}
 
-		customError, err := c.homologationService.Create(&homologation)
+		customError, err := c.homologationService.Create(&homologation, userID)
 		if customError != nil {
 			ctx.JSON(http.StatusConflict, gin.H{
 				"error": customError.Err,
@@ -141,7 +141,7 @@ func (c *homologationController) PhaseChange() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		id := ctx.Param("id")
-
+		userID := ctx.MustGet("userID").(string)
 		var homologation *request.HomologationResume
 
 		err := ctx.ShouldBindJSON(&homologation)
@@ -149,7 +149,7 @@ func (c *homologationController) PhaseChange() gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		err = c.homologationService.PhaseChange(id, homologation)
+		err = c.homologationService.PhaseChange(id, homologation, userID)
 		if err != nil {
 			handleErrorResponse(ctx, err)
 			return
@@ -180,13 +180,13 @@ func (c *homologationController) CreateFailTest() gin.HandlerFunc {
 		id := ctx.Param("id")
 
 		var testResult *request.TestResultResume
-
+		userID := ctx.MustGet("userID").(string)
 		err := ctx.ShouldBindJSON(&testResult)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		err = c.homologationService.CreateFailTestResult(id, testResult)
+		err = c.homologationService.CreateFailTestResult(id, testResult,userID)
 		if err != nil {
 			handleErrorResponse(ctx, err)
 			return

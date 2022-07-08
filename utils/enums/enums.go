@@ -22,6 +22,12 @@ var HomologationPhase_value = map[string]int{
 	"UNDER_EVALUATION": 3,
 	"COMPLETE":         4,
 }
+var DashBoardPhase_value = map[string]int{
+	"PLANNING":         0,
+	"SAMPLE_RECEPTION": 1,
+	"ONGOING":          2,
+	"COMPLETE":         3,
+}
 var HomologationPhase_key = map[int]string{
 	0: "Planning Date",
 	1: "Sample Reception Date",

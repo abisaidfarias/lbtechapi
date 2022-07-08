@@ -38,4 +38,5 @@ type Homologation struct {
 	TestingType        string             `bson:"testing_type"`
 	Comment            string             `bson:"comment"`
 	ApprovalTypeOption string             `bson:"approval_type_option"`
+	DashBoardPhase     int                `bson:"dashboard_phase"`
 }

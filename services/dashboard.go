@@ -53,8 +53,8 @@ func (s *dashboardService) GetGeneralInfo(userID string) (*responses.DashboardIn
 	}
 
 	t := time.Now()
-	dashboardTotals, err := s.homologationRepository.GetByCompanyStatusGrouped(user.Clients,
-		user.Brands, user.Countries,user.Company, user.IsInternal)
+	dashboardTotals, err := s.homologationRepository.GetHomologationsGroupedByPhase(user.Clients,
+		user.Brands, user.Countries, user.Company, user.IsInternal)
 	if err != nil {
 		return nil, nil
 	}
@@ -67,13 +67,11 @@ func (s *dashboardService) GetGeneralInfo(userID string) (*responses.DashboardIn
 	response.LogoImage = userExpanded.Company.LogoUrl
 	response.Month = t.Month().String()
 	for _, dashboardTotal := range dashboardTotals {
-		if dashboardTotal.CurrentPhase == enums.HomologationPhase_value["PLANNING"] {
+		if dashboardTotal.CurrentPhase == enums.DashBoardPhase_value["PLANNING"] {
 			response.TotalPlanning = dashboardTotal.Count
-			response.TotalOngoing += dashboardTotal.Count
-		} else if dashboardTotal.CurrentPhase == enums.HomologationPhase_value["SAMPLE_RECEPTION"] {
+		} else if dashboardTotal.CurrentPhase == enums.DashBoardPhase_value["SAMPLE_RECEPTION"] {
 			response.TotalSampleReception = dashboardTotal.Count
-			response.TotalOngoing += dashboardTotal.Count
-		} else if dashboardTotal.CurrentPhase == enums.HomologationPhase_value["COMPLETE"] {
+		} else if dashboardTotal.CurrentPhase == enums.DashBoardPhase_value["COMPLETE"] {
 			response.TotalFinished = dashboardTotal.Count
 		} else {
 			response.TotalOngoing += dashboardTotal.Count

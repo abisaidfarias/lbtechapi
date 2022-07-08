@@ -21,9 +21,9 @@ import (
 
 // IDeviceTrackingService is the deviceTracking service
 type IDeviceTrackingService interface {
-	Create(*request.DeviceTracking) error
+	Create(*request.DeviceTracking, string) error
 	Get(string) ([]responses.Tracking, error)
-	AddTrakingLog(*request.TrackingLogMultiple) error
+	AddTrakingLog(*request.TrackingLogMultiple, string) error
 	Delete(string) error
 	Update(string, *request.DeviceTrackingExpanded) error
 	AdvancedSearch(*request.SearchOption, string) ([]responses.Tracking, error)
@@ -58,7 +58,7 @@ func NewDeviceTrackingService(deviceTrackingRepository repositories.IDeviceTrack
 }
 
 // Create creates a new cateogry
-func (s *deviceTrackingService) Create(deviceTrackingRequest *request.DeviceTracking) error {
+func (s *deviceTrackingService) Create(deviceTrackingRequest *request.DeviceTracking, userID string) error {
 
 	for _, imei := range deviceTrackingRequest.Imeis {
 		deviceTracking := mapping.DeviceTrackinRequestToDeviceTracking(deviceTrackingRequest, imei)
@@ -78,7 +78,7 @@ func (s *deviceTrackingService) Create(deviceTrackingRequest *request.DeviceTrac
 		deviceTrackingRequest.TrackingLog.Person.Name,
 		deviceTrackingRequest.TrackingLog.Comment,
 		deviceTrackingRequest.TrackingLog.Location.Name, companyId,
-		deviceTrackingRequest.TrackingLog.TrackingDate, utils.CREATE)
+		deviceTrackingRequest.TrackingLog.TrackingDate, utils.CREATE, userID)
 
 	return nil
 }
@@ -95,7 +95,6 @@ func (s *deviceTrackingService) Get(userID string) ([]responses.Tracking, error)
 	}
 
 	trackingGrouped := make(map[string]responses.Tracking)
-	// var newTrakingLogs []responses.TrackingLog = []responses.TrackingLog{}
 	for _, deviceTracking := range deviceTrackings {
 		deviceName := fmt.Sprintf("%s %s",
 			deviceTracking.Device.Brand.Name, deviceTracking.Device.CommercialModel)
@@ -105,16 +104,6 @@ func (s *deviceTrackingService) Get(userID string) ([]responses.Tracking, error)
 		existTracking.ID = deviceTracking.Device.ID
 		existTracking.ImageUrl = deviceTracking.Device.ImageUrl
 		existTracking.TecnicalModel = deviceTracking.Device.TechnicalModel
-
-		// for _, tracking := range deviceTracking.TrackingLogs {
-		// 	var newTrackingLog responses.TrackingLog = tracking
-		// 	if len(tracking.ExternalResponsible) > 0 {
-		// 		newTrackingLog.Person.Name = newTrackingLog.ExternalResponsible
-		// 	}
-		// 	newTrakingLogs = append(newTrakingLogs, newTrackingLog)
-		// }
-
-		// deviceTracking.TrackingLogs = newTrakingLogs
 		existTracking.DeviceTrackings = append(existTracking.DeviceTrackings, *deviceTracking)
 		trackingGrouped[deviceName] = existTracking
 	}
@@ -125,7 +114,7 @@ func (s *deviceTrackingService) Get(userID string) ([]responses.Tracking, error)
 
 	return trakings, nil
 }
-func (s *deviceTrackingService) AddTrakingLog(trackingLogReq *request.TrackingLogMultiple) error {
+func (s *deviceTrackingService) AddTrakingLog(trackingLogReq *request.TrackingLogMultiple, userID string) error {
 	var devicesTrackingsId []string
 	for _, id := range trackingLogReq.DeviceTrackings {
 		deviceTranckingID, _ := primitive.ObjectIDFromHex(id)
@@ -136,7 +125,7 @@ func (s *deviceTrackingService) AddTrakingLog(trackingLogReq *request.TrackingLo
 			return err
 		}
 	}
-	go s.MoveTrackingNotification(devicesTrackingsId, trackingLogReq.TrackingLog)
+	go s.MoveTrackingNotification(devicesTrackingsId, trackingLogReq.TrackingLog, userID)
 	return nil
 }
 func (s *deviceTrackingService) Delete(ids string) error {
@@ -175,7 +164,6 @@ func (s *deviceTrackingService) AdvancedSearch(searchOption *request.SearchOptio
 	}
 
 	trackingGrouped := make(map[string]responses.Tracking)
-	// var newTrakingLogs []responses.TrackingLog = []responses.TrackingLog{}
 	for _, deviceTracking := range deviceTrackings {
 		existTracking := trackingGrouped["NoDevice"]
 		existTracking.Brand = ""
@@ -183,16 +171,6 @@ func (s *deviceTrackingService) AdvancedSearch(searchOption *request.SearchOptio
 		existTracking.ID = primitive.NilObjectID
 		existTracking.ImageUrl = ""
 		existTracking.TecnicalModel = ""
-
-		// for _, tracking := range deviceTracking.TrackingLogs {
-		// 	var newTrackingLog responses.TrackingLog = tracking
-		// 	if len(tracking.ExternalResponsible) > 0 {
-		// 		newTrackingLog.Person.Name = newTrackingLog.ExternalResponsible
-		// 	}
-		// 	newTrakingLogs = append(newTrakingLogs, newTrackingLog)
-		// }
-
-		// deviceTracking.TrackingLogs = newTrakingLogs
 		existTracking.DeviceTrackings = append(existTracking.DeviceTrackings, *deviceTracking)
 		trackingGrouped["NoDevice"] = existTracking
 
@@ -299,8 +277,13 @@ func exportFileDeviceTracking(deviceTrackings []*responses.DeviceTrackingExpande
 func (s *deviceTrackingService) DeviceTrackingNotification(imeis []string,
 	country string, deviceId string, internal string,
 	external string, comment string, location string,
-	companyId primitive.ObjectID, date time.Time, key string) {
+	companyId primitive.ObjectID, date time.Time, key string, userID string) {
 
+	user, err := s.userRepository.GetByID(userID)
+	if err != nil {
+		return
+	}
+	userName := fmt.Sprintf("%s %s", user.Name, user.LastName)
 	toList, isEmpty := functions.GetEmails(false, companyId)
 	if isEmpty {
 		return
@@ -334,18 +317,18 @@ func (s *deviceTrackingService) DeviceTrackingNotification(imeis []string,
 	default:
 		return
 	}
-
 	body, err := functions.GetTrackingBodyMessage(subject, mainMessage, company.Name, brand.Name,
 		device.TechnicalModel, device.CommercialModel, internal,
 		external, country, location, strings.Join(imeis[:], ","),
-		comment, date, utils.TEMPLATE_TRACKING_PATH)
+		comment, date, utils.TEMPLATE_TRACKING_PATH, userName)
 
 	if err != nil {
 		return
 	}
 	functions.SendNotifications(toList, body)
 }
-func (s *deviceTrackingService) MoveTrackingNotification(deviceTrackingsId []string, trackingLog request.TrackingLog) {
+func (s *deviceTrackingService) MoveTrackingNotification(deviceTrackingsId []string,
+	trackingLog request.TrackingLog, userID string) {
 
 	companyGrouped := make(map[primitive.ObjectID][]string)
 	var deviceId string
@@ -362,6 +345,6 @@ func (s *deviceTrackingService) MoveTrackingNotification(deviceTrackingsId []str
 		s.DeviceTrackingNotification(imeis, trackingLog.Country.Name,
 			deviceId, name, trackingLog.Person.Name,
 			trackingLog.Comment, trackingLog.Location.Name,
-			companyId, trackingLog.TrackingDate, utils.TRACKING_MOVE)
+			companyId, trackingLog.TrackingDate, utils.TRACKING_MOVE, userID)
 	}
 }

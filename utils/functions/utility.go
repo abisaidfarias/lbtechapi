@@ -254,7 +254,7 @@ func GetHomologationBodyMessage(subject string, mainMessge string, projectType s
 	approvalType int, carrier string, testingType string, planningDate string,
 	sampleStartDate string, sampleEndDate string, testStartDate string,
 	testEndDate string, underStartDate string, underEndDate string,
-	resultDate string, templatePath string) (bytes.Buffer, error) {
+	resultDate string, templatePath string, userName string) (bytes.Buffer, error) {
 
 	var body bytes.Buffer
 	body.Write([]byte(fmt.Sprintf("%s \n%s\n\n", subject, utils.MIME_HEADERS)))
@@ -287,6 +287,7 @@ func GetHomologationBodyMessage(subject string, mainMessge string, projectType s
 		UnderStart      string
 		UnderEndDate    string
 		ResultDate      string
+		UserName        string
 	}{
 		MainMessage:     mainMessge,
 		Date:            fmt.Sprintf("%02d/%02d/%d", time.Now().Day(), time.Now().Month(), time.Now().Year()),
@@ -308,6 +309,7 @@ func GetHomologationBodyMessage(subject string, mainMessge string, projectType s
 		UnderStart:      underStartDate,
 		UnderEndDate:    underEndDate,
 		ResultDate:      resultDate,
+		UserName:        userName,
 	})
 
 	return body, nil
@@ -316,7 +318,7 @@ func GetTrackingBodyMessage(subject string, mainMessge string, client string,
 	brand string, technicalModel string, commercialModel string,
 	responsible string, externalResponsible string, country string,
 	location string, imeis string, comment string, date time.Time,
-	templatePath string) (bytes.Buffer, error) {
+	templatePath string, userName string) (bytes.Buffer, error) {
 
 	var body bytes.Buffer
 	body.Write([]byte(fmt.Sprintf("%s \n%s\n\n", subject, utils.MIME_HEADERS)))
@@ -341,6 +343,7 @@ func GetTrackingBodyMessage(subject string, mainMessge string, client string,
 		Location            string
 		IMEI                string
 		Comments            string
+		UserName            string
 	}{
 		MainMessage:         mainMessge,
 		Date:                fmt.Sprintf("%02d/%02d/%d", date.Day(), date.Month(), date.Year()),
@@ -354,6 +357,7 @@ func GetTrackingBodyMessage(subject string, mainMessge string, client string,
 		Location:            location,
 		IMEI:                imeis,
 		Comments:            comment,
+		UserName:            userName,
 	})
 
 	return body, nil
@@ -443,7 +447,7 @@ func GetFailBodyMessage(subject string, mainMessge string, client string, countr
 	issueOverview string, actualResult string,
 	stepToReproduce string, expectedResult string, issueFrecuency int,
 	issueSeverity int, hiperLink string, descriptionLink string,
-	templatePath string) (bytes.Buffer, error) {
+	templatePath string, userName string) (bytes.Buffer, error) {
 
 	var body bytes.Buffer
 	body.Write([]byte(fmt.Sprintf("%s \n%s\n\n", subject, utils.MIME_HEADERS)))
@@ -477,6 +481,7 @@ func GetFailBodyMessage(subject string, mainMessge string, client string, countr
 		IssueSeverity   string
 		Hiperlink       string
 		LinkDescription string
+		UserName        string
 	}{
 		MainMessage:     mainMessge,
 		Date:            fmt.Sprintf("%02d/%02d/%d", time.Now().Day(), time.Now().Month(), time.Now().Year()),
@@ -499,12 +504,13 @@ func GetFailBodyMessage(subject string, mainMessge string, client string, countr
 		IssueSeverity:   enums.TestFailureSeverity_key[issueSeverity],
 		Hiperlink:       hiperLink,
 		LinkDescription: descriptionLink,
+		UserName:        userName,
 	})
 
 	return body, nil
 }
 func GetDeviceBodyMessage(subject string, mainMessge string, brand string,
-	deviceRequest request.Device, templatePath string) (bytes.Buffer, error) {
+	deviceRequest request.Device, templatePath string, userName string) (bytes.Buffer, error) {
 
 	var body bytes.Buffer
 	body.Write([]byte(fmt.Sprintf("%s \n%s\n\n", subject, utils.MIME_HEADERS)))
@@ -569,6 +575,7 @@ func GetDeviceBodyMessage(subject string, mainMessge string, brand string,
 		SimSupported           string
 		SimType                string
 		Esim                   string
+		UserName               string
 	}{
 		MainMessage:            mainMessge,
 		Date:                   fmt.Sprintf("%02d/%02d/%d", time.Now().Day(), time.Now().Month(), time.Now().Year()),
@@ -622,6 +629,7 @@ func GetDeviceBodyMessage(subject string, mainMessge string, brand string,
 		SimSupported:           deviceRequest.SimSupported,
 		SimType:                deviceRequest.SimType,
 		Esim:                   strconv.FormatBool(deviceRequest.Esim),
+		UserName:               userName,
 	})
 
 	return body, nil

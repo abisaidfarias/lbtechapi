@@ -346,6 +346,7 @@ func UpdatePhaseChange(homologation *models.Homologation, oid primitive.ObjectID
 				{Key: "completed_date", Value: homologation.CompletedDate},
 				{Key: "result_url", Value: homologation.ResultUrl},
 				{Key: "comment", Value: homologation.Comment},
+				{Key: "dashboard_phase", Value: homologation.DashBoardPhase},
 			},
 		},
 	}
@@ -368,11 +369,11 @@ func UpdateDocument(documentUrl string, homologationId primitive.ObjectID) (prim
 	}
 	return filter, update
 }
-func GetHomologationsGroupedByStatus() bson.D {
+func GetHomologationsGroupedByPhase() bson.D {
 
 	return bson.D{
 		primitive.E{Key: "$group", Value: bson.D{
-			primitive.E{Key: "_id", Value: "$current_phase"},
+			primitive.E{Key: "_id", Value: "$dashboard_phase"},
 			primitive.E{Key: "count", Value: bson.D{
 				primitive.E{Key: "$sum", Value: 1},
 			}},

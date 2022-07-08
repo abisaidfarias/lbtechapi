@@ -42,6 +42,7 @@ func (c *deviceTrackingController) Create() gin.HandlerFunc {
 
 		var deviceTracking request.DeviceTracking
 
+		userID := ctx.MustGet("userID").(string)
 		err := ctx.ShouldBindJSON(&deviceTracking)
 
 		if err != nil {
@@ -49,7 +50,7 @@ func (c *deviceTrackingController) Create() gin.HandlerFunc {
 			return
 		}
 
-		err = c.deviceTrackingService.Create(&deviceTracking)
+		err = c.deviceTrackingService.Create(&deviceTracking, userID)
 
 		if err != nil {
 			if utils.ErrorDuplicatedData(err) {
@@ -85,6 +86,7 @@ func (c *deviceTrackingController) AddTrakingLog() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		var trackingLog *request.TrackingLogMultiple
+		userID := ctx.MustGet("userID").(string)
 
 		err := ctx.ShouldBindJSON(&trackingLog)
 
@@ -93,7 +95,7 @@ func (c *deviceTrackingController) AddTrakingLog() gin.HandlerFunc {
 			return
 		}
 
-		err = c.deviceTrackingService.AddTrakingLog(trackingLog)
+		err = c.deviceTrackingService.AddTrakingLog(trackingLog, userID)
 
 		if err != nil {
 			if utils.ErrorDuplicatedData(err) {
@@ -189,7 +191,6 @@ func (c *deviceTrackingController) AdvancedSearchOptions() gin.HandlerFunc {
 }
 func (c *deviceTrackingController) ExportDeviceTracking() gin.HandlerFunc {
 
-	
 	return func(ctx *gin.Context) {
 		userID := ctx.MustGet("userID").(string)
 		var searchOption *request.SearchOption

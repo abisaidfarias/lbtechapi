@@ -66,6 +66,7 @@ func HomologationRequestToHomologation(homologation *request.Homologation,
 		TestingType:        homologation.TestingType,
 		Comment:            homologation.Comment,
 		ApprovalTypeOption: homologation.ApprovalTypeOption,
+		DashBoardPhase:     homologation.CurrentPhase,
 	}
 }
 
