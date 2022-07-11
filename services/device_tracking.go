@@ -89,7 +89,12 @@ func (s *deviceTrackingService) Get(userID string) ([]responses.Tracking, error)
 	if err != nil {
 		return nil, err
 	}
-	deviceTrackings, err := s.deviceTrackingRepository.Get(user.IsInternal, user.Company, user.Brands)
+	var countries []string
+	if !user.IsInternal {
+		countries, _ = s.countryRepository.GetCountriesById(user.Countries)
+	}
+	deviceTrackings, err := s.deviceTrackingRepository.Get(user.IsInternal, user.Company,
+		user.Brands, countries)
 	if err != nil {
 		return nil, err
 	}
@@ -165,6 +170,12 @@ func (s *deviceTrackingService) AdvancedSearch(searchOption *request.SearchOptio
 
 	trackingGrouped := make(map[string]responses.Tracking)
 	for _, deviceTracking := range deviceTrackings {
+
+		lastRecord := deviceTracking.TrackingLogs[len(deviceTracking.TrackingLogs)-1]
+		if !isContained(lastRecord, searchOption.Locations, searchOption.Countries) {
+			continue
+		}
+
 		existTracking := trackingGrouped["NoDevice"]
 		existTracking.Brand = ""
 		existTracking.Model = ""
@@ -189,7 +200,12 @@ func (s *deviceTrackingService) AdvancedSearchOptions(userId string) (responses.
 	if err != nil {
 		return searchOption, err
 	}
-	deviceTrackings, err := s.deviceTrackingRepository.Get(user.IsInternal, user.Company, user.Brands)
+	var countries []string
+	if !user.IsInternal {
+		countries, _ = s.countryRepository.GetCountriesById(user.Countries)
+	}
+	deviceTrackings, err := s.deviceTrackingRepository.Get(user.IsInternal, user.Company,
+		user.Brands, countries)
 	if err != nil {
 		return searchOption, err
 	}
@@ -347,4 +363,27 @@ func (s *deviceTrackingService) MoveTrackingNotification(deviceTrackingsId []str
 			trackingLog.Comment, trackingLog.Location.Name,
 			companyId, trackingLog.TrackingDate, utils.TRACKING_MOVE, userID)
 	}
+}
+func isContained(trackingLog responses.TrackingLog, locations []string, countries []string) bool {
+
+	isContained := true
+	if len(countries) > 0 {
+		isContained = false
+		for _, country := range countries {
+			if trackingLog.Country.Name == country {
+				isContained = true
+				break
+			}
+		}
+	}
+	if len(locations) > 0 {
+		isContained = false
+		for _, location := range locations {
+			if trackingLog.Location.Name == location {
+				isContained = true
+				break
+			}
+		}
+	}
+	return isContained
 }

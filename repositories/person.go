@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/abisaidfarias/lbtechapi/database"
@@ -44,7 +45,9 @@ func (r *personRepository) Create(person *models.Person) (*primitive.ObjectID, e
 // Get returns a list of all test cases
 func (r *personRepository) Get() ([]*responses.Person, error) {
 
-	cursor, err := personCollection.Find(context.TODO(), bson.M{})
+	findOptions := options.Find()
+	findOptions.SetSort(bson.M{"name": 1})
+	cursor, err := personCollection.Find(context.TODO(), bson.M{}, findOptions)
 	if err != nil {
 		panic(err)
 	}

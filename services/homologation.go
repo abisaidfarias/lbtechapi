@@ -584,6 +584,11 @@ func (s *homologationService) HomologationNotification(homologation *request.Hom
 			homologation.CompletedDate.Day(), homologation.CompletedDate.Month(),
 			homologation.CompletedDate.Year())
 	}
+	homologationType:= enums.HomologationType_key[homologation.Type]
+	if homologation.Type == enums.HomologationType_value["MAINTENANCE"] &&
+		len(homologation.ApprovalTypeOption) > 0 {
+			homologationType = homologation.ApprovalTypeOption
+	}
 	var subject string
 	var mainMessage string
 
@@ -603,10 +608,11 @@ func (s *homologationService) HomologationNotification(homologation *request.Hom
 	body, err := functions.GetHomologationBodyMessage(subject, mainMessage, projectType, brand.Name,
 		device.TechnicalModel, device.CommercialModel,
 		homologation.SoftwareVersion, homologation.OsVersion,
-		country.Name, homologation.Type, homologation.Carrier,
+		country.Name, homologationType, homologation.Carrier,
 		homologation.TestingType, planningDate, sampleStartDate,
 		sampleEndDate, testStartDate, testEndDate, underStartDate,
-		underEndDate, resultDate, utils.TEMPLATE_HOMOLOGATION_PATH, userName)
+		underEndDate, resultDate, utils.TEMPLATE_HOMOLOGATION_PATH,
+		userName)
 
 	if err != nil {
 		return
@@ -629,6 +635,12 @@ func (s *homologationService) FailNotification(homologation *responses.Homologat
 	if homologation.IsInternalProject {
 		projectType = "Internal"
 	}
+	homologationType:= enums.HomologationType_key[homologation.Type]
+	if homologation.Type == enums.HomologationType_value["MAINTENANCE"] &&
+		len(homologation.ApprovalTypeOption) > 0 {
+			homologationType = homologation.ApprovalTypeOption
+	}
+
 	var subject string
 	var mainMessage string
 
@@ -646,7 +658,7 @@ func (s *homologationService) FailNotification(homologation *responses.Homologat
 		homologation.Country.Name, homologation.Brand.Name,
 		homologation.Device.TechnicalModel, homologation.Device.CommercialModel,
 		homologation.SoftwareVersion, homologation.OsVersion,
-		homologation.Type, projectType, failtTest.Code, failtTest.Name, failtTest.OverviewIssue, failtTest.ActualResult,
+		homologationType, projectType, failtTest.Code, failtTest.Name, failtTest.OverviewIssue, failtTest.ActualResult,
 		failtTest.StepsToReproduce, failtTest.ExpectedResult, failtTest.IssueFrequency,
 		failtTest.IssueSeverity, "hiperlinks", "description", utils.TEMPLATE_FAIL_PATH, userName)
 

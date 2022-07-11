@@ -33,7 +33,7 @@ var HomologationPhase_key = map[int]string{
 	1: "Sample Reception Date",
 	2: "Testing Start Date",
 	3: "Testing End Date",
-	4: "Homologation Process Finishes",
+	4: "Homologation Process Finished",
 }
 var TestResult_value = map[string]int{
 	"NORUN": 0,

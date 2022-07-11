@@ -5,6 +5,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/abisaidfarias/lbtechapi/database"
@@ -243,8 +244,10 @@ func (r *userRepository) GetUsersByCompany(companyId primitive.ObjectID) ([]*res
 }
 func (r *userRepository) GetInternalUser() ([]*responses.User, error) {
 
+	findOptions := options.Find()
+	findOptions.SetSort(bson.M{"name": 1})
 	cursor, err := userCollection.Find(context.TODO(),
-		queries.GetInternalUsers())
+		queries.GetInternalUsers(), findOptions)
 
 	if err != nil {
 		panic(err)
