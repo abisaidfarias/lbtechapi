@@ -394,20 +394,55 @@ func exportHomologationFile(homologations []*responses.HomologationExpanded) (by
 		file.SetCellValue(utils.PAGE, cell, h.ApprovalType)
 		cell, _ = excelize.CoordinatesToCellName(8, index+2)
 		file.SetCellValue(utils.PAGE, cell, h.TestPlan.Name)
+		cell, _ = excelize.CoordinatesToCellName(9, index+2)
+		file.SetCellValue(utils.PAGE, cell, h.ProjectType)
+		cell, _ = excelize.CoordinatesToCellName(10, index+2)
+		file.SetCellValue(utils.PAGE, cell, h.StatusView)
+		cell, _ = excelize.CoordinatesToCellName(11, index+2)
+		file.SetCellValue(utils.PAGE, cell, h.SoftwareVersion)
+		cell, _ = excelize.CoordinatesToCellName(12, index+2)
+		file.SetCellValue(utils.PAGE, cell, h.Carrier)
+
+		if h.PlanningDate != nil {
+			year, month, day := h.PlanningDate.Date()
+			cell, _ = excelize.CoordinatesToCellName(13, index+2)
+			file.SetCellValue(utils.PAGE, cell, fmt.Sprintf("%d/%d/%d", day, month, year))
+		}
+		if h.SampleStartDate != nil {
+			year, month, day := h.SampleStartDate.Date()
+			cell, _ = excelize.CoordinatesToCellName(14, index+2)
+			file.SetCellValue(utils.PAGE, cell, fmt.Sprintf("%d/%d/%d", day, month, year))
+		}
+		if h.SampleEndDate != nil {
+			year, month, day := h.SampleEndDate.Date()
+			cell, _ = excelize.CoordinatesToCellName(15, index+2)
+			file.SetCellValue(utils.PAGE, cell, fmt.Sprintf("%d/%d/%d", day, month, year))
+		}
 		if h.TestStartDate != nil {
 			year, month, day := h.TestStartDate.Date()
-			cell, _ = excelize.CoordinatesToCellName(9, index+2)
+			cell, _ = excelize.CoordinatesToCellName(16, index+2)
 			file.SetCellValue(utils.PAGE, cell, fmt.Sprintf("%d/%d/%d", day, month, year))
 		}
 		if h.TestEndDate != nil {
-			year, month, day := h.TestStartDate.Date()
-			cell, _ = excelize.CoordinatesToCellName(10, index+2)
+			year, month, day := h.TestEndDate.Date()
+			cell, _ = excelize.CoordinatesToCellName(17, index+2)
 			file.SetCellValue(utils.PAGE, cell, fmt.Sprintf("%d/%d/%d", day, month, year))
 		}
-		cell, _ = excelize.CoordinatesToCellName(11, index+2)
-		file.SetCellValue(utils.PAGE, cell, h.ProjectType)
-		cell, _ = excelize.CoordinatesToCellName(12, index+2)
-		file.SetCellValue(utils.PAGE, cell, h.StatusView)
+		if h.UnderStartDate != nil {
+			year, month, day := h.UnderStartDate.Date()
+			cell, _ = excelize.CoordinatesToCellName(18, index+2)
+			file.SetCellValue(utils.PAGE, cell, fmt.Sprintf("%d/%d/%d", day, month, year))
+		}
+		if h.UnderEndDate != nil {
+			year, month, day := h.UnderEndDate.Date()
+			cell, _ = excelize.CoordinatesToCellName(19, index+2)
+			file.SetCellValue(utils.PAGE, cell, fmt.Sprintf("%d/%d/%d", day, month, year))
+		}
+		if h.CompletedDate != nil {
+			year, month, day := h.CompletedDate.Date()
+			cell, _ = excelize.CoordinatesToCellName(20, index+2)
+			file.SetCellValue(utils.PAGE, cell, fmt.Sprintf("%d/%d/%d", day, month, year))
+		}
 	}
 
 	var b bytes.Buffer
@@ -584,10 +619,10 @@ func (s *homologationService) HomologationNotification(homologation *request.Hom
 			homologation.CompletedDate.Day(), homologation.CompletedDate.Month(),
 			homologation.CompletedDate.Year())
 	}
-	homologationType:= enums.HomologationType_key[homologation.Type]
+	homologationType := enums.HomologationType_key[homologation.Type]
 	if homologation.Type == enums.HomologationType_value["MAINTENANCE"] &&
 		len(homologation.ApprovalTypeOption) > 0 {
-			homologationType = homologation.ApprovalTypeOption
+		homologationType = homologation.ApprovalTypeOption
 	}
 	var subject string
 	var mainMessage string
@@ -635,10 +670,10 @@ func (s *homologationService) FailNotification(homologation *responses.Homologat
 	if homologation.IsInternalProject {
 		projectType = "Internal"
 	}
-	homologationType:= enums.HomologationType_key[homologation.Type]
+	homologationType := enums.HomologationType_key[homologation.Type]
 	if homologation.Type == enums.HomologationType_value["MAINTENANCE"] &&
 		len(homologation.ApprovalTypeOption) > 0 {
-			homologationType = homologation.ApprovalTypeOption
+		homologationType = homologation.ApprovalTypeOption
 	}
 
 	var subject string
