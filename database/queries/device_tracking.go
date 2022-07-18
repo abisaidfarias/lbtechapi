@@ -21,7 +21,7 @@ func AddTrackingLog(trackingLog *models.TrackingLog, oid primitive.ObjectID) (pr
 	return filter, update
 }
 func GetDeviceTrackingExpanded(isInternal bool, companyID primitive.ObjectID,
-	brands []primitive.ObjectID, countries []string) []bson.D {
+	brands []primitive.ObjectID, countries []string, companies []primitive.ObjectID) []bson.D {
 	lookupCompany := bson.D{
 		primitive.E{Key: "$lookup", Value: bson.D{
 			primitive.E{Key: "from", Value: "companies"},
@@ -58,23 +58,36 @@ func GetDeviceTrackingExpanded(isInternal bool, companyID primitive.ObjectID,
 			primitive.E{Key: "path", Value: "$device.brand"},
 			primitive.E{Key: "preserveNullAndEmptyArrays", Value: true},
 		}}}
+
 	var objectStage bson.D
 	var matchStage bson.D
+	hasStage := false
 	if len(brands) > 0 {
 
 		var brandStageIn bson.D
 		brandStageIn = append(brandStageIn, primitive.E{Key: "$in", Value: brands})
 		objectStage = append(matchStage, primitive.E{Key: "device.brand._id", Value: brandStageIn})
+		hasStage = true
 	}
 	if len(countries) > 0 {
 		var countryStageIn bson.D
 		countryStageIn = append(countryStageIn, primitive.E{Key: "$in", Value: countries})
 		objectStage = append(objectStage, primitive.E{Key: "tracking_logs.country.name",
 			Value: countryStageIn})
+		hasStage = true
+	}
+	if len(companies) > 0 {
+		var companyStageIn bson.D
+		companyStageIn = append(companyStageIn, primitive.E{Key: "$in", Value: countries})
+		objectStage = append(objectStage, primitive.E{Key: "company._id",
+			Value: companyStageIn})
+		hasStage = true
 	}
 
-	if !isInternal {
-		objectStage = append(objectStage, primitive.E{Key: "company._id", Value: companyID})
+	if hasStage {
+		if !isInternal {
+			objectStage = append(objectStage, primitive.E{Key: "company._id", Value: companyID})
+		}
 		matchStage = append(matchStage, primitive.E{Key: "$match", Value: objectStage})
 		return mongo.Pipeline{lookupCompany, unwindCompany,
 			lookupDevice, unwindDevice, lookupBrand, unwindBrand, matchStage}
@@ -110,7 +123,9 @@ func UpdateDeviceTracking(deviceTracking *models.DeviceTracking, oid primitive.O
 	}
 	return filter, update
 }
-func GetDeviceTrackingAdvancedSearch(companyID primitive.ObjectID, isInternal bool, searchOption *request.SearchOption) []bson.D {
+func GetDeviceTrackingAdvancedSearch(companyID primitive.ObjectID,
+	isInternal bool, searchOption *request.SearchOption,
+	brands []primitive.ObjectID, countries []string, companies []primitive.ObjectID) []bson.D {
 	lookupCompany := bson.D{
 		primitive.E{Key: "$lookup", Value: bson.D{
 			primitive.E{Key: "from", Value: "companies"},
@@ -151,6 +166,27 @@ func GetDeviceTrackingAdvancedSearch(companyID primitive.ObjectID, isInternal bo
 	var objectStage bson.D
 	var matchStage bson.D
 	var hasStage = false
+	if len(brands) > 0 {
+
+		var brandStageIn bson.D
+		brandStageIn = append(brandStageIn, primitive.E{Key: "$in", Value: brands})
+		objectStage = append(matchStage, primitive.E{Key: "device.brand._id", Value: brandStageIn})
+		hasStage = true
+	}
+	if len(countries) > 0 {
+		var countryStageIn bson.D
+		countryStageIn = append(countryStageIn, primitive.E{Key: "$in", Value: countries})
+		objectStage = append(objectStage, primitive.E{Key: "tracking_logs.country.name",
+			Value: countryStageIn})
+		hasStage = true
+	}
+	if len(companies) > 0 {
+		var companyStageIn bson.D
+		companyStageIn = append(companyStageIn, primitive.E{Key: "$in", Value: countries})
+		objectStage = append(objectStage, primitive.E{Key: "company._id",
+			Value: companyStageIn})
+		hasStage = true
+	}
 	if len(searchOption.Brands) > 0 {
 		var brandStageIn bson.D
 		brandStageIn = append(brandStageIn, primitive.E{Key: "$in", Value: searchOption.Brands})

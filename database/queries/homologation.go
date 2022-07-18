@@ -422,6 +422,7 @@ func UpdateHomologation(homologation *models.Homologation, oid primitive.ObjectI
 				{Key: "brand", Value: homologation.Brand},
 				{Key: "company", Value: homologation.Company},
 				{Key: "os_version", Value: homologation.OsVersion},
+				{Key: "carrier", Value: homologation.Carrier},
 			},
 		},
 	}

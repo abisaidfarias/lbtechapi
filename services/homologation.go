@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/repositories"
@@ -321,7 +322,6 @@ func (s *homologationService) Update(id string, homologationRequest *request.Hom
 	if err != nil {
 		return err
 	}
-	//go functions.SendNotifications(homologation.Company, false, "PRUEBA")
 	return nil
 }
 func (s *homologationService) Delete(id string) error {
@@ -624,6 +624,12 @@ func (s *homologationService) HomologationNotification(homologation *request.Hom
 		len(homologation.ApprovalTypeOption) > 0 {
 		homologationType = homologation.ApprovalTypeOption
 	}
+
+	finished := false
+	desicion := strings.ToUpper(enums.HomologationStatus_type[homologation.Status])
+	if homologation.Status != enums.HomologationStatus_value["IN_PROGRESS"] {
+		finished = true
+	}
 	var subject string
 	var mainMessage string
 
@@ -647,7 +653,7 @@ func (s *homologationService) HomologationNotification(homologation *request.Hom
 		homologation.TestingType, planningDate, sampleStartDate,
 		sampleEndDate, testStartDate, testEndDate, underStartDate,
 		underEndDate, resultDate, utils.TEMPLATE_HOMOLOGATION_PATH,
-		userName)
+		userName, finished, desicion)
 
 	if err != nil {
 		return
@@ -695,7 +701,7 @@ func (s *homologationService) FailNotification(homologation *responses.Homologat
 		homologation.SoftwareVersion, homologation.OsVersion,
 		homologationType, projectType, failtTest.Code, failtTest.Name, failtTest.OverviewIssue, failtTest.ActualResult,
 		failtTest.StepsToReproduce, failtTest.ExpectedResult, failtTest.IssueFrequency,
-		failtTest.IssueSeverity, "hiperlinks", "description", utils.TEMPLATE_FAIL_PATH, userName)
+		failtTest.IssueSeverity, failtTest.Hyperlinks, utils.TEMPLATE_FAIL_PATH, userName)
 
 	if err != nil {
 		return

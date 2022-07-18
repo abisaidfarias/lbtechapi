@@ -38,9 +38,10 @@
     <p><strong>Under Evaluation Start Date:</strong> {{.UnderStart}}</p>
 
     <p><strong>Under Evaluation End Date:</strong> {{.UnderEndDate}}</p>
-
-    <p><strong>Decision Date:</strong> {{.ResultDate}}</p>
-
+    {{if .Finished -}}
+        <p><strong>Decision Date:</strong> {{.ResultDate}}</p>
+        <p><strong>Decision:</strong> {{.Decision}}</p>
+    {{- end}}
     <p><strong>Responsible: </strong>{{.UserName}}</p>
     
     <h3>Team LB Technology</h3>

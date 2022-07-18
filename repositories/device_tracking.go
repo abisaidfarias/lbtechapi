@@ -16,13 +16,15 @@ import (
 type IDeviceTrackingRepository interface {
 	Create(*models.DeviceTracking) error
 	Get(isInternal bool, companyID primitive.ObjectID,
-		brands []primitive.ObjectID, countries []string) ([]*responses.DeviceTrackingExpanded, error)
+		brands []primitive.ObjectID, countries []string,
+		companies []primitive.ObjectID) ([]*responses.DeviceTrackingExpanded, error)
 	AddTrakingLog(trackingLog *models.TrackingLog, deviceTranckingID primitive.ObjectID) error
 	GetByCompany(primitive.ObjectID) (*responses.DeviceTracking, error)
 	GetByDevice(primitive.ObjectID) (*responses.DeviceTracking, error)
 	Delete([]primitive.ObjectID) error
 	Update(string, *models.DeviceTracking) error
-	AdvancedSearch(*request.SearchOption, primitive.ObjectID, bool) ([]*responses.DeviceTrackingExpanded, error)
+	AdvancedSearch(*request.SearchOption, primitive.ObjectID, bool, []primitive.ObjectID, []string,
+		[]primitive.ObjectID) ([]*responses.DeviceTrackingExpanded, error)
 	GetByPerson(primitive.ObjectID) (*responses.DeviceTracking, error)
 	GetById(string) (*responses.DeviceTracking, error)
 }
@@ -49,10 +51,10 @@ func (r *deviceTrackingRepository) Create(deviceTracking *models.DeviceTracking)
 
 // Get returns a list of all test cases
 func (r *deviceTrackingRepository) Get(isInternal bool, companyID primitive.ObjectID,
-	brands []primitive.ObjectID, countries []string) ([]*responses.DeviceTrackingExpanded, error) {
-
-	cursor, err := deviceTrackingCollection.Aggregate(context.TODO(),
-		queries.GetDeviceTrackingExpanded(isInternal, companyID, brands, countries))
+	brands []primitive.ObjectID, countries []string,
+	companies []primitive.ObjectID) ([]*responses.DeviceTrackingExpanded, error) {
+	deviceTrackingQuery := queries.GetDeviceTrackingExpanded(isInternal, companyID, brands, countries, companies)
+	cursor, err := deviceTrackingCollection.Aggregate(context.TODO(), deviceTrackingQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -137,10 +139,13 @@ func (r *deviceTrackingRepository) Update(id string, deviceTracking *models.Devi
 	return nil
 }
 func (r *deviceTrackingRepository) AdvancedSearch(searchOption *request.SearchOption,
-	companyId primitive.ObjectID, isInternal bool) ([]*responses.DeviceTrackingExpanded, error) {
+	companyId primitive.ObjectID, isInternal bool,
+	brands []primitive.ObjectID, countries []string,
+	companies []primitive.ObjectID) ([]*responses.DeviceTrackingExpanded, error) {
 
 	cursor, err := deviceTrackingCollection.Aggregate(context.TODO(),
-		queries.GetDeviceTrackingAdvancedSearch(companyId, isInternal, searchOption))
+		queries.GetDeviceTrackingAdvancedSearch(companyId, isInternal,
+			searchOption, brands, countries, companies))
 	if err != nil {
 		return nil, err
 	}

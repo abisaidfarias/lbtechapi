@@ -41,9 +41,12 @@
 
     <p><strong>Issue Severity:</strong> {{.IssueSeverity}}</p>
 
-    <p><strong>Hiperlink:</strong> {{.Hiperlink}}</p>
-
-    <p><strong>Description Hiperlink:</strong> {{.LinkDescription}}</p>
+    <p><strong>Hyperlinks:</strong></p>
+    <ul>
+        {{ range .Hyperlinks }}
+            <li> {{ .Link }}  ({{ .Description }}) </li>
+        {{ end }}
+    </ul>
 
     <p><strong>Responsible: </strong>{{.UserName}}</p>
     

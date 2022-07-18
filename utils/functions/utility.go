@@ -254,7 +254,8 @@ func GetHomologationBodyMessage(subject string, mainMessge string, projectType s
 	homologationType string, carrier string, testingType string, planningDate string,
 	sampleStartDate string, sampleEndDate string, testStartDate string,
 	testEndDate string, underStartDate string, underEndDate string,
-	resultDate string, templatePath string, userName string) (bytes.Buffer, error) {
+	resultDate string, templatePath string, userName string,
+	finished bool, desicion string) (bytes.Buffer, error) {
 
 	var body bytes.Buffer
 	body.Write([]byte(fmt.Sprintf("%s \n%s\n\n", subject, utils.MIME_HEADERS)))
@@ -288,6 +289,8 @@ func GetHomologationBodyMessage(subject string, mainMessge string, projectType s
 		UnderEndDate    string
 		ResultDate      string
 		UserName        string
+		Finished        bool
+		Decision        string
 	}{
 		MainMessage:     mainMessge,
 		Date:            fmt.Sprintf("%02d/%02d/%d", time.Now().Day(), time.Now().Month(), time.Now().Year()),
@@ -310,6 +313,8 @@ func GetHomologationBodyMessage(subject string, mainMessge string, projectType s
 		UnderEndDate:    underEndDate,
 		ResultDate:      resultDate,
 		UserName:        userName,
+		Finished:        finished,
+		Decision:        desicion,
 	})
 
 	return body, nil
@@ -317,8 +322,10 @@ func GetHomologationBodyMessage(subject string, mainMessge string, projectType s
 func GetTrackingBodyMessage(subject string, mainMessge string, client string,
 	brand string, technicalModel string, commercialModel string,
 	responsible string, externalResponsible string, country string,
-	location string, imeis string, comment string, date time.Time,
+	location string, imeis []string, comment string, date time.Time,
 	templatePath string, userName string) (bytes.Buffer, error) {
+
+	xxx := []string{"India", "Canada", "Japan", "Germany", "Italy"}
 
 	var body bytes.Buffer
 	body.Write([]byte(fmt.Sprintf("%s \n%s\n\n", subject, utils.MIME_HEADERS)))
@@ -341,9 +348,10 @@ func GetTrackingBodyMessage(subject string, mainMessge string, client string,
 		ExternalResponsible string
 		Country             string
 		Location            string
-		IMEI                string
+		IMEIs               []string
 		Comments            string
 		UserName            string
+		Hyperlink           []string
 	}{
 		MainMessage:         mainMessge,
 		Date:                fmt.Sprintf("%02d/%02d/%d", date.Day(), date.Month(), date.Year()),
@@ -355,9 +363,10 @@ func GetTrackingBodyMessage(subject string, mainMessge string, client string,
 		ExternalResponsible: externalResponsible,
 		Country:             country,
 		Location:            location,
-		IMEI:                imeis,
+		IMEIs:               imeis,
 		Comments:            comment,
 		UserName:            userName,
+		Hyperlink:           xxx,
 	})
 
 	return body, nil
@@ -446,7 +455,7 @@ func GetFailBodyMessage(subject string, mainMessge string, client string, countr
 	projectType string, testCode string, testName string,
 	issueOverview string, actualResult string,
 	stepToReproduce string, expectedResult string, issueFrecuency int,
-	issueSeverity int, hiperLink string, descriptionLink string,
+	issueSeverity int, hiperLink []request.Hyperlink,
 	templatePath string, userName string) (bytes.Buffer, error) {
 
 	var body bytes.Buffer
@@ -479,7 +488,7 @@ func GetFailBodyMessage(subject string, mainMessge string, client string, countr
 		ExpectedResult  string
 		IssueFrecuency  string
 		IssueSeverity   string
-		Hiperlink       string
+		Hyperlinks      []request.Hyperlink
 		LinkDescription string
 		UserName        string
 	}{
@@ -502,8 +511,7 @@ func GetFailBodyMessage(subject string, mainMessge string, client string, countr
 		ExpectedResult:  expectedResult,
 		IssueFrecuency:  enums.TestFailureFrequency_key[issueFrecuency],
 		IssueSeverity:   enums.TestFailureSeverity_key[issueSeverity],
-		Hiperlink:       hiperLink,
-		LinkDescription: descriptionLink,
+		Hyperlinks:      hiperLink,
 		UserName:        userName,
 	})
 

@@ -4,6 +4,7 @@ var HomologationStatus_value = map[string]int{
 	"IN_PROGRESS": 0,
 	"APPROVED":    1,
 	"REJECTED":    2,
+	"FINISHED":    3,
 }
 var HomologationType_value = map[string]int{
 	"INITIAL":     0,

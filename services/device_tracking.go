@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -90,11 +91,11 @@ func (s *deviceTrackingService) Get(userID string) ([]responses.Tracking, error)
 		return nil, err
 	}
 	var countries []string
-	if !user.IsInternal {
+	if len(user.Countries) > 0 {
 		countries, _ = s.countryRepository.GetCountriesById(user.Countries)
 	}
 	deviceTrackings, err := s.deviceTrackingRepository.Get(user.IsInternal, user.Company,
-		user.Brands, countries)
+		user.Brands, countries, user.Clients)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +117,9 @@ func (s *deviceTrackingService) Get(userID string) ([]responses.Tracking, error)
 	for _, v := range trackingGrouped {
 		trakings = append(trakings, v)
 	}
-
+	sort.Slice(trakings, func(i, j int) bool {
+		return trakings[i].Brand < trakings[j].Brand
+	})
 	return trakings, nil
 }
 func (s *deviceTrackingService) AddTrakingLog(trackingLogReq *request.TrackingLogMultiple, userID string) error {
@@ -163,7 +166,12 @@ func (s *deviceTrackingService) AdvancedSearch(searchOption *request.SearchOptio
 	if err != nil {
 		return nil, err
 	}
-	deviceTrackings, err := s.deviceTrackingRepository.AdvancedSearch(searchOption, user.Company, user.IsInternal)
+	var countries []string
+	if len(user.Countries) > 0 {
+		countries, _ = s.countryRepository.GetCountriesById(user.Countries)
+	}
+	deviceTrackings, err := s.deviceTrackingRepository.AdvancedSearch(searchOption,
+		user.Company, user.IsInternal, user.Brands, countries, user.Clients)
 	if err != nil {
 		return nil, err
 	}
@@ -190,7 +198,9 @@ func (s *deviceTrackingService) AdvancedSearch(searchOption *request.SearchOptio
 	for _, v := range trackingGrouped {
 		trakings = append(trakings, v)
 	}
-
+	sort.Slice(trakings[0].DeviceTrackings, func(i, j int) bool {
+		return trakings[0].DeviceTrackings[i].Device.Brand.Name < trakings[0].DeviceTrackings[j].Device.Brand.Name
+	})
 	return trakings, nil
 }
 func (s *deviceTrackingService) AdvancedSearchOptions(userId string) (responses.SearchOption, error) {
@@ -205,7 +215,7 @@ func (s *deviceTrackingService) AdvancedSearchOptions(userId string) (responses.
 		countries, _ = s.countryRepository.GetCountriesById(user.Countries)
 	}
 	deviceTrackings, err := s.deviceTrackingRepository.Get(user.IsInternal, user.Company,
-		user.Brands, countries)
+		user.Brands, countries, user.Clients)
 	if err != nil {
 		return searchOption, err
 	}
@@ -243,7 +253,12 @@ func (s *deviceTrackingService) ExportDeviceTracking(searchOption *request.Searc
 	if err != nil {
 		return b, err
 	}
-	deviceTrackings, err := s.deviceTrackingRepository.AdvancedSearch(searchOption, user.ID, user.IsInternal)
+	var countries []string
+	if len(user.Countries) > 0 {
+		countries, _ = s.countryRepository.GetCountriesById(user.Countries)
+	}
+	deviceTrackings, err := s.deviceTrackingRepository.AdvancedSearch(searchOption, user.ID,
+		user.IsInternal, user.Brands, countries, user.Clients)
 	if err != nil {
 		return b, err
 	}
@@ -335,7 +350,7 @@ func (s *deviceTrackingService) DeviceTrackingNotification(imeis []string,
 	}
 	body, err := functions.GetTrackingBodyMessage(subject, mainMessage, company.Name, brand.Name,
 		device.TechnicalModel, device.CommercialModel, internal,
-		external, country, location, strings.Join(imeis[:], ","),
+		external, country, location, imeis,
 		comment, date, utils.TEMPLATE_TRACKING_PATH, userName)
 
 	if err != nil {

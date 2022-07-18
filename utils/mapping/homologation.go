@@ -120,6 +120,7 @@ func HomologationRequestToHomologationUpdate(homologation *request.Homologation)
 		Carrier:           homologation.Carrier,
 		TestingType:       homologation.TestingType,
 		CurrentPhase:      homologation.CurrentPhase,
+		Status:            homologation.Status,
 	}
 }
 func TestResultsRequestToTestResults(testResultsRequest []request.TestResult) []models.TestResult {
