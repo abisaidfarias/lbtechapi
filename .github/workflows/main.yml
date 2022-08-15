@@ -1,0 +1,25 @@
+name: Deployment From GitHub to AWS Elastic Beanstalk
+
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Generate deployment package
+      run: zip -r deploy.zip . -x '*.git*'
+
+    - name: Deploy to EB
+      uses: einaregilsson/beanstalk-deploy@v20
+      with:
+        aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        application_name: lbtechapi
+        environment_name: lbtechapi-dev
+        version_label: 1.70
+        region: us-east-1
+        deployment_package: deploy.zip
