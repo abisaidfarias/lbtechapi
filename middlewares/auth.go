@@ -1,12 +1,12 @@
 package middlewares
 
 import (
-	"os"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
-	"github.com/abisaidfarias/lbtechapi/services"
+	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
@@ -41,19 +41,17 @@ func AuthMiddleware() gin.HandlerFunc {
 			ctx.Abort()
 			return
 		}
-
 		ctx.Set("userID", claims.ID)
-		// TODO add this after company relation
-		// ctx.Set("companyID", claims.companyID)
+		ctx.Set("companyID", claims.CompanyID)
 
 		ctx.Next()
 	}
 }
 
-func validateToken(tokenString string) (*services.AuthClaims, error) {
+func validateToken(tokenString string) (*models.AuthClaim, error) {
 
 	var JWTKey = []byte(os.Getenv("SECRET_KEY"))
-	claims := &services.AuthClaims{}
+	claims := &models.AuthClaim{}
 
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		return JWTKey, nil
@@ -67,7 +65,7 @@ func validateToken(tokenString string) (*services.AuthClaims, error) {
 		return nil, fmt.Errorf("ID token is invalid")
 	}
 
-	claims, ok := token.Claims.(*services.AuthClaims)
+	claims, ok := token.Claims.(*models.AuthClaim)
 
 	if !ok {
 		return nil, fmt.Errorf("ID token valid but couldn't parse claims")

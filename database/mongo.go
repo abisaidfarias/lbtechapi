@@ -1,11 +1,12 @@
 package database
 
 import (
-	"github.com/joho/godotenv"
-	"os"
 	"context"
 	"log"
+	"os"
 	"sync"
+
+	"github.com/joho/godotenv"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -33,10 +34,20 @@ func GetInstance() *mongo.Database {
 func initDB() *mongo.Database {
 
 	godotenv.Load()
-	log.Println("MONGO", os.Getenv("MONGO_URI"))
 	clientOpts := options.Client().ApplyURI(os.Getenv("MONGO_URI"))
 
 	client, err := mongo.Connect(context.TODO(), clientOpts)
+	collation := options.Collation{
+		Strength:        2,
+		Locale:          "es",
+		CaseLevel:       false,
+		CaseFirst:       "off",
+		NumericOrdering: false,
+		Alternate:       "non-ignorable",
+		MaxVariable:     "punct",
+		Normalization:   false,
+		Backwards:       false,
+	}
 
 	if err != nil {
 		log.Fatal(err)
@@ -47,16 +58,90 @@ func initDB() *mongo.Database {
 		log.Fatal(err)
 	}
 
-	database := client.Database("lbtechdev")
+	database := client.Database(os.Getenv("MONGO_DB"))
 
 	indexEmail := mongo.IndexModel{
 		Keys: bson.M{
 			"email": 1,
-		}, Options: options.Index().SetUnique(true),
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
+	}
+	indexCode := mongo.IndexModel{
+		Keys: bson.M{
+			"code": 1,
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
+	}
+	indexTestPlanName := mongo.IndexModel{
+		Keys: bson.M{
+			"name": 1,
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
+	}
+	indexTestCategoryName := mongo.IndexModel{
+		Keys: bson.M{
+			"name": 1,
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
+	}
+	indexProfileName := mongo.IndexModel{
+		Keys: bson.M{
+			"name": 1,
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
+	}
+	indexCompanyName := mongo.IndexModel{
+		Keys: bson.M{
+			"name": 1,
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
+	}
+	indexBrandName := mongo.IndexModel{
+		Keys: bson.M{
+			"name": 1,
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
+	}
+	indexCountryName := mongo.IndexModel{
+		Keys: bson.M{
+			"name": 1,
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
+	}
+	indexDeviceCommercialName := mongo.IndexModel{
+		Keys: bson.M{
+			"commercial_model": 1,
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
+	}
+	indexPrinterSerial := mongo.IndexModel{
+		Keys: bson.M{
+			"serial": 1,
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
+	}
+	indexLocationName := mongo.IndexModel{
+		Keys: bson.M{
+			"name": 1,
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
 	}
 
-	database.Collection("users").Indexes().DropAll(context.Background())
+	indexImei := mongo.IndexModel{
+		Keys: bson.M{
+			"imei": 1,
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
+	}
+	indexPersonName := mongo.IndexModel{
+		Keys: bson.M{
+			"name": 1,
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
+	}
 	database.Collection("users").Indexes().CreateOne(context.Background(), indexEmail)
-
+	database.Collection("test_cases").Indexes().CreateOne(context.Background(), indexCode)
+	database.Collection("test_categories").Indexes().CreateOne(context.Background(), indexTestCategoryName)
+	database.Collection("test_plans").Indexes().CreateOne(context.Background(), indexTestPlanName)
+	database.Collection("profiles").Indexes().CreateOne(context.Background(), indexProfileName)
+	database.Collection("companies").Indexes().CreateOne(context.Background(), indexCompanyName)
+	database.Collection("brands").Indexes().CreateOne(context.Background(), indexBrandName)
+	database.Collection("countries").Indexes().CreateOne(context.Background(), indexCountryName)
+	database.Collection("devices").Indexes().CreateOne(context.Background(), indexDeviceCommercialName)
+	database.Collection("printers").Indexes().CreateOne(context.Background(), indexPrinterSerial)
+	database.Collection("locations").Indexes().CreateOne(context.Background(), indexLocationName)
+	database.Collection("device_trackings").Indexes().CreateOne(context.Background(), indexImei)
+	database.Collection("persons").Indexes().CreateOne(context.Background(), indexPersonName)
 	return database
+}
+func GetMongoDBClient() *mongo.Client {
+
+	return instance.Client()
 }

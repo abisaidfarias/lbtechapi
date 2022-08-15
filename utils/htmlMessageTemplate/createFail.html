@@ -1,0 +1,55 @@
+<!-- template.html -->
+<!DOCTYPE html>
+<html>
+<body>
+    
+    <p><strong>{{.MainMessage}} {{.Date}} :</strong></p>
+
+    <p><strong>Client:</strong> {{.Client}}</p>
+
+    <p><strong>Country:</strong> {{.Country}}</p>
+
+    <p><strong>Brand:</strong> {{.Brand}}</p>
+
+    <p><strong>Technical Model:</strong> {{.TechnicalModel}}</p>
+    
+    <p><strong>Commercial Model:</strong> {{.CommercialModel}}</p>
+
+    <p><strong>SW Version:</strong> {{.SoftwareVersion}}</p>
+    
+    <p><strong>OS Version:</strong> {{.OSversion}}</p>
+
+    <p><strong>Approval Type:</strong> {{.ApprovalType}}</p>
+
+    <p><strong>Project Type:</strong> {{.ProjectType}}</p>
+
+    <p><strong>Test Code:</strong> {{.TestCode}}</p>
+
+    <p><strong>Test Name:</strong> {{.TestName}}</p>
+
+    <p><strong>Issue Description</strong></p>
+
+    <p><strong>Issue Overview:</strong> {{.IssueOverview}}</p>
+
+    <p><strong>Actual Result:</strong> {{.ActualResult}}</p>
+    
+    <p><strong>Steps to Reproduce:</strong> {{.StepToReproduce}}</p>
+    
+    <p><strong>Expected Result:</strong> {{.ExpectedResult}}</p>
+    
+    <p><strong>Issue Frecuency:</strong> {{.IssueFrecuency}}</p>
+
+    <p><strong>Issue Severity:</strong> {{.IssueSeverity}}</p>
+
+    <p><strong>Hyperlinks:</strong></p>
+    <ul>
+        {{ range .Hyperlinks }}
+            <li> {{ .Link }}  ({{ .Description }}) </li>
+        {{ end }}
+    </ul>
+
+    <p><strong>Responsible: </strong>{{.UserName}}</p>
+    
+    <h3>Team LB Technology</h3>
+</body>
+</html>

@@ -2,24 +2,34 @@ package repositories
 
 import (
 	"context"
-	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"gopkg.in/mgo.v2/bson"
 
 	"github.com/abisaidfarias/lbtechapi/database"
+	"github.com/abisaidfarias/lbtechapi/database/queries"
 	"github.com/abisaidfarias/lbtechapi/models"
-	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
-	"gopkg.in/mgo.v2/bson"
+	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 )
 
 // IUserRepository is the user repository interface
 type IUserRepository interface {
-	GetByID(string) (*models.User, error)
-	GetByEmail(string) (*models.User, error)
-	Save(*models.User) error
+	GetByID(string) (*responses.User, error)
+	GetByEmail(string) (*responses.AuthUser, error)
+	GetByCompany(primitive.ObjectID) ([]*bson.M, error)
+	GetProfileByID(primitive.ObjectID) (*responses.Profile, error)
+	Get() ([]*bson.M, error)
+	Create(*models.User) error
 	Update(string, *models.User) error
 	Delete(string) error
+	ChangePassword(string, string) error
+	GetByIDExpanded(string) (*responses.UserExpanded, error)
+	Updgrade(*models.User) error
+	GetUserByCompany(primitive.ObjectID) (*responses.User, error)
+	GetInternalUser() ([]*responses.User, error)
+	GetUsersByCompany(primitive.ObjectID) ([]*responses.User, error)
 }
 
 type userRepository struct {
@@ -39,24 +49,20 @@ func NewUserRepository() IUserRepository {
 var userCollection = database.GetInstance().Collection("users")
 
 // GetByEmail checks database for credentials
-func (r *userRepository) GetByEmail(email string) (*models.User, error) {
+func (r *userRepository) GetByEmail(email string) (*responses.AuthUser, error) {
 
-	var user models.User
+	var user responses.AuthUser
 
-	filter := bson.M{
-		"email": email,
-	}
-
-	err := userCollection.FindOne(context.TODO(), filter).Decode(&user)
+	err := userCollection.FindOne(context.TODO(), queries.GetUserByEmail(email)).Decode(&user)
 
 	if err != nil {
-		return nil, fmt.Errorf("%w", utils.ErrorInQuery)
+		return nil, err
 	}
 	return &user, nil
 }
 
-// GetByOID checks database for credentials
-func (r *userRepository) GetByID(id string) (*models.User, error) {
+// GetByID checks database for credentials
+func (r *userRepository) GetByID(id string) (*responses.User, error) {
 
 	oid, err := primitive.ObjectIDFromHex(id)
 
@@ -64,29 +70,54 @@ func (r *userRepository) GetByID(id string) (*models.User, error) {
 		return nil, err
 	}
 
-	var result models.User
+	var user responses.User
 
-	err = userCollection.FindOne(context.TODO(), bson.M{"_id": oid}).Decode(&result)
+	err = userCollection.FindOne(context.TODO(), queries.GetUserById(oid)).Decode(&user)
 
-	if err != nil {
-		return nil, fmt.Errorf("%w", utils.ErrorInQuery)
+	switch err {
+	case mongo.ErrNoDocuments:
+		return &user, err
+	default:
+		return &user, nil
 	}
+}
+func (r *userRepository) GetByCompany(companyID primitive.ObjectID) ([]*bson.M, error) {
 
-	return &result, nil
+	var users []*bson.M = []*bson.M{}
+	cursor, err := userCollection.Aggregate(context.TODO(), queries.GetUserByCompany(companyID))
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All(context.TODO(), &users); err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+func (r *userRepository) Get() ([]*bson.M, error) {
+
+	cursor, err := userCollection.Aggregate(context.TODO(), queries.GetUsers())
+	if err != nil {
+		return nil, err
+	}
+	var users []*bson.M = []*bson.M{}
+	for cursor.Next(context.TODO()) {
+		var user bson.M
+		err := cursor.Decode(&user)
+		if err != nil {
+			return nil, err
+		}
+		user["passwordHash"] = ""
+		users = append(users, &user)
+	}
+	return users, nil
 }
 
-// SaveUSer saves the new user
-func (r *userRepository) Save(user *models.User) error {
+// Save saves the new user
+func (r *userRepository) Create(user *models.User) error {
 
 	_, err := userCollection.InsertOne(context.TODO(), user)
 
 	if err != nil {
-		var merr mongo.WriteException
-		merr = err.(mongo.WriteException)
-		errCode := merr.WriteErrors[0].Code
-		if errCode == 11000 {
-			return fmt.Errorf("%w", utils.ErrorDuplicated)
-		}
 		return err
 	}
 
@@ -96,13 +127,11 @@ func (r *userRepository) Save(user *models.User) error {
 // Update updates the given that
 func (r *userRepository) Update(id string, user *models.User) error {
 
-	oid, err := primitive.ObjectIDFromHex(id)
+	oid, _ := primitive.ObjectIDFromHex(id)
 
-	update := bson.M{
-		"$set": user,
-	}
+	filter, update := queries.UpdateUser(user, oid)
 
-	_, err = userCollection.UpdateOne(context.TODO(), bson.M{"_id": oid}, update)
+	_, err := userCollection.UpdateOne(context.TODO(), filter, update)
 
 	if err != nil {
 		return err
@@ -113,13 +142,120 @@ func (r *userRepository) Update(id string, user *models.User) error {
 
 // Delete deletes the user
 func (r *userRepository) Delete(id string) error {
-	oid, err := primitive.ObjectIDFromHex(id)
+	oid, _ := primitive.ObjectIDFromHex(id)
 
-	_, err = userCollection.DeleteOne(context.TODO(), bson.M{"_id": oid})
+	_, err := userCollection.DeleteOne(context.TODO(), queries.DeleteUser(oid))
 
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+func (r *userRepository) GetProfileByID(oid primitive.ObjectID) (*responses.Profile, error) {
+
+	var user responses.User
+	err := userCollection.FindOne(context.TODO(), queries.GetUserById(oid)).Decode(&user)
+
+	if err != nil {
+		return nil, err
+	}
+	var profile *responses.Profile
+	err = profileCollection.FindOne(context.TODO(), queries.GetProfileById(user.Profile)).Decode(&profile)
+	if err != nil {
+		return nil, err
+	}
+	return profile, nil
+}
+func (r *userRepository) ChangePassword(hashPassword string, email string) error {
+
+	filter, update := queries.ChangePassword(email, hashPassword)
+
+	err := userCollection.FindOneAndUpdate(context.TODO(), filter, update)
+
+	if err.Err() != nil {
+		return err.Err()
+	}
+
+	return nil
+}
+func (r *userRepository) GetByIDExpanded(id string) (*responses.UserExpanded, error) {
+
+	oid, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var user *responses.UserExpanded
+
+	cursor, err := userCollection.Aggregate(context.TODO(), queries.GetUserExpandedById(oid))
+	if err != nil {
+		return nil, err
+	}
+	for cursor.Next(context.TODO()) {
+		err := cursor.Decode(&user)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return user, nil
+}
+func (r *userRepository) Updgrade(user *models.User) error {
+
+	_, err := userCollection.InsertOne(context.TODO(), user)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+func (r *userRepository) GetUserByCompany(companyId primitive.ObjectID) (*responses.User, error) {
+
+	var user *responses.User
+	err := userCollection.FindOne(context.TODO(),
+		queries.GetDeviceTrackingByCompany(companyId)).Decode(&user)
+
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			return nil, nil
+		default:
+			return nil, err
+		}
+	}
+	return user, nil
+}
+func (r *userRepository) GetUsersByCompany(companyId primitive.ObjectID) ([]*responses.User, error) {
+
+	cursor, err := userCollection.Find(context.TODO(),
+		queries.GetUsersByCompany(companyId))
+
+	if err != nil {
+		panic(err)
+	}
+	var users []*responses.User = []*responses.User{}
+	if err = cursor.All(context.TODO(), &users); err != nil {
+		panic(err)
+	}
+	cursor.Close(context.TODO())
+	return users, nil
+}
+func (r *userRepository) GetInternalUser() ([]*responses.User, error) {
+
+	findOptions := options.Find()
+	findOptions.SetSort(bson.M{"name": 1})
+	cursor, err := userCollection.Find(context.TODO(),
+		queries.GetInternalUsers(), findOptions)
+
+	if err != nil {
+		panic(err)
+	}
+	var users []*responses.User = []*responses.User{}
+	if err = cursor.All(context.TODO(), &users); err != nil {
+		panic(err)
+	}
+	cursor.Close(context.TODO())
+	return users, nil
 }

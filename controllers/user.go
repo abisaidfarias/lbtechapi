@@ -15,8 +15,15 @@ import (
 type IUserController interface {
 	Create() gin.HandlerFunc
 	GetByID() gin.HandlerFunc
+	GetByEmail() gin.HandlerFunc
 	Update() gin.HandlerFunc
 	Delete() gin.HandlerFunc
+	Get() gin.HandlerFunc
+	GetProfileByID() gin.HandlerFunc
+	ChangePassword() gin.HandlerFunc
+	Upgrade() gin.HandlerFunc
+	GetByInternal() gin.HandlerFunc
+	GetUserByCompany() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
@@ -36,7 +43,7 @@ func (c *userController) Create() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 
-		var user request.UserRequest
+		var user request.User
 
 		err := ctx.ShouldBindJSON(&user)
 
@@ -44,24 +51,52 @@ func (c *userController) Create() gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-
+		userID := ctx.MustGet("userID").(string)
+		user.UserID = userID
 		err = c.userService.Create(&user)
 
 		if err != nil {
+			if utils.ErrorDuplicatedData(err) {
+				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicated.Error()})
+				return
+			}
 			handleErrorResponse(ctx, err)
 			return
 		}
 
 		ctx.Status(http.StatusCreated)
-		return
+	}
+}
+func (c *userController) Upgrade() gin.HandlerFunc {
+
+	return func(ctx *gin.Context) {
+
+		var user request.User
+
+		err := ctx.ShouldBindJSON(&user)
+
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		err = c.userService.Upgrade(&user)
+
+		if err != nil {
+			if utils.ErrorDuplicatedData(err) {
+				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicated.Error()})
+				return
+			}
+			handleErrorResponse(ctx, err)
+			return
+		}
+
+		ctx.Status(http.StatusCreated)
 	}
 }
 
 func (c *userController) GetByID() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var id string
-
-		id = ctx.Param("id")
+		id := ctx.Param("id")
 
 		if id == "" {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("%w", utils.ErrorInvalidURLParams)})
@@ -76,7 +111,28 @@ func (c *userController) GetByID() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, *user)
-		return
+	}
+
+}
+func (c *userController) GetByEmail() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var id string
+
+		email := ctx.Param("email")
+
+		if id == "" {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("%w", utils.ErrorInvalidURLParams)})
+			return
+		}
+
+		user, err := c.userService.GetByEmail(email)
+
+		if err != nil {
+			handleErrorResponse(ctx, err)
+			return
+		}
+
+		ctx.JSON(http.StatusOK, *user)
 	}
 
 }
@@ -84,9 +140,7 @@ func (c *userController) GetByID() gin.HandlerFunc {
 func (c *userController) Update() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
-		var id string
-
-		id = ctx.Param("id")
+		id := ctx.Param("id")
 
 		var user models.User
 
@@ -100,13 +154,17 @@ func (c *userController) Update() gin.HandlerFunc {
 		err = c.userService.Update(id, &user)
 
 		if err != nil {
+			if utils.ErrorDuplicatedData(err) {
+				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicated.Error()})
+				return
+			}
 			handleErrorResponse(ctx, err)
 			return
 
 		}
 
-		ctx.Status(http.StatusNoContent)
-		return
+		ctx.Status(http.StatusOK)
+
 	}
 
 }
@@ -114,9 +172,7 @@ func (c *userController) Update() gin.HandlerFunc {
 func (c *userController) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
-		var id string
-
-		id = ctx.Param("id")
+		id := ctx.Param("id")
 
 		err := c.userService.Delete(id)
 
@@ -125,8 +181,93 @@ func (c *userController) Delete() gin.HandlerFunc {
 			return
 		}
 
-		ctx.Status(http.StatusNoContent)
-		return
+		ctx.Status(http.StatusOK)
+
+	}
+
+}
+func (c *userController) Get() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userID := ctx.MustGet("userID").(string)
+		users, err := c.userService.Get(userID)
+
+		if err != nil {
+			handleErrorResponse(ctx, err)
+			return
+		}
+
+		ctx.JSON(http.StatusOK, users)
+	}
+
+}
+func (c *userController) GetProfileByID() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		userID := ctx.MustGet("userID").(string)
+		profile, err := c.userService.GetProfileByID(userID)
+
+		if err != nil {
+			handleErrorResponse(ctx, err)
+			return
+		}
+
+		ctx.JSON(http.StatusOK, profile)
+
+	}
+
+}
+func (c *userController) ChangePassword() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		email := ctx.Param("id")
+
+		var changePassword request.ChangePassword
+
+		err := ctx.ShouldBindJSON(&changePassword)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		err = c.userService.ChangePassword(email, changePassword)
+
+		if err != nil {
+			handleErrorResponse(ctx, err)
+			return
+		}
+
+		ctx.Status(http.StatusOK)
+	}
+
+}
+func (c *userController) GetByInternal() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		users, err := c.userService.GetInternalUser()
+
+		if err != nil {
+			handleErrorResponse(ctx, err)
+			return
+		}
+
+		ctx.JSON(http.StatusOK, users)
+
+	}
+
+}
+func (c *userController) GetUserByCompany() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		companyId := ctx.Param("id")
+
+		users, err := c.userService.GetUsersByCompany(companyId)
+
+		if err != nil {
+			handleErrorResponse(ctx, err)
+			return
+		}
+
+		ctx.JSON(http.StatusOK, users)
+
 	}
 
 }

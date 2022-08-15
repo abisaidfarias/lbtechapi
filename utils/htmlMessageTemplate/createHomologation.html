@@ -1,0 +1,49 @@
+<!-- template.html -->
+<!DOCTYPE html>
+<html>
+<body>
+ 
+    <p>{{.MainMessage}} {{.Date}}</p>
+    
+    <p><strong>Project Type:</strong> {{.ProjectType}}</p>
+    
+    <p><strong>Brand:</strong> {{.Brand}}</p>
+    
+    <p><strong>Technical Model:</strong> {{.TechnicalModel}}</p>
+    
+    <p><strong>Commercial Model:</strong> {{.CommercialModel}}</p>
+    
+    <p><strong>SW Version:</strong> {{.SoftwareVersion}}</p>
+    
+    <p><strong>OS Version:</strong> {{.OSversion}}</p>
+    
+    <p><strong>Country:</strong> {{.Country}}</p>
+    
+    <p><strong>Approval Type:</strong> {{.ApprovalType}}</p>
+    
+    <p><strong>Carrier:</strong> {{.Carrier}}</p>
+    
+    <p><strong>Testing Type:</strong> {{.TestingType}}</p>
+    
+    <p><strong>Planning Date:</strong> {{.PlanningDate}}</p>
+    
+    <p><strong>Sample Reception Start Date:</strong> {{.SampleStart}}</p>
+    
+    <p><strong>Sample Reception End Date:</strong> {{.SampleEndDate}}</p>
+
+    <p><strong>Testing Start Date:</strong> {{.TestStart}}</p>
+    
+    <p><strong>Testing End Date:</strong> {{.TestEndDate}}</p>
+
+    <p><strong>Under Evaluation Start Date:</strong> {{.UnderStart}}</p>
+
+    <p><strong>Under Evaluation End Date:</strong> {{.UnderEndDate}}</p>
+    {{if .Finished -}}
+        <p><strong>Decision Date:</strong> {{.ResultDate}}</p>
+        <p><strong>Decision:</strong> {{.Decision}}</p>
+    {{- end}}
+    <p><strong>Responsible: </strong>{{.UserName}}</p>
+    
+    <h3>Team LB Technology</h3>
+</body>
+</html>
