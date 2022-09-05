@@ -113,7 +113,7 @@ func main() {
 		panic("error validation")
 	}
 	server.GET("/health", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{"status": "server is up"})
+		ctx.JSON(http.StatusOK, gin.H{"status": "server is up v1"})
 	})
 	v1 := server.Group("/api/v1")
 	{
