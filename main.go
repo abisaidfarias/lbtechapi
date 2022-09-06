@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/abisaidfarias/lbtechapi/controllers"
 	"github.com/abisaidfarias/lbtechapi/middlewares"
@@ -113,7 +115,7 @@ func main() {
 		panic("error validation")
 	}
 	server.GET("/health", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{"status": "server is up v1"})
+		ctx.JSON(http.StatusOK, gin.H{"status": fmt.Sprintf("server is up %s", os.Getenv("MONGO_DB"))})
 	})
 	v1 := server.Group("/api/v1")
 	{
