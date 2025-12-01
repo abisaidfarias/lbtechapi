@@ -25,7 +25,18 @@ func NewAuthController(authService services.IAuthService) IAuthController {
 	}
 }
 
-// SignIn signs the user in
+// SignIn godoc
+// @Summary Iniciar sesión
+// @Description Autentica un usuario y devuelve un token JWT
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param credentials body request.AuthCredentials true "Credenciales de usuario"
+// @Success 200 {object} responses.AuthResponse "Usuario autenticado exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "Credenciales incorrectas"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /sign-in [post]
 func (c *authController) SignIn() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var credentials request.AuthCredentials

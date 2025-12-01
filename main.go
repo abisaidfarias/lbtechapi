@@ -15,6 +15,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
+	
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	_ "github.com/abisaidfarias/lbtechapi/docs"
 )
 
 var (
@@ -99,6 +103,26 @@ var (
 	notificationController controllers.INotificationController  = controllers.NewNotificationController(notificationService)
 )
 
+// @title LBTech API
+// @version 1.0
+// @description API para gestión de homologaciones y dispositivos
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.email support@lbtech.com
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8080
+// @BasePath /api/v1
+// @schemes http https
+
+// @securityDefinitions.apikey Bearer
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
+
 func main() {
 	server := gin.Default()
 	server.Use(middlewares.CORSMiddleware())
@@ -117,6 +141,10 @@ func main() {
 	server.GET("/health", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"status": fmt.Sprintf("server is up %s", os.Getenv("MONGO_DB"))})
 	})
+	
+	// Swagger endpoint
+	server.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	
 	v1 := server.Group("/api/v1")
 	{
 		v1.GET("/health", func(ctx *gin.Context) {

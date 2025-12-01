@@ -1,0 +1,254 @@
+basePath: /api/v1
+definitions:
+  request.AuthCredentials:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  request.User:
+    properties:
+      brands:
+        items:
+          type: string
+        type: array
+      clients:
+        items:
+          type: string
+        type: array
+      company:
+        type: string
+      countries:
+        items:
+          type: string
+        type: array
+      email:
+        type: string
+      is_internal:
+        type: boolean
+      lastName:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      profile:
+        type: string
+      user_id:
+        type: string
+    required:
+    - email
+    - lastName
+    - name
+    - password
+    - profile
+    type: object
+  responses.AuthResponse:
+    properties:
+      _id:
+        type: string
+      company:
+        type: string
+      email:
+        type: string
+      lastName:
+        type: string
+      name:
+        type: string
+      profile:
+        $ref: '#/definitions/responses.Profile'
+      token:
+        type: string
+    type: object
+  responses.Claim:
+    properties:
+      allow:
+        type: boolean
+      name:
+        type: string
+    type: object
+  responses.Profile:
+    properties:
+      _id:
+        type: string
+      claims:
+        items:
+          $ref: '#/definitions/responses.Claim'
+        type: array
+      is_internal:
+        type: boolean
+      name:
+        type: string
+    type: object
+  responses.User:
+    properties:
+      brands:
+        items:
+          type: string
+        type: array
+      clients:
+        items:
+          type: string
+        type: array
+      company:
+        type: string
+      countries:
+        items:
+          type: string
+        type: array
+      email:
+        type: string
+      id:
+        type: string
+      isInternal:
+        type: boolean
+      lastName:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      profile:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@lbtech.com
+    name: API Support
+  description: API para gestión de homologaciones y dispositivos
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: LBTech API
+  version: "1.0"
+paths:
+  /sign-in:
+    post:
+      consumes:
+      - application/json
+      description: Autentica un usuario y devuelve un token JWT
+      parameters:
+      - description: Credenciales de usuario
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/request.AuthCredentials'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Usuario autenticado exitosamente
+          schema:
+            $ref: '#/definitions/responses.AuthResponse'
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Credenciales incorrectas
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Iniciar sesión
+      tags:
+      - Authentication
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene la lista de usuarios del sistema
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de usuarios
+          schema:
+            items:
+              $ref: '#/definitions/responses.User'
+            type: array
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Listar usuarios
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Crea un nuevo usuario en el sistema
+      parameters:
+      - description: Datos del usuario
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/request.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Usuario creado exitosamente
+          schema:
+            $ref: '#/definitions/responses.User'
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Crear nuevo usuario
+      tags:
+      - Users
+schemes:
+- http
+- https
+securityDefinitions:
+  Bearer:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
