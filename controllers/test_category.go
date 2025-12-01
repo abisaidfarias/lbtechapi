@@ -27,7 +27,20 @@ func NewTestCategoryController(testCategoryService services.ITestCategoryService
 	}
 }
 
-// Create creates a category
+// Create godoc
+// @Summary Crear nueva categoría de prueba
+// @Description Crea una nueva categoría de prueba en el sistema
+// @Tags Test Categories
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param category body request.TestCategory true "Datos de la categoría"
+// @Success 201 {object} map[string]string "Categoría creada exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 409 {object} map[string]string "Categoría duplicada"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /test-categories [post]
 func (c *testCategoryController) Create() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -57,7 +70,17 @@ func (c *testCategoryController) Create() gin.HandlerFunc {
 	}
 }
 
-// Get list all categories
+// Get godoc
+// @Summary Listar categorías de prueba
+// @Description Obtiene la lista de todas las categorías de prueba
+// @Tags Test Categories
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Success 200 {array} responses.TestCategory "Lista de categorías"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /test-categories [get]
 func (c *testCategoryController) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 

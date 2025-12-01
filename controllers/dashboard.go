@@ -25,7 +25,17 @@ func NewDashboardController(dashboardService services.IDashboardService) IDashbo
 	}
 }
 
-// Get list all categories
+// Get godoc
+// @Summary Obtener dashboard
+// @Description Obtiene los datos del dashboard para el usuario
+// @Tags Dashboard
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Success 200 {object} responses.DashboardReport "Datos del dashboard"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /dashboard [get]
 func (c *dashboardController) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -41,6 +51,18 @@ func (c *dashboardController) Get() gin.HandlerFunc {
 	}
 
 }
+
+// GetGeneralInfo godoc
+// @Summary Obtener información general del dashboard
+// @Description Obtiene la información general del dashboard
+// @Tags Dashboard
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Success 200 {object} responses.DashboardInfo "Información general"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /dashboard/info [get]
 func (c *dashboardController) GetGeneralInfo() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 

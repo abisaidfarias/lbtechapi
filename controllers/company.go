@@ -29,7 +29,20 @@ func NewCompanyController(companyService services.ICompanyService) ICompanyContr
 	}
 }
 
-// Create creates a category
+// Create godoc
+// @Summary Crear nueva compañía
+// @Description Crea una nueva compañía en el sistema
+// @Tags Companies
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param company body request.Company true "Datos de la compañía"
+// @Success 201 "Compañía creada exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 409 {object} map[string]string "Compañía duplicada"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /company [post]
 func (c *companyController) Create() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -59,7 +72,17 @@ func (c *companyController) Create() gin.HandlerFunc {
 	}
 }
 
-// Get list all categories
+// Get godoc
+// @Summary Listar compañías
+// @Description Obtiene la lista de todas las compañías
+// @Tags Companies
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Success 200 {array} responses.Company "Lista de compañías"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /company [get]
 func (c *companyController) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -73,6 +96,21 @@ func (c *companyController) Get() gin.HandlerFunc {
 	}
 
 }
+
+// Delete godoc
+// @Summary Eliminar compañía
+// @Description Elimina una compañía del sistema
+// @Tags Companies
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID de la compañía"
+// @Success 200 "Compañía eliminada exitosamente"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Compañía no encontrada"
+// @Failure 409 "No se puede eliminar, existen dependencias"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /company/{id} [delete]
 func (c *companyController) Delete() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -90,6 +128,23 @@ func (c *companyController) Delete() gin.HandlerFunc {
 		ctx.Status(http.StatusOK)
 	}
 }
+
+// Update godoc
+// @Summary Actualizar compañía
+// @Description Actualiza una compañía existente
+// @Tags Companies
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID de la compañía"
+// @Param company body request.Company true "Datos actualizados de la compañía"
+// @Success 200 "Compañía actualizada exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Compañía no encontrada"
+// @Failure 409 {object} map[string]string "Conflicto con datos existentes"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /company/{id} [put]
 func (c *companyController) Update() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {

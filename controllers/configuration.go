@@ -27,7 +27,20 @@ func NewConfigurationController(configurationService services.IConfigurationServ
 	}
 }
 
-// Create creates a category
+// Create godoc
+// @Summary Crear nueva configuración
+// @Description Crea una nueva configuración en el sistema
+// @Tags Configurations
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param configuration body request.Configuration true "Datos de la configuración"
+// @Success 201 {object} map[string]string "Configuración creada exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 409 {object} map[string]string "Configuración duplicada"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /configuration [post]
 func (c *configurationController) Create() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -57,7 +70,17 @@ func (c *configurationController) Create() gin.HandlerFunc {
 	}
 }
 
-// Get list all categories
+// Get godoc
+// @Summary Listar configuraciones
+// @Description Obtiene la lista de todas las configuraciones
+// @Tags Configurations
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Success 200 {array} responses.Configuration "Lista de configuraciones"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /configuration [get]
 func (c *configurationController) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 

@@ -27,7 +27,20 @@ func NewLocationController(locationService services.ILocationService) ILocationC
 	}
 }
 
-// Create creates a category
+// Create godoc
+// @Summary Crear nueva ubicación
+// @Description Crea una nueva ubicación en el sistema
+// @Tags Locations
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param location body request.Location true "Datos de la ubicación"
+// @Success 201 {object} map[string]string "Ubicación creada exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 409 {object} map[string]string "Ubicación duplicada"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /location [post]
 func (c *locationController) Create() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -57,7 +70,17 @@ func (c *locationController) Create() gin.HandlerFunc {
 	}
 }
 
-// Get list all categories
+// Get godoc
+// @Summary Listar ubicaciones
+// @Description Obtiene la lista de todas las ubicaciones
+// @Tags Locations
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Success 200 {array} responses.Location "Lista de ubicaciones"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /location [get]
 func (c *locationController) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 

@@ -27,7 +27,20 @@ func NewNotificationController(notificationService services.INotificationService
 	}
 }
 
-// Create creates a category
+// Create godoc
+// @Summary Crear nueva notificación
+// @Description Crea una nueva notificación en el sistema
+// @Tags Notifications
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param notification body request.Notification true "Datos de la notificación"
+// @Success 201 {object} map[string]string "Notificación creada exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 409 {object} map[string]string "Notificación duplicada"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /notification [post]
 func (c *notificationController) Create() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -57,7 +70,18 @@ func (c *notificationController) Create() gin.HandlerFunc {
 	}
 }
 
-// Get list all categories
+// GetByCompany godoc
+// @Summary Obtener notificaciones por compañía
+// @Description Obtiene las notificaciones asociadas a una compañía específica
+// @Tags Notifications
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID de la compañía"
+// @Success 200 {array} responses.Notification "Lista de notificaciones"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /notification/company/{id} [get]
 func (c *notificationController) GetByCompany() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id := ctx.Param("id")

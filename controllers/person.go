@@ -29,7 +29,20 @@ func NewPersonController(personService services.IPersonService) IPersonControlle
 	}
 }
 
-// Create creates a category
+// Create godoc
+// @Summary Crear nueva persona
+// @Description Crea una nueva persona en el sistema
+// @Tags Persons
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param person body request.Person true "Datos de la persona"
+// @Success 201 {object} map[string]string "Persona creada exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 409 {object} map[string]string "Persona duplicada"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /person [post]
 func (c *personController) Create() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -60,7 +73,17 @@ func (c *personController) Create() gin.HandlerFunc {
 	}
 }
 
-// Get list all categories
+// Get godoc
+// @Summary Listar personas
+// @Description Obtiene la lista de todas las personas
+// @Tags Persons
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Success 200 {array} responses.Person "Lista de personas"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /person [get]
 func (c *personController) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -74,6 +97,21 @@ func (c *personController) Get() gin.HandlerFunc {
 	}
 
 }
+
+// Delete godoc
+// @Summary Eliminar persona
+// @Description Elimina una persona del sistema
+// @Tags Persons
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID de la persona"
+// @Success 200 "Persona eliminada exitosamente"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Persona no encontrada"
+// @Failure 409 "No se puede eliminar, existen dependencias"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /person/{id} [delete]
 func (c *personController) Delete() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -91,6 +129,23 @@ func (c *personController) Delete() gin.HandlerFunc {
 		ctx.Status(http.StatusOK)
 	}
 }
+
+// Update godoc
+// @Summary Actualizar persona
+// @Description Actualiza una persona existente
+// @Tags Persons
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID de la persona"
+// @Param person body request.Person true "Datos actualizados de la persona"
+// @Success 200 "Persona actualizada exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Persona no encontrada"
+// @Failure 409 {object} map[string]string "Conflicto con datos existentes"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /person/{id} [put]
 func (c *personController) Update() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {

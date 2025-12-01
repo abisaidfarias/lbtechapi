@@ -26,7 +26,20 @@ func NewKpiController(kpiService services.IKpiService) IKpiController {
 	}
 }
 
-// Get list all categories
+// GetVolumeChart godoc
+// @Summary Obtener gráfica de volumen
+// @Description Obtiene los datos de la gráfica de volumen por rango de fechas
+// @Tags KPI
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param start path string true "Fecha inicio (RFC3339)"
+// @Param end path string true "Fecha fin (RFC3339)"
+// @Success 200 {object} responses.VolumeChart "Datos de la gráfica"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 422 {object} map[string]string "Formato de fecha inválido"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /kpi/volume/{start}/{end} [get]
 func (c *kpiController) GetVolumeChart() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -52,6 +65,21 @@ func (c *kpiController) GetVolumeChart() gin.HandlerFunc {
 	}
 
 }
+
+// GetTimeChart godoc
+// @Summary Obtener gráfica de tiempos
+// @Description Obtiene los datos de la gráfica de tiempos por rango de fechas
+// @Tags KPI
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param start path string true "Fecha inicio (RFC3339)"
+// @Param end path string true "Fecha fin (RFC3339)"
+// @Success 200 {object} responses.TimeChart "Datos de la gráfica"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 422 {object} map[string]string "Formato de fecha inválido"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /kpi/time/{start}/{end} [get]
 func (c *kpiController) GetTimeChart() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 

@@ -32,7 +32,20 @@ func NewDeviceController(deviceService services.IDeviceService) IDeviceControlle
 	}
 }
 
-// Create creates a case
+// Create godoc
+// @Summary Crear nuevo dispositivo
+// @Description Crea un nuevo dispositivo en el sistema
+// @Tags Devices
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param device body request.Device true "Datos del dispositivo"
+// @Success 201 {object} responses.Device "Dispositivo creado exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 409 {object} map[string]string "Dispositivo duplicado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /device [post]
 func (c *deviceController) Create() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -61,7 +74,17 @@ func (c *deviceController) Create() gin.HandlerFunc {
 	}
 }
 
-// Get list all cases
+// Get godoc
+// @Summary Listar dispositivos
+// @Description Obtiene la lista de todos los dispositivos
+// @Tags Devices
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Success 200 {array} responses.Device "Lista de dispositivos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /device [get]
 func (c *deviceController) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -77,7 +100,20 @@ func (c *deviceController) Get() gin.HandlerFunc {
 
 }
 
-// Create creates a case
+// GetById godoc
+// @Summary Obtener dispositivo por ID
+// @Description Obtiene un dispositivo específico por su ID
+// @Tags Devices
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID del dispositivo"
+// @Success 200 {object} responses.Device "Dispositivo encontrado"
+// @Failure 400 {object} map[string]string "Parámetros inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Dispositivo no encontrado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /device/{id} [get]
 func (c *deviceController) GetById() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -100,7 +136,22 @@ func (c *deviceController) GetById() gin.HandlerFunc {
 	}
 }
 
-// Create creates a case
+// Update godoc
+// @Summary Actualizar dispositivo
+// @Description Actualiza un dispositivo existente
+// @Tags Devices
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID del dispositivo"
+// @Param device body request.Device true "Datos actualizados del dispositivo"
+// @Success 200 "Dispositivo actualizado exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Dispositivo no encontrado"
+// @Failure 409 {object} map[string]string "Conflicto con datos existentes"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /device/{id} [put]
 func (c *deviceController) Update() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -131,6 +182,21 @@ func (c *deviceController) Update() gin.HandlerFunc {
 		ctx.Status(http.StatusOK)
 	}
 }
+
+// Delete godoc
+// @Summary Eliminar dispositivo
+// @Description Elimina un dispositivo del sistema
+// @Tags Devices
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID del dispositivo"
+// @Success 200 "Dispositivo eliminado exitosamente"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Dispositivo no encontrado"
+// @Failure 409 "No se puede eliminar, existen dependencias"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /device/{id} [delete]
 func (c *deviceController) Delete() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
