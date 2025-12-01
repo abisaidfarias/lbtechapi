@@ -10,11 +10,11 @@ RUN go mod download
 
 COPY . .
 
-ENV PORT 8080
+ENV PORT=8080
 
 RUN go build
 
-RUN find . -name "*.go" -type f -delete
+RUN find . -name "*.go" -type f ! -path "./docs/*" -delete
 
 EXPOSE $PORT
 
