@@ -3,10 +3,9 @@ package database
 import (
 	"context"
 	"log"
-	"os"
 	"sync"
 
-	"github.com/joho/godotenv"
+	"github.com/abisaidfarias/lbtechapi/config"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -33,8 +32,7 @@ func GetInstance() *mongo.Database {
 //Conn on mongo
 func initDB() *mongo.Database {
 
-	godotenv.Load()
-	clientOpts := options.Client().ApplyURI(os.Getenv("MONGO_URI"))
+	clientOpts := options.Client().ApplyURI(config.GetValue("MONGO_URI"))
 
 	client, err := mongo.Connect(context.TODO(), clientOpts)
 	collation := options.Collation{
@@ -58,7 +56,7 @@ func initDB() *mongo.Database {
 		log.Fatal(err)
 	}
 
-	database := client.Database(os.Getenv("MONGO_DB"))
+	database := client.Database(config.GetValue("MONGO_DB"))
 
 	indexEmail := mongo.IndexModel{
 		Keys: bson.M{

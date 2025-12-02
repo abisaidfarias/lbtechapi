@@ -3,9 +3,9 @@ package middlewares
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 
+	"github.com/abisaidfarias/lbtechapi/config"
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -50,7 +50,7 @@ func AuthMiddleware() gin.HandlerFunc {
 
 func validateToken(tokenString string) (*models.AuthClaim, error) {
 
-	var JWTKey = []byte(os.Getenv("SECRET_KEY"))
+	var JWTKey = []byte(config.GetValue("SECRET_KEY"))
 	claims := &models.AuthClaim{}
 
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {

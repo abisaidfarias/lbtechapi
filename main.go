@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
+	"github.com/abisaidfarias/lbtechapi/config"
 	"github.com/abisaidfarias/lbtechapi/controllers"
 	"github.com/abisaidfarias/lbtechapi/middlewares"
 	"github.com/abisaidfarias/lbtechapi/repositories"
@@ -124,6 +124,14 @@ var (
 // @description Type "Bearer" followed by a space and JWT token.
 
 func main() {
+	// Load secrets from AWS Parameter Store
+	log.Println("Loading secrets...")
+	_, err := config.LoadSecrets()
+	if err != nil {
+		log.Fatal("Failed to load secrets:", err)
+	}
+	log.Println("✅ Secrets loaded successfully")
+
 	server := gin.Default()
 	server.Use(middlewares.CORSMiddleware())
 
@@ -139,7 +147,7 @@ func main() {
 		panic("error validation")
 	}
 	server.GET("/health", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{"status": fmt.Sprintf("server is up %s", os.Getenv("MONGO_DB"))})
+		ctx.JSON(http.StatusOK, gin.H{"status": fmt.Sprintf("server is up %s", config.GetValue("MONGO_DB"))})
 	})
 	
 	// Swagger endpoint
