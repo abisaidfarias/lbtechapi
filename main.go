@@ -21,6 +21,16 @@ import (
 	_ "github.com/abisaidfarias/lbtechapi/docs"
 )
 
+// init loads secrets before any global variables are initialized
+func init() {
+	log.Println("🔐 Loading secrets...")
+	_, err := config.LoadSecrets()
+	if err != nil {
+		log.Fatal("Failed to load secrets:", err)
+	}
+	log.Println("✅ Secrets loaded successfully")
+}
+
 var (
 	userRepository repositories.IUserRepository = repositories.NewUserRepository()
 	authService    services.IAuthService        = services.NewAuthService(userRepository)
@@ -124,14 +134,6 @@ var (
 // @description Type "Bearer" followed by a space and JWT token.
 
 func main() {
-	// Load secrets from AWS Parameter Store
-	log.Println("Loading secrets...")
-	_, err := config.LoadSecrets()
-	if err != nil {
-		log.Fatal("Failed to load secrets:", err)
-	}
-	log.Println("✅ Secrets loaded successfully")
-
 	server := gin.Default()
 	server.Use(middlewares.CORSMiddleware())
 
