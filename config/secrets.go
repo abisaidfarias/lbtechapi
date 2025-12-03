@@ -105,10 +105,14 @@ func getEnv(key, defaultValue string) string {
 	return value
 }
 
-// Get returns the loaded secrets
+// Get returns the loaded secrets (auto-loads if not already loaded)
 func Get() *Secrets {
 	if appSecrets == nil {
-		panic("Secrets not loaded. Call LoadSecrets() first.")
+		secrets, err := LoadSecrets()
+		if err != nil {
+			panic("Failed to load secrets: " + err.Error())
+		}
+		return secrets
 	}
 	return appSecrets
 }
