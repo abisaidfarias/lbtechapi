@@ -156,7 +156,51 @@ func NewUserController(us UserServiceInterface) *UserController {
 
 ## 4. INFRAESTRUCTURA
 
-### 4.1 Ambiente de Producción
+### 4.1 Optimización de Costos DEV (Ahorro ~$18-22/mes)
+**Estado**: Pendiente
+
+**Configuración actual**:
+- EC2: t2.micro (~$8/mes o gratis con Free Tier)
+- **Application Load Balancer (ALB): ~$18-22/mes** ← El más caro
+- Environment Type: LoadBalanced
+
+**Plan: Cambiar a Single Instance (sin Load Balancer)**
+
+**Pasos para implementar**:
+```bash
+# 1. Cambiar el tipo de environment a Single Instance
+aws elasticbeanstalk update-environment \
+  --environment-name lbtechapi \
+  --option-settings \
+    Namespace=aws:elasticbeanstalk:environment,OptionName=EnvironmentType,Value=SingleInstance
+
+# 2. Esperar a que termine (~5-10 min)
+eb status
+
+# 3. Verificar que funcione
+curl http://lbtechapi.us-east-1.elasticbeanstalk.com/health
+```
+
+**Consideraciones**:
+- ❌ Se pierde HTTPS con dominio personalizado (api.testkoi.com)
+- ❌ Sin alta disponibilidad (pero para DEV no importa)
+- ✅ Ahorro de ~$18-22/mes
+- ✅ Mismo funcionamiento para desarrollo
+
+**Si necesitas HTTPS después**:
+- Opción A: Instalar Let's Encrypt en la instancia (gratis)
+- Opción B: Usar CloudFlare como proxy (gratis, incluye SSL)
+
+**Costo estimado después del cambio**:
+| Recurso | Costo/mes |
+|---------|-----------|
+| EC2 t2.micro | $0-8 |
+| EBS | ~$1 |
+| **Total** | **~$1-9/mes** |
+
+---
+
+### 4.2 Ambiente de Producción
 **Estado**: Pendiente
 
 **Tareas**:
