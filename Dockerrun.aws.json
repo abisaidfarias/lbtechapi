@@ -1,25 +1,12 @@
 {
-    "AWSEBDockerrunVersion":"1",
-    "Image":{
-        "Name":"abisaid/lbtechapi:latest",
-        "Update":"true"
+    "AWSEBDockerrunVersion": "1",
+    "Image": {
+        "Name": "abisaid/lbtechapi:latest",
+        "Update": "true"
     },
-    "Ports":[
+    "Ports": [
         {
-            "ContainerPort":"8080"
+            "ContainerPort": "8080"
         }
-    ],
-    "Environment":[
-        {"Name":"USE_LOCAL_ENV","Value":"true"},
-        {"Name":"ENVIRONMENT","Value":"dev"},
-        {"Name":"SECRET_KEY"},
-        {"Name":"MONGO_URI"},
-        {"Name":"MONGO_DB"},
-        {"Name":"EMAIL_FROM"},
-        {"Name":"EMAIL_PASSWORD"},
-        {"Name":"EMAIL_PORT"},
-        {"Name":"SMTP_CLIENTE"},
-        {"Name":"MONTH_INTERVAL"}
     ]
-
 }
