@@ -38,7 +38,19 @@ func NewUserController(userService services.IUserService) IUserController {
 	}
 }
 
-// SignUp creates a new user
+// Create godoc
+// @Summary Crear nuevo usuario
+// @Description Crea un nuevo usuario en el sistema
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param user body request.User true "Datos del usuario"
+// @Success 201 {object} responses.User "Usuario creado exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /users [post]
 func (c *userController) Create() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -186,6 +198,18 @@ func (c *userController) Delete() gin.HandlerFunc {
 	}
 
 }
+
+// Get godoc
+// @Summary Listar usuarios
+// @Description Obtiene la lista de usuarios del sistema
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Success 200 {array} responses.User "Lista de usuarios"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /users [get]
 func (c *userController) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		userID := ctx.MustGet("userID").(string)

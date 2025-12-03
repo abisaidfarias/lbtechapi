@@ -35,7 +35,6 @@ func (r *brandRepository) Create(brand *models.Brand) (*primitive.ObjectID, erro
 	if err != nil {
 		return nil, err
 	}
-
 	id := res.InsertedID.(primitive.ObjectID)
 	return &id, nil
 }

@@ -1,10 +1,10 @@
 package queries
 
 import (
-	"os"
 	"strconv"
 	"time"
 
+	"github.com/abisaidfarias/lbtechapi/config"
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"go.mongodb.org/mongo-driver/bson"
@@ -444,7 +444,7 @@ func DeleteHomologationHierarchy(deviceId primitive.ObjectID,
 func IntervalTime() primitive.D {
 	var matchStage bson.D
 	var objectStage bson.M
-	monthInterval, _ := strconv.Atoi(os.Getenv("MONTH_INTERVAL"))
+	monthInterval, _ := strconv.Atoi(config.GetValue("MONTH_INTERVAL"))
 
 	startDate := time.Now().AddDate(0, -monthInterval, 0)
 	endDate := time.Now()

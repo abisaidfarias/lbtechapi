@@ -29,7 +29,20 @@ func NewCountryController(countryService services.ICountryService) ICountryContr
 	}
 }
 
-// Create creates a category
+// Create godoc
+// @Summary Crear nuevo país
+// @Description Crea un nuevo país en el sistema
+// @Tags Countries
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param country body request.Country true "Datos del país"
+// @Success 201 "País creado exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 409 {object} map[string]string "País duplicado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /country [post]
 func (c *countryController) Create() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -59,7 +72,17 @@ func (c *countryController) Create() gin.HandlerFunc {
 	}
 }
 
-// Get list all categories
+// Get godoc
+// @Summary Listar países
+// @Description Obtiene la lista de todos los países
+// @Tags Countries
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Success 200 {array} responses.Country "Lista de países"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /country [get]
 func (c *countryController) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -74,6 +97,21 @@ func (c *countryController) Get() gin.HandlerFunc {
 	}
 
 }
+
+// Delete godoc
+// @Summary Eliminar país
+// @Description Elimina un país del sistema
+// @Tags Countries
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID del país"
+// @Success 200 "País eliminado exitosamente"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "País no encontrado"
+// @Failure 409 "No se puede eliminar, existen homologaciones asociadas"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /country/{id} [delete]
 func (c *countryController) Delete() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -91,6 +129,23 @@ func (c *countryController) Delete() gin.HandlerFunc {
 		ctx.Status(http.StatusOK)
 	}
 }
+
+// Update godoc
+// @Summary Actualizar país
+// @Description Actualiza un país existente
+// @Tags Countries
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID del país"
+// @Param country body request.Country true "Datos actualizados del país"
+// @Success 200 "País actualizado exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "País no encontrado"
+// @Failure 409 {object} map[string]string "Conflicto con datos existentes"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /country/{id} [put]
 func (c *countryController) Update() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {

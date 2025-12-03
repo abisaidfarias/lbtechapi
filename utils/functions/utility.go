@@ -10,10 +10,10 @@ import (
 	"math/rand"
 	"net"
 	"net/smtp"
-	"os"
 	"strconv"
 	"time"
 
+	"github.com/abisaidfarias/lbtechapi/config"
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/database/queries"
 	"github.com/abisaidfarias/lbtechapi/models"
@@ -148,7 +148,7 @@ func ValidateUserCredentials(passwordHash string, password string) error {
 }
 func GenerateJWT(user *responses.AuthUser) string {
 
-	var JWTKey = []byte(os.Getenv("SECRET_KEY"))
+	var JWTKey = []byte(config.GetValue("SECRET_KEY"))
 	expirationTime := time.Now().Add(1000 * time.Hour)
 
 	claims := &models.AuthClaim{
@@ -178,11 +178,11 @@ func CompareHashAndPassword(hashedPassword string, incomingPassword []byte) bool
 }
 func SendNotifications(toList []string, body bytes.Buffer) {
 
-	from := os.Getenv("EMAIL_FROM")
-	password := os.Getenv("EMAIL_PASSWORD")
+	from := config.GetValue("EMAIL_FROM")
+	password := config.GetValue("EMAIL_PASSWORD")
 
-	smtpHost := os.Getenv("SMTP_CLIENTE")
-	smtpPort := os.Getenv("EMAIL_PORT")
+	smtpHost := config.GetValue("SMTP_CLIENTE")
+	smtpPort := config.GetValue("EMAIL_PORT")
 
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%s", smtpHost, smtpPort))
 	if err != nil {

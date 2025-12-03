@@ -27,7 +27,18 @@ func NewPrinterController(printerService services.IPrinterService) IPrinterContr
 	}
 }
 
-// Create creates a category
+// Create godoc
+// @Summary Crear nueva impresora
+// @Description Crea una nueva impresora en el sistema
+// @Tags Printers
+// @Accept json
+// @Produce json
+// @Param printer body request.Printer true "Datos de la impresora"
+// @Success 201 "Impresora creada exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 409 {object} map[string]string "Impresora duplicada"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /printer [post]
 func (c *printerController) Create() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -57,7 +68,15 @@ func (c *printerController) Create() gin.HandlerFunc {
 	}
 }
 
-// Get list all categories
+// Get godoc
+// @Summary Listar impresoras
+// @Description Obtiene la lista de todas las impresoras
+// @Tags Printers
+// @Accept json
+// @Produce json
+// @Success 200 {array} responses.Printer "Lista de impresoras"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /printer [get]
 func (c *printerController) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 

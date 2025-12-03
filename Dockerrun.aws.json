@@ -1,12 +1,12 @@
 {
-    "AWSEBDockerrunVersion":"1",
-    "Image":{
-        "Name":"abisaid/lbtechapi"
+    "AWSEBDockerrunVersion": "1",
+    "Image": {
+        "Name": "abisaid/lbtechapi:latest",
+        "Update": "true"
     },
-    "Ports":[
+    "Ports": [
         {
-            "ContainerPort":"8080"
+            "ContainerPort": "8080"
         }
     ]
-
 }

@@ -33,7 +33,20 @@ func NewTestPlanController(testPlanService services.ITestPlanService) ITestPlanC
 	}
 }
 
-// Create creates a Plan
+// Create godoc
+// @Summary Crear nuevo plan de pruebas
+// @Description Crea un nuevo plan de pruebas en el sistema
+// @Tags Test Plans
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param testPlan body request.TestPlan true "Datos del plan de pruebas"
+// @Success 201 "Plan de pruebas creado exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 409 {object} map[string]string "Plan duplicado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /test-plan [post]
 func (c *testPlanController) Create() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -61,7 +74,17 @@ func (c *testPlanController) Create() gin.HandlerFunc {
 	}
 }
 
-// Get list all Plans
+// Get godoc
+// @Summary Listar planes de pruebas
+// @Description Obtiene la lista de todos los planes de pruebas
+// @Tags Test Plans
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Success 200 {array} responses.TestPlan "Lista de planes de pruebas"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /test-plan [get]
 func (c *testPlanController) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -77,7 +100,20 @@ func (c *testPlanController) Get() gin.HandlerFunc {
 
 }
 
-// Create creates a Plan
+// GetById godoc
+// @Summary Obtener plan de pruebas por ID
+// @Description Obtiene un plan de pruebas específico por su ID
+// @Tags Test Plans
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID del plan de pruebas"
+// @Success 200 {object} responses.TestPlan "Plan de pruebas encontrado"
+// @Failure 400 {object} map[string]string "Parámetros inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Plan no encontrado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /test-plan/{id} [get]
 func (c *testPlanController) GetById() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -98,7 +134,22 @@ func (c *testPlanController) GetById() gin.HandlerFunc {
 	}
 }
 
-// Create creates a Plan
+// Update godoc
+// @Summary Actualizar plan de pruebas
+// @Description Actualiza un plan de pruebas existente
+// @Tags Test Plans
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID del plan de pruebas"
+// @Param testPlan body request.TestPlan true "Datos actualizados del plan"
+// @Success 200 "Plan actualizado exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Plan no encontrado"
+// @Failure 409 {object} map[string]string "Conflicto con datos existentes"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /test-plan/{id} [put]
 func (c *testPlanController) Update() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -130,7 +181,20 @@ func (c *testPlanController) Update() gin.HandlerFunc {
 	}
 }
 
-// Create creates a Plan
+// Delete godoc
+// @Summary Eliminar plan de pruebas
+// @Description Elimina un plan de pruebas del sistema
+// @Tags Test Plans
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID del plan de pruebas"
+// @Success 200 "Plan eliminado exitosamente"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Plan no encontrado"
+// @Failure 409 "No se puede eliminar, existen homologaciones asociadas"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /test-plan/{id} [delete]
 func (c *testPlanController) Delete() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {

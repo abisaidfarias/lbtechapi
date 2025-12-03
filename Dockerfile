@@ -10,11 +10,15 @@ RUN go mod download
 
 COPY . .
 
-ENV PORT 8080
+# Copy environment file for DEV (Parameter Store values baked in for Docker limitation)
+COPY .env.docker .env
+
+ENV PORT=8080
+ENV USE_LOCAL_ENV=true
 
 RUN go build
 
-RUN find . -name "*.go" -type f -delete
+RUN find . -name "*.go" -type f ! -path "./docs/*" -delete
 
 EXPOSE $PORT
 

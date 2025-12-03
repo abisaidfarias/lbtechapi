@@ -33,7 +33,20 @@ func NewTestCaseController(testCaseService services.ITestCaseService) ITestCaseC
 	}
 }
 
-// Create creates a case
+// Create godoc
+// @Summary Crear nuevo caso de prueba
+// @Description Crea un nuevo caso de prueba en el sistema
+// @Tags Test Cases
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param testCase body request.TestCase true "Datos del caso de prueba"
+// @Success 201 "Caso de prueba creado exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 409 {object} map[string]string "Caso de prueba duplicado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /test-cases [post]
 func (c *testCaseController) Create() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -62,7 +75,17 @@ func (c *testCaseController) Create() gin.HandlerFunc {
 	}
 }
 
-// Get list all cases
+// Get godoc
+// @Summary Listar casos de prueba
+// @Description Obtiene la lista de todos los casos de prueba
+// @Tags Test Cases
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Success 200 {array} responses.TestCase "Lista de casos de prueba"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /test-cases [get]
 func (c *testCaseController) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -78,7 +101,20 @@ func (c *testCaseController) Get() gin.HandlerFunc {
 
 }
 
-// Create creates a case
+// GetById godoc
+// @Summary Obtener caso de prueba por ID
+// @Description Obtiene un caso de prueba específico por su ID
+// @Tags Test Cases
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID del caso de prueba"
+// @Success 200 {object} responses.TestCase "Caso de prueba encontrado"
+// @Failure 400 {object} map[string]string "Parámetros inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Caso de prueba no encontrado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /test-cases/{id} [get]
 func (c *testCaseController) GetById() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -100,7 +136,22 @@ func (c *testCaseController) GetById() gin.HandlerFunc {
 	}
 }
 
-// Create creates a case
+// Update godoc
+// @Summary Actualizar caso de prueba
+// @Description Actualiza un caso de prueba existente
+// @Tags Test Cases
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID del caso de prueba"
+// @Param testCase body request.TestCase true "Datos actualizados del caso"
+// @Success 200 "Caso actualizado exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Caso no encontrado"
+// @Failure 409 {object} map[string]string "Conflicto con datos existentes"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /test-cases/{id} [put]
 func (c *testCaseController) Update() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -132,7 +183,22 @@ func (c *testCaseController) Update() gin.HandlerFunc {
 	}
 }
 
-// Create creates a case
+// Upgrade godoc
+// @Summary Actualizar versión de caso de prueba
+// @Description Actualiza la versión de un caso de prueba
+// @Tags Test Cases
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID del caso de prueba"
+// @Param testCase body request.TestCase true "Datos de la nueva versión"
+// @Success 200 "Versión actualizada exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Caso no encontrado"
+// @Failure 409 {object} map[string]string "Conflicto con datos existentes"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /test-cases/{id}/upgrade [put]
 func (c *testCaseController) Upgrade() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -164,7 +230,19 @@ func (c *testCaseController) Upgrade() gin.HandlerFunc {
 	}
 }
 
-// Create creates a case
+// Delete godoc
+// @Summary Eliminar caso de prueba
+// @Description Elimina un caso de prueba del sistema
+// @Tags Test Cases
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID del caso de prueba"
+// @Success 200 "Caso eliminado exitosamente"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Caso no encontrado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /test-cases/{id} [delete]
 func (c *testCaseController) Delete() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -181,6 +259,19 @@ func (c *testCaseController) Delete() gin.HandlerFunc {
 	}
 }
 
+// FileUpload godoc
+// @Summary Cargar archivo de casos de prueba
+// @Description Procesa y carga casos de prueba desde un archivo
+// @Tags Test Cases
+// @Accept multipart/form-data
+// @Produce json
+// @Security Bearer
+// @Param file formData file true "Archivo de casos de prueba"
+// @Success 201 {object} responses.TestCaseFileUpload "Casos cargados exitosamente"
+// @Failure 400 {object} map[string]string "Formato de archivo inválido"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /test-cases/fileUpload [post]
 func (c *testCaseController) FileUpload() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		fileHeader, err := ctx.FormFile("file")

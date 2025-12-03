@@ -1,0 +1,6 @@
+[
+    {
+      "name": "lbtechcontainer-dev",
+      "imageUri": "438758934896.dkr.ecr.us-east-1.amazonaws.com/lbtechapidev:latest"
+    }
+]

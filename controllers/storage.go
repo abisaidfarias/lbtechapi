@@ -29,7 +29,19 @@ func NewStorageController(storageService services.IStorageService) IStorageContr
 	}
 }
 
-// Create creates a category
+// UploadFile godoc
+// @Summary Cargar archivo
+// @Description Sube un archivo al storage
+// @Tags Storage
+// @Accept multipart/form-data
+// @Produce json
+// @Security Bearer
+// @Param file formData file true "Archivo a subir"
+// @Success 201 {object} map[string]string "URL del archivo subido"
+// @Failure 400 {object} map[string]string "Archivo inválido"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /upload/images [post]
 func (c *storageController) UploadFile() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {

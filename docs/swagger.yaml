@@ -1,0 +1,4773 @@
+basePath: /api/v1
+definitions:
+  request.AuthCredentials:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  request.Brand:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  request.Claim:
+    properties:
+      allow:
+        type: boolean
+      name:
+        type: string
+    required:
+    - allow
+    - name
+    type: object
+  request.Company:
+    properties:
+      _id:
+        type: string
+      address:
+        type: string
+      email:
+        type: string
+      logo_url:
+        type: string
+      name:
+        type: string
+    required:
+    - address
+    - email
+    - name
+    type: object
+  request.Configuration:
+    properties:
+      bands_5g:
+        items:
+          type: string
+        type: array
+      ca_combos:
+        items:
+          type: string
+        type: array
+      device_types:
+        items:
+          type: string
+        type: array
+      gsm_bands:
+        items:
+          type: string
+        type: array
+      lte_bands:
+        items:
+          type: string
+        type: array
+      memory_capabilities:
+        items:
+          type: string
+        type: array
+      rams:
+        items:
+          type: string
+        type: array
+      roms:
+        items:
+          type: string
+        type: array
+      usb_communications:
+        items:
+          type: string
+        type: array
+      wcdma_bands:
+        items:
+          type: string
+        type: array
+    type: object
+  request.Country:
+    properties:
+      band_5g:
+        items:
+          type: string
+        type: array
+      band_gsm:
+        items:
+          type: string
+        type: array
+      band_lte:
+        items:
+          type: string
+        type: array
+      band_wcdma:
+        items:
+          type: string
+        type: array
+      carrier_agg:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  request.Device:
+    properties:
+      band_5g:
+        items:
+          type: string
+        type: array
+      band_gsm:
+        items:
+          type: string
+        type: array
+      band_lte:
+        items:
+          type: string
+        type: array
+      band_wcdma:
+        items:
+          type: string
+        type: array
+      battery_capacity:
+        type: string
+      battery_inducted_charger:
+        type: boolean
+      battery_state:
+        type: string
+      battery_type:
+        type: string
+      brand:
+        type: string
+      camera_back:
+        type: string
+      camera_front:
+        type: string
+      carrier_agg:
+        items:
+          type: string
+        type: array
+      commercial_model:
+        type: string
+      communication_blutooth:
+        type: boolean
+      communication_gps:
+        type: boolean
+      communication_nfc:
+        type: boolean
+      communication_radio:
+        type: boolean
+      communication_usb:
+        type: string
+      communication_wlan:
+        type: boolean
+      display_resolution:
+        type: string
+      display_size:
+        type: string
+      display_type:
+        type: string
+      dual_sim:
+        type: string
+      e_sim:
+        type: boolean
+      hardware_code:
+        type: string
+      image_url:
+        type: string
+      ing_code:
+        type: string
+      logging_code:
+        type: string
+      memory_cpu:
+        type: string
+      memory_extended:
+        type: boolean
+      memory_ram:
+        type: string
+      memory_rom:
+        type: string
+      memory_type:
+        type: string
+      network_5g:
+        type: boolean
+      network_carrier_agg:
+        type: boolean
+      network_gsm:
+        type: boolean
+      network_lte:
+        type: boolean
+      network_vilte:
+        type: boolean
+      network_volte:
+        type: boolean
+      network_vowifi:
+        type: boolean
+      network_wcdma:
+        type: boolean
+      platform_chipset_brand:
+        type: string
+      platform_chipset_model:
+        type: string
+      platform_cpu:
+        type: string
+      platform_os:
+        type: string
+      platform_version:
+        type: string
+      sensor_accelerometer:
+        type: boolean
+      sensor_ambient_light:
+        type: boolean
+      sensor_fingerprint:
+        type: boolean
+      sensor_gyroscope:
+        type: boolean
+      sensor_hall:
+        type: boolean
+      sensor_proximity:
+        type: boolean
+      sim_supported:
+        type: string
+      sim_type:
+        type: string
+      software_code:
+        type: string
+      technical_model:
+        type: string
+      type:
+        type: string
+    required:
+    - brand
+    - commercial_model
+    - technical_model
+    - type
+    type: object
+  request.DeviceResume:
+    properties:
+      _id:
+        type: string
+      brand:
+        $ref: '#/definitions/request.Brand'
+      commercial_model:
+        type: string
+      image_url:
+        type: string
+      technical_model:
+        type: string
+      type:
+        type: string
+    type: object
+  request.DeviceTracking:
+    properties:
+      company:
+        type: string
+      device:
+        type: string
+      imei:
+        type: string
+      imeis:
+        items:
+          type: string
+        type: array
+      tracking_log:
+        $ref: '#/definitions/request.TrackingLog'
+      tracking_logs:
+        items:
+          $ref: '#/definitions/request.TrackingLog'
+        type: array
+    required:
+    - company
+    - device
+    type: object
+  request.DeviceTrackingExpanded:
+    properties:
+      _id:
+        type: string
+      company:
+        $ref: '#/definitions/request.Company'
+      device:
+        $ref: '#/definitions/request.DeviceResume'
+      imei:
+        type: string
+      tracking_logs:
+        items:
+          $ref: '#/definitions/request.TrackingLog'
+        type: array
+    type: object
+  request.Homologation:
+    properties:
+      approval_type_option:
+        type: string
+      brand:
+        type: string
+      carrier:
+        type: string
+      comment:
+        type: string
+      company:
+        type: string
+      completed_date:
+        type: string
+      country:
+        type: string
+      current_phase:
+        type: integer
+      device:
+        type: string
+      document_url:
+        type: string
+      hardware_version:
+        type: string
+      is_custom_test_plan:
+        type: boolean
+      is_internal_project:
+        type: boolean
+      notifications:
+        items:
+          type: string
+        type: array
+      os_version:
+        type: string
+      planning_date:
+        type: string
+      result_url:
+        type: string
+      sample_end_date:
+        type: string
+      sample_start_date:
+        type: string
+      software_version:
+        type: string
+      status:
+        type: integer
+      test_categories:
+        items:
+          type: string
+        type: array
+      test_end_date:
+        type: string
+      test_plan:
+        type: string
+      test_results:
+        items:
+          $ref: '#/definitions/request.TestResult'
+        type: array
+      test_start_date:
+        type: string
+      testing_type:
+        type: string
+      type:
+        type: integer
+      under_end_date:
+        type: string
+      under_start_date:
+        type: string
+    required:
+    - company
+    - country
+    - device
+    - os_version
+    type: object
+  request.HomologationResume:
+    properties:
+      approval_type_option:
+        type: string
+      carrier:
+        type: string
+      comment:
+        type: string
+      completed_date:
+        type: string
+      current_phase:
+        type: integer
+      document_url:
+        type: string
+      hardware_version:
+        type: string
+      isInternalProject:
+        type: boolean
+      os_version:
+        type: string
+      planning_date:
+        type: string
+      result_url:
+        type: string
+      sample_end_date:
+        type: string
+      sample_start_date:
+        type: string
+      software_version:
+        type: string
+      status:
+        type: integer
+      test_end_date:
+        type: string
+      test_start_date:
+        type: string
+      testing_type:
+        type: string
+      under_end_date:
+        type: string
+      under_start_date:
+        type: string
+    type: object
+  request.Hyperlink:
+    properties:
+      description:
+        type: string
+      link:
+        type: string
+    type: object
+  request.Location:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  request.Notification:
+    properties:
+      company:
+        type: string
+      notification_emails:
+        items:
+          $ref: '#/definitions/request.NotificationEmail'
+        type: array
+    required:
+    - company
+    type: object
+  request.NotificationEmail:
+    properties:
+      email:
+        type: string
+      lastName:
+        type: string
+      name:
+        type: string
+      type:
+        type: integer
+    type: object
+  request.Person:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  request.Printer:
+    properties:
+      PNconsumible:
+        type: string
+      SNconsumible:
+        type: string
+      level:
+        type: string
+      maxtoner:
+        type: string
+      modelo:
+        type: string
+      paginas:
+        type: string
+      rat:
+        type: string
+      remtoner:
+        type: string
+      serial:
+        type: string
+      ubicacion:
+        type: string
+    type: object
+  request.Profile:
+    properties:
+      claims:
+        items:
+          $ref: '#/definitions/request.Claim'
+        type: array
+      is_internal:
+        type: boolean
+      name:
+        type: string
+      userID:
+        type: string
+    required:
+    - claims
+    - name
+    type: object
+  request.SearchOption:
+    properties:
+      brands:
+        items:
+          type: string
+        type: array
+      commercial_models:
+        items:
+          type: string
+        type: array
+      countries:
+        items:
+          type: string
+        type: array
+      locations:
+        items:
+          type: string
+        type: array
+    type: object
+  request.TestCase:
+    properties:
+      category_id:
+        type: string
+      code:
+        type: string
+      description:
+        type: string
+      device:
+        type: string
+      expected:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        type: string
+    required:
+    - category_id
+    - code
+    - description
+    - expected
+    - name
+    type: object
+  request.TestCategory:
+    properties:
+      _id:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  request.TestFails:
+    properties:
+      test_results:
+        items:
+          $ref: '#/definitions/request.TestResult'
+        type: array
+      total_high:
+        type: integer
+      total_low:
+        type: integer
+      total_medium:
+        type: integer
+      total_test:
+        type: integer
+    type: object
+  request.TestPlan:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      test_categories:
+        items:
+          type: string
+        type: array
+      userID:
+        type: string
+    required:
+    - name
+    - test_categories
+    type: object
+  request.TestResult:
+    properties:
+      actual_result:
+        type: string
+      code:
+        type: string
+      description:
+        type: string
+      expected:
+        type: string
+      expected_result:
+        type: string
+      hyperlinks:
+        items:
+          $ref: '#/definitions/request.Hyperlink'
+        type: array
+      images:
+        items:
+          type: string
+        type: array
+      is_active:
+        type: boolean
+      issue_frequency:
+        type: integer
+      issue_severity:
+        type: integer
+      name:
+        type: string
+      overview_issue:
+        type: string
+      result:
+        type: integer
+      steps_to_reproduce:
+        type: string
+      test_category:
+        $ref: '#/definitions/request.TestCategory'
+      value:
+        type: string
+    type: object
+  request.TestResultResume:
+    properties:
+      actual_result:
+        type: string
+      code:
+        type: string
+      expected_result:
+        type: string
+      hyperlinks:
+        items:
+          $ref: '#/definitions/request.Hyperlink'
+        type: array
+      images:
+        items:
+          type: string
+        type: array
+      issue_frequency:
+        type: integer
+      issue_severity:
+        type: integer
+      name:
+        type: string
+      overview_issue:
+        type: string
+      result:
+        type: integer
+      steps_to_reproduce:
+        type: string
+      value:
+        type: string
+    required:
+    - code
+    type: object
+  request.TrackingLog:
+    properties:
+      comment:
+        type: string
+      country:
+        $ref: '#/definitions/request.Country'
+      document_url:
+        type: string
+      internal_responsible:
+        $ref: '#/definitions/request.UserResume'
+      location:
+        $ref: '#/definitions/request.Location'
+      person:
+        $ref: '#/definitions/request.Person'
+      tracking_date:
+        type: string
+    required:
+    - country
+    - internal_responsible
+    - location
+    - person
+    type: object
+  request.TrackingLogMultiple:
+    properties:
+      device_trackings:
+        items:
+          type: string
+        type: array
+      tracking_log:
+        $ref: '#/definitions/request.TrackingLog'
+    required:
+    - device_trackings
+    - tracking_log
+    type: object
+  request.User:
+    properties:
+      brands:
+        items:
+          type: string
+        type: array
+      clients:
+        items:
+          type: string
+        type: array
+      company:
+        type: string
+      countries:
+        items:
+          type: string
+        type: array
+      email:
+        type: string
+      is_internal:
+        type: boolean
+      lastName:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      profile:
+        type: string
+      user_id:
+        type: string
+    required:
+    - email
+    - lastName
+    - name
+    - password
+    - profile
+    type: object
+  request.UserResume:
+    properties:
+      email:
+        type: string
+      is_internal:
+        type: boolean
+      lastName:
+        type: string
+      name:
+        type: string
+      user_id:
+        type: string
+    required:
+    - email
+    - lastName
+    - name
+    type: object
+  responses.AuthResponse:
+    properties:
+      _id:
+        type: string
+      company:
+        type: string
+      email:
+        type: string
+      lastName:
+        type: string
+      name:
+        type: string
+      profile:
+        $ref: '#/definitions/responses.Profile'
+      token:
+        type: string
+    type: object
+  responses.Brand:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  responses.CategoryResult:
+    properties:
+      fail:
+        type: integer
+      na:
+        type: integer
+      no_run:
+        type: integer
+      pass:
+        type: integer
+      test_cases_resume:
+        items:
+          $ref: '#/definitions/responses.TestCaseResume'
+        type: array
+    type: object
+  responses.Claim:
+    properties:
+      allow:
+        type: boolean
+      name:
+        type: string
+    type: object
+  responses.Company:
+    properties:
+      _id:
+        type: string
+      address:
+        type: string
+      email:
+        type: string
+      logo_url:
+        type: string
+      name:
+        type: string
+    type: object
+  responses.Configuration:
+    properties:
+      bands5g:
+        items:
+          type: string
+        type: array
+      caCombos:
+        items:
+          type: string
+        type: array
+      deviceTypes:
+        items:
+          type: string
+        type: array
+      gsmBands:
+        items:
+          type: string
+        type: array
+      lteBands:
+        items:
+          type: string
+        type: array
+      memoryCapabilities:
+        items:
+          type: string
+        type: array
+      rams:
+        items:
+          type: string
+        type: array
+      roms:
+        items:
+          type: string
+        type: array
+      usbCommunications:
+        items:
+          type: string
+        type: array
+      wcdmaBands:
+        items:
+          type: string
+        type: array
+    type: object
+  responses.Country:
+    properties:
+      band_5g:
+        items:
+          type: string
+        type: array
+      band_gsm:
+        items:
+          type: string
+        type: array
+      band_lte:
+        items:
+          type: string
+        type: array
+      band_wcdma:
+        items:
+          type: string
+        type: array
+      carrier_agg:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  responses.DashboardInfo:
+    properties:
+      company_name:
+        type: string
+      logo_image:
+        type: string
+      month:
+        type: string
+      total_finished:
+        type: integer
+      total_ongoing:
+        type: integer
+      total_planning:
+        type: integer
+      total_sample:
+        type: integer
+    type: object
+  responses.DashboardReport:
+    properties:
+      band_5g:
+        items:
+          type: string
+        type: array
+      band_gsm:
+        items:
+          type: string
+        type: array
+      band_lte:
+        items:
+          type: string
+        type: array
+      band_wcdma:
+        items:
+          type: string
+        type: array
+      carrier_agg:
+        items:
+          type: string
+        type: array
+      countries:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+    type: object
+  responses.Detail:
+    properties:
+      createdDate:
+        type: string
+      id:
+        type: string
+      level:
+        type: string
+      location:
+        type: string
+      maxTonner:
+        type: string
+      pages:
+        type: string
+      percentageTonner:
+        type: string
+      pnconsumible:
+        type: string
+      rat:
+        type: string
+      remToner:
+        type: string
+      snconsumible:
+        type: string
+    type: object
+  responses.Device:
+    properties:
+      _id:
+        type: string
+      band_5g:
+        items:
+          type: string
+        type: array
+      band_gsm:
+        items:
+          type: string
+        type: array
+      band_lte:
+        items:
+          type: string
+        type: array
+      band_wcdma:
+        items:
+          type: string
+        type: array
+      battery_capacity:
+        type: string
+      battery_inducted_charger:
+        type: boolean
+      battery_state:
+        type: string
+      battery_type:
+        type: string
+      brand:
+        type: string
+      camera_back:
+        type: string
+      camera_front:
+        type: string
+      carrier_agg:
+        items:
+          type: string
+        type: array
+      commercial_model:
+        type: string
+      communication_blutooth:
+        type: boolean
+      communication_gps:
+        type: boolean
+      communication_nfc:
+        type: boolean
+      communication_radio:
+        type: boolean
+      communication_usb:
+        type: string
+      communication_wlan:
+        type: boolean
+      display_resolution:
+        type: string
+      display_size:
+        type: string
+      display_type:
+        type: string
+      dual_sim:
+        type: string
+      e_sim:
+        type: boolean
+      hardware_code:
+        type: string
+      image_url:
+        type: string
+      ing_code:
+        type: string
+      logging_code:
+        type: string
+      memory_cpu:
+        type: string
+      memory_extended:
+        type: boolean
+      memory_ram:
+        type: string
+      memory_rom:
+        type: string
+      memory_type:
+        type: string
+      network_5g:
+        type: boolean
+      network_carrier_agg:
+        type: boolean
+      network_gsm:
+        type: boolean
+      network_lte:
+        type: boolean
+      network_vilte:
+        type: boolean
+      network_volte:
+        type: boolean
+      network_vowifi:
+        type: boolean
+      network_wcdma:
+        type: boolean
+      platform_chipset_brand:
+        type: string
+      platform_chipset_model:
+        type: string
+      platform_cpu:
+        type: string
+      platform_os:
+        type: string
+      platform_version:
+        type: string
+      sensor_accelerometer:
+        type: boolean
+      sensor_ambient_light:
+        type: boolean
+      sensor_fingerprint:
+        type: boolean
+      sensor_gyroscope:
+        type: boolean
+      sensor_hall:
+        type: boolean
+      sensor_proximity:
+        type: boolean
+      sim_supported:
+        type: string
+      sim_type:
+        type: string
+      software_code:
+        type: string
+      technical_model:
+        type: string
+      type:
+        type: string
+    type: object
+  responses.DeviceTracking:
+    properties:
+      company:
+        type: string
+      device:
+        type: string
+      id:
+        type: string
+      imei:
+        type: string
+      trackingLogs:
+        items:
+          $ref: '#/definitions/responses.TrackingLog'
+        type: array
+    type: object
+  responses.Homologation:
+    properties:
+      _id:
+        type: string
+      approval_type_option:
+        type: string
+      carrier:
+        type: string
+      comment:
+        type: string
+      company:
+        type: string
+      completed_date:
+        type: string
+      country:
+        type: string
+      current_phase:
+        type: integer
+      device:
+        type: string
+      document_url:
+        type: string
+      hardware_version:
+        type: string
+      is_custom_test_plan:
+        type: boolean
+      is_internal_project:
+        type: boolean
+      os_version:
+        type: string
+      planning_date:
+        type: string
+      result_url:
+        type: string
+      sample_end_date:
+        type: string
+      sample_start_date:
+        type: string
+      software_version:
+        type: string
+      status:
+        type: integer
+      test_categories:
+        items:
+          $ref: '#/definitions/responses.TestCategory'
+        type: array
+      test_end_date:
+        type: string
+      test_plan:
+        type: string
+      test_start_date:
+        type: string
+      testResults:
+        items:
+          $ref: '#/definitions/responses.TestResult'
+        type: array
+      testing_type:
+        type: string
+      type:
+        type: integer
+      under_end_date:
+        type: string
+      under_start_date:
+        type: string
+    type: object
+  responses.HomologationReport:
+    properties:
+      categories:
+        additionalProperties:
+          $ref: '#/definitions/responses.CategoryResult'
+        type: object
+    type: object
+  responses.Hyperlink:
+    properties:
+      description:
+        type: string
+      link:
+        type: string
+    type: object
+  responses.Location:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  responses.Notification:
+    properties:
+      company:
+        type: string
+      id:
+        type: string
+      notification_emails:
+        items:
+          $ref: '#/definitions/responses.NotificationEmail'
+        type: array
+    type: object
+  responses.NotificationEmail:
+    properties:
+      email:
+        type: string
+      lastName:
+        type: string
+      name:
+        type: string
+      type:
+        type: integer
+    type: object
+  responses.Person:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  responses.Printer:
+    properties:
+      createdDate:
+        type: string
+      details:
+        items:
+          $ref: '#/definitions/responses.Detail'
+        type: array
+      id:
+        type: string
+      level:
+        type: string
+      location:
+        type: string
+      maxTonner:
+        type: string
+      modelo:
+        type: string
+      pages:
+        type: string
+      percentageTonner:
+        type: string
+      pnconsumible:
+        type: string
+      rat:
+        type: string
+      remToner:
+        type: string
+      serial:
+        type: string
+      snconsumible:
+        type: string
+    type: object
+  responses.Profile:
+    properties:
+      _id:
+        type: string
+      claims:
+        items:
+          $ref: '#/definitions/responses.Claim'
+        type: array
+      is_internal:
+        type: boolean
+      name:
+        type: string
+    type: object
+  responses.SearchOption:
+    properties:
+      brands:
+        items:
+          type: string
+        type: array
+      commercial_models:
+        items:
+          type: string
+        type: array
+      countries:
+        items:
+          type: string
+        type: array
+      locations:
+        items:
+          type: string
+        type: array
+    type: object
+  responses.StackedSerieChart:
+    properties:
+      description:
+        type: string
+      group:
+        type: string
+      x_axis:
+        items:
+          type: integer
+        type: array
+    type: object
+  responses.TestCase:
+    properties:
+      code:
+        type: string
+      description:
+        type: string
+      expected:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        type: string
+      test_category:
+        type: string
+    required:
+    - code
+    - description
+    - expected
+    - name
+    type: object
+  responses.TestCaseFileUpload:
+    properties:
+      invalid_rows:
+        items:
+          type: integer
+        type: array
+      total_rows:
+        type: integer
+    type: object
+  responses.TestCaseResume:
+    properties:
+      code:
+        type: string
+      name:
+        type: string
+      result:
+        type: integer
+    required:
+    - code
+    - name
+    type: object
+  responses.TestCategory:
+    properties:
+      _id:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+      test_cases:
+        items:
+          type: string
+        type: array
+    type: object
+  responses.TestCategoryExpanded:
+    properties:
+      _id:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+      test_cases:
+        items:
+          $ref: '#/definitions/responses.TestCase'
+        type: array
+    type: object
+  responses.TestPlan:
+    properties:
+      _id:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+      test_categories:
+        items:
+          type: string
+        type: array
+      total_category:
+        type: integer
+      total_test:
+        type: integer
+      userName:
+        type: string
+    type: object
+  responses.TestResult:
+    properties:
+      actual_result:
+        type: string
+      code:
+        type: string
+      description:
+        type: string
+      expected:
+        type: string
+      expected_result:
+        type: string
+      hyperlinks:
+        items:
+          $ref: '#/definitions/responses.Hyperlink'
+        type: array
+      images:
+        items:
+          type: string
+        type: array
+      is_active:
+        type: boolean
+      issue_frequency:
+        type: integer
+      issue_severity:
+        type: integer
+      name:
+        type: string
+      overview_issue:
+        type: string
+      result:
+        type: integer
+      steps_to_reproduce:
+        type: string
+      test_category:
+        $ref: '#/definitions/responses.TestCategory'
+      value:
+        type: string
+    type: object
+  responses.TimeChart:
+    properties:
+      brand_testing_chart:
+        additionalProperties:
+          items:
+            format: float64
+            type: number
+          type: array
+        type: object
+      brand_under_chart:
+        additionalProperties:
+          items:
+            format: float64
+            type: number
+          type: array
+        type: object
+      contry_testing_chart:
+        additionalProperties:
+          items:
+            format: float64
+            type: number
+          type: array
+        type: object
+      contry_under_chart:
+        additionalProperties:
+          items:
+            format: float64
+            type: number
+          type: array
+        type: object
+    type: object
+  responses.TrackingLog:
+    properties:
+      comment:
+        type: string
+      country:
+        $ref: '#/definitions/responses.Country'
+      document_url:
+        type: string
+      external_responsible:
+        type: string
+      internal_responsible:
+        $ref: '#/definitions/responses.User'
+      location:
+        $ref: '#/definitions/responses.Location'
+      person:
+        $ref: '#/definitions/responses.Person'
+      tracking_date:
+        type: string
+    type: object
+  responses.User:
+    properties:
+      brands:
+        items:
+          type: string
+        type: array
+      clients:
+        items:
+          type: string
+        type: array
+      company:
+        type: string
+      countries:
+        items:
+          type: string
+        type: array
+      email:
+        type: string
+      id:
+        type: string
+      isInternal:
+        type: boolean
+      lastName:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      profile:
+        type: string
+    type: object
+  responses.VolumeChart:
+    properties:
+      country_brand_chart:
+        $ref: '#/definitions/responses.VolumeCountryBrandChart'
+      type_brand_chart:
+        $ref: '#/definitions/responses.VolumeTypeBrandChart'
+    type: object
+  responses.VolumeCountryBrandChart:
+    properties:
+      brand:
+        items:
+          type: string
+        type: array
+      countries:
+        items:
+          type: string
+        type: array
+      stacked_serie:
+        items:
+          $ref: '#/definitions/responses.StackedSerieChart'
+        type: array
+    type: object
+  responses.VolumeTypeBrandChart:
+    properties:
+      brand:
+        items:
+          type: string
+        type: array
+      stacked_serie:
+        items:
+          $ref: '#/definitions/responses.StackedSerieChart'
+        type: array
+      types:
+        items:
+          type: string
+        type: array
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@lbtech.com
+    name: API Support
+  description: API para gestión de homologaciones y dispositivos
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: LBTech API
+  version: "1.0"
+paths:
+  /brand:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene la lista de todas las marcas
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de marcas
+          schema:
+            items:
+              $ref: '#/definitions/responses.Brand'
+            type: array
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Listar marcas
+      tags:
+      - Brands
+    post:
+      consumes:
+      - application/json
+      description: Crea una nueva marca en el sistema
+      parameters:
+      - description: Datos de la marca
+        in: body
+        name: brand
+        required: true
+        schema:
+          $ref: '#/definitions/request.Brand'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Marca creada exitosamente
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Marca duplicada
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Crear nueva marca
+      tags:
+      - Brands
+  /company:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene la lista de todas las compañías
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de compañías
+          schema:
+            items:
+              $ref: '#/definitions/responses.Company'
+            type: array
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Listar compañías
+      tags:
+      - Companies
+    post:
+      consumes:
+      - application/json
+      description: Crea una nueva compañía en el sistema
+      parameters:
+      - description: Datos de la compañía
+        in: body
+        name: company
+        required: true
+        schema:
+          $ref: '#/definitions/request.Company'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Compañía creada exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Compañía duplicada
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Crear nueva compañía
+      tags:
+      - Companies
+  /company/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Elimina una compañía del sistema
+      parameters:
+      - description: ID de la compañía
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Compañía eliminada exitosamente
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Compañía no encontrada
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: No se puede eliminar, existen dependencias
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Eliminar compañía
+      tags:
+      - Companies
+    put:
+      consumes:
+      - application/json
+      description: Actualiza una compañía existente
+      parameters:
+      - description: ID de la compañía
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Datos actualizados de la compañía
+        in: body
+        name: company
+        required: true
+        schema:
+          $ref: '#/definitions/request.Company'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Compañía actualizada exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Compañía no encontrada
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflicto con datos existentes
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Actualizar compañía
+      tags:
+      - Companies
+  /configuration:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene la lista de todas las configuraciones
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de configuraciones
+          schema:
+            items:
+              $ref: '#/definitions/responses.Configuration'
+            type: array
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Listar configuraciones
+      tags:
+      - Configurations
+    post:
+      consumes:
+      - application/json
+      description: Crea una nueva configuración en el sistema
+      parameters:
+      - description: Datos de la configuración
+        in: body
+        name: configuration
+        required: true
+        schema:
+          $ref: '#/definitions/request.Configuration'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Configuración creada exitosamente
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Configuración duplicada
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Crear nueva configuración
+      tags:
+      - Configurations
+  /country:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene la lista de todos los países
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de países
+          schema:
+            items:
+              $ref: '#/definitions/responses.Country'
+            type: array
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Listar países
+      tags:
+      - Countries
+    post:
+      consumes:
+      - application/json
+      description: Crea un nuevo país en el sistema
+      parameters:
+      - description: Datos del país
+        in: body
+        name: country
+        required: true
+        schema:
+          $ref: '#/definitions/request.Country'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: País creado exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: País duplicado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Crear nuevo país
+      tags:
+      - Countries
+  /country/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Elimina un país del sistema
+      parameters:
+      - description: ID del país
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: País eliminado exitosamente
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: País no encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: No se puede eliminar, existen homologaciones asociadas
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Eliminar país
+      tags:
+      - Countries
+    put:
+      consumes:
+      - application/json
+      description: Actualiza un país existente
+      parameters:
+      - description: ID del país
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Datos actualizados del país
+        in: body
+        name: country
+        required: true
+        schema:
+          $ref: '#/definitions/request.Country'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: País actualizado exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: País no encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflicto con datos existentes
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Actualizar país
+      tags:
+      - Countries
+  /dashboard:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene los datos del dashboard para el usuario
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Datos del dashboard
+          schema:
+            $ref: '#/definitions/responses.DashboardReport'
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Obtener dashboard
+      tags:
+      - Dashboard
+  /dashboard/info:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene la información general del dashboard
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Información general
+          schema:
+            $ref: '#/definitions/responses.DashboardInfo'
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Obtener información general del dashboard
+      tags:
+      - Dashboard
+  /device:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene la lista de todos los dispositivos
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de dispositivos
+          schema:
+            items:
+              $ref: '#/definitions/responses.Device'
+            type: array
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Listar dispositivos
+      tags:
+      - Devices
+    post:
+      consumes:
+      - application/json
+      description: Crea un nuevo dispositivo en el sistema
+      parameters:
+      - description: Datos del dispositivo
+        in: body
+        name: device
+        required: true
+        schema:
+          $ref: '#/definitions/request.Device'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Dispositivo creado exitosamente
+          schema:
+            $ref: '#/definitions/responses.Device'
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Dispositivo duplicado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Crear nuevo dispositivo
+      tags:
+      - Devices
+  /device-tracking:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene la lista de todos los trackings de dispositivos
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de trackings
+          schema:
+            items:
+              $ref: '#/definitions/responses.DeviceTracking'
+            type: array
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Listar trackings de dispositivos
+      tags:
+      - Device Tracking
+    post:
+      consumes:
+      - application/json
+      description: Crea un nuevo registro de tracking para un dispositivo
+      parameters:
+      - description: Datos del tracking
+        in: body
+        name: deviceTracking
+        required: true
+        schema:
+          $ref: '#/definitions/request.DeviceTracking'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Tracking creado exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Tracking duplicado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Crear nuevo tracking de dispositivo
+      tags:
+      - Device Tracking
+    put:
+      consumes:
+      - application/json
+      description: Agrega un nuevo log a un tracking existente
+      parameters:
+      - description: Datos del log
+        in: body
+        name: trackingLog
+        required: true
+        schema:
+          $ref: '#/definitions/request.TrackingLogMultiple'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Log agregado exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflicto
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Agregar log de tracking
+      tags:
+      - Device Tracking
+  /device-tracking/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Elimina un tracking de dispositivo
+      parameters:
+      - description: ID del tracking
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Tracking eliminado exitosamente
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Tracking no encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Eliminar tracking
+      tags:
+      - Device Tracking
+    put:
+      consumes:
+      - application/json
+      description: Actualiza un tracking de dispositivo existente
+      parameters:
+      - description: ID del tracking
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Datos actualizados
+        in: body
+        name: deviceTracking
+        required: true
+        schema:
+          $ref: '#/definitions/request.DeviceTrackingExpanded'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Tracking actualizado exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Tracking no encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflicto con datos existentes
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Actualizar tracking
+      tags:
+      - Device Tracking
+  /device-tracking/advanced-search:
+    post:
+      consumes:
+      - application/json
+      description: Realiza una búsqueda avanzada de trackings con filtros
+      parameters:
+      - description: Opciones de búsqueda
+        in: body
+        name: searchOption
+        required: true
+        schema:
+          $ref: '#/definitions/request.SearchOption'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Resultados de la búsqueda
+          schema:
+            items:
+              $ref: '#/definitions/responses.DeviceTracking'
+            type: array
+        "400":
+          description: Parámetros de búsqueda inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Búsqueda avanzada de trackings
+      tags:
+      - Device Tracking
+  /device-tracking/search-options:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene las opciones disponibles para la búsqueda avanzada
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Opciones de búsqueda
+          schema:
+            $ref: '#/definitions/responses.SearchOption'
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Obtener opciones de búsqueda avanzada
+      tags:
+      - Device Tracking
+  /device/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Elimina un dispositivo del sistema
+      parameters:
+      - description: ID del dispositivo
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Dispositivo eliminado exitosamente
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Dispositivo no encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: No se puede eliminar, existen dependencias
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Eliminar dispositivo
+      tags:
+      - Devices
+    get:
+      consumes:
+      - application/json
+      description: Obtiene un dispositivo específico por su ID
+      parameters:
+      - description: ID del dispositivo
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Dispositivo encontrado
+          schema:
+            $ref: '#/definitions/responses.Device'
+        "400":
+          description: Parámetros inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Dispositivo no encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Obtener dispositivo por ID
+      tags:
+      - Devices
+    put:
+      consumes:
+      - application/json
+      description: Actualiza un dispositivo existente
+      parameters:
+      - description: ID del dispositivo
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Datos actualizados del dispositivo
+        in: body
+        name: device
+        required: true
+        schema:
+          $ref: '#/definitions/request.Device'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Dispositivo actualizado exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Dispositivo no encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflicto con datos existentes
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Actualizar dispositivo
+      tags:
+      - Devices
+  /export/device-tracking:
+    post:
+      consumes:
+      - application/json
+      description: Exporta los trackings de dispositivos a un archivo Excel
+      parameters:
+      - description: Opciones de búsqueda/filtro
+        in: body
+        name: searchOption
+        required: true
+        schema:
+          $ref: '#/definitions/request.SearchOption'
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: Archivo Excel
+          schema:
+            type: file
+        "400":
+          description: Parámetros inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Exportar trackings a Excel
+      tags:
+      - Device Tracking
+  /export/fail-test/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Exporta las pruebas fallidas de una homologación a un archivo Excel
+      parameters:
+      - description: ID de la homologación
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: Archivo Excel
+          schema:
+            type: file
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Homologación no encontrada
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Exportar pruebas fallidas a Excel
+      tags:
+      - Homologations
+  /export/homologation:
+    get:
+      consumes:
+      - application/json
+      description: Exporta todas las homologaciones del usuario a un archivo Excel
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: Archivo Excel
+          schema:
+            type: file
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Exportar homologaciones a Excel
+      tags:
+      - Homologations
+  /homologation:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene la lista de todas las homologaciones
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de homologaciones
+          schema:
+            items:
+              $ref: '#/definitions/responses.Homologation'
+            type: array
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Listar homologaciones
+      tags:
+      - Homologations
+    post:
+      consumes:
+      - application/json
+      description: Crea una nueva homologación en el sistema
+      parameters:
+      - description: Datos de la homologación
+        in: body
+        name: homologation
+        required: true
+        schema:
+          $ref: '#/definitions/request.Homologation'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Homologación creada exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflicto - error con código
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Crear nueva homologación
+      tags:
+      - Homologations
+  /homologation/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Elimina una homologación del sistema
+      parameters:
+      - description: ID de la homologación
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Homologación eliminada exitosamente
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Homologación no encontrada
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Eliminar homologación
+      tags:
+      - Homologations
+    put:
+      consumes:
+      - application/json
+      description: Actualiza el resultado de una prueba en la homologación
+      parameters:
+      - description: ID de la homologación
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Resultado de la prueba
+        in: body
+        name: testResult
+        required: true
+        schema:
+          $ref: '#/definitions/request.TestResultResume'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Resultado actualizado exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Homologación no encontrada
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Actualizar resultado de prueba
+      tags:
+      - Homologations
+  /homologation/{id}/categories/test:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene las categorías de prueba con sus tests para una homologación
+      parameters:
+      - description: ID de la homologación
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Categorías con tests
+          schema:
+            items:
+              $ref: '#/definitions/responses.TestCategoryExpanded'
+            type: array
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Homologación no encontrada
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Obtener categorías con tests
+      tags:
+      - Homologations
+  /homologation/{id}/document:
+    put:
+      consumes:
+      - application/json
+      description: Actualiza los documentos asociados a una homologación
+      parameters:
+      - description: ID de la homologación
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Datos de los documentos
+        in: body
+        name: homologation
+        required: true
+        schema:
+          $ref: '#/definitions/request.Homologation'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Documentos actualizados exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Homologación no encontrada
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Actualizar documento de homologación
+      tags:
+      - Homologations
+  /homologation/{id}/failTest:
+    post:
+      consumes:
+      - application/json
+      description: Registra una nueva prueba fallida en la homologación
+      parameters:
+      - description: ID de la homologación
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Datos de la prueba fallida
+        in: body
+        name: testResult
+        required: true
+        schema:
+          $ref: '#/definitions/request.TestResultResume'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Prueba fallida registrada exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Homologación no encontrada
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Crear prueba fallida
+      tags:
+      - Homologations
+    put:
+      consumes:
+      - application/json
+      description: Actualiza las pruebas fallidas de una homologación
+      parameters:
+      - description: ID de la homologación
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Datos de las pruebas fallidas
+        in: body
+        name: testFails
+        required: true
+        schema:
+          $ref: '#/definitions/request.TestFails'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Pruebas fallidas actualizadas exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Homologación no encontrada
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflicto con datos existentes
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Actualizar pruebas fallidas
+      tags:
+      - Homologations
+  /homologation/{id}/homologation:
+    put:
+      consumes:
+      - application/json
+      description: Actualiza los datos de una homologación existente
+      parameters:
+      - description: ID de la homologación
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Datos actualizados de la homologación
+        in: body
+        name: homologation
+        required: true
+        schema:
+          $ref: '#/definitions/request.Homologation'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Homologación actualizada exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Homologación no encontrada
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflicto con datos existentes
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Actualizar homologación
+      tags:
+      - Homologations
+  /homologation/{id}/phase:
+    put:
+      consumes:
+      - application/json
+      description: Cambia la fase/estado de una homologación
+      parameters:
+      - description: ID de la homologación
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Datos de la fase
+        in: body
+        name: homologation
+        required: true
+        schema:
+          $ref: '#/definitions/request.HomologationResume'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Fase actualizada exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Homologación no encontrada
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Cambiar fase de homologación
+      tags:
+      - Homologations
+  /homologation/{id}/report:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene el reporte completo de una homologación
+      parameters:
+      - description: ID de la homologación
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Reporte de la homologación
+          schema:
+            $ref: '#/definitions/responses.HomologationReport'
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Homologación no encontrada
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Obtener reporte de homologación
+      tags:
+      - Homologations
+  /homologation/{id}/test/fails:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene las pruebas fallidas de una homologación
+      parameters:
+      - description: ID de la homologación
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de pruebas fallidas
+          schema:
+            items:
+              $ref: '#/definitions/responses.TestResult'
+            type: array
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Homologación no encontrada
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Obtener pruebas fallidas
+      tags:
+      - Homologations
+  /kpi/time/{start}/{end}:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene los datos de la gráfica de tiempos por rango de fechas
+      parameters:
+      - description: Fecha inicio (RFC3339)
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: Fecha fin (RFC3339)
+        in: path
+        name: end
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Datos de la gráfica
+          schema:
+            $ref: '#/definitions/responses.TimeChart'
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Formato de fecha inválido
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Obtener gráfica de tiempos
+      tags:
+      - KPI
+  /kpi/volume/{start}/{end}:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene los datos de la gráfica de volumen por rango de fechas
+      parameters:
+      - description: Fecha inicio (RFC3339)
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: Fecha fin (RFC3339)
+        in: path
+        name: end
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Datos de la gráfica
+          schema:
+            $ref: '#/definitions/responses.VolumeChart'
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Formato de fecha inválido
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Obtener gráfica de volumen
+      tags:
+      - KPI
+  /location:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene la lista de todas las ubicaciones
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de ubicaciones
+          schema:
+            items:
+              $ref: '#/definitions/responses.Location'
+            type: array
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Listar ubicaciones
+      tags:
+      - Locations
+    post:
+      consumes:
+      - application/json
+      description: Crea una nueva ubicación en el sistema
+      parameters:
+      - description: Datos de la ubicación
+        in: body
+        name: location
+        required: true
+        schema:
+          $ref: '#/definitions/request.Location'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Ubicación creada exitosamente
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Ubicación duplicada
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Crear nueva ubicación
+      tags:
+      - Locations
+  /notification:
+    post:
+      consumes:
+      - application/json
+      description: Crea una nueva notificación en el sistema
+      parameters:
+      - description: Datos de la notificación
+        in: body
+        name: notification
+        required: true
+        schema:
+          $ref: '#/definitions/request.Notification'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Notificación creada exitosamente
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Notificación duplicada
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Crear nueva notificación
+      tags:
+      - Notifications
+  /notification/company/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene las notificaciones asociadas a una compañía específica
+      parameters:
+      - description: ID de la compañía
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de notificaciones
+          schema:
+            items:
+              $ref: '#/definitions/responses.Notification'
+            type: array
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Obtener notificaciones por compañía
+      tags:
+      - Notifications
+  /person:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene la lista de todas las personas
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de personas
+          schema:
+            items:
+              $ref: '#/definitions/responses.Person'
+            type: array
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Listar personas
+      tags:
+      - Persons
+    post:
+      consumes:
+      - application/json
+      description: Crea una nueva persona en el sistema
+      parameters:
+      - description: Datos de la persona
+        in: body
+        name: person
+        required: true
+        schema:
+          $ref: '#/definitions/request.Person'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Persona creada exitosamente
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Persona duplicada
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Crear nueva persona
+      tags:
+      - Persons
+  /person/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Elimina una persona del sistema
+      parameters:
+      - description: ID de la persona
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Persona eliminada exitosamente
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Persona no encontrada
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: No se puede eliminar, existen dependencias
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Eliminar persona
+      tags:
+      - Persons
+    put:
+      consumes:
+      - application/json
+      description: Actualiza una persona existente
+      parameters:
+      - description: ID de la persona
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Datos actualizados de la persona
+        in: body
+        name: person
+        required: true
+        schema:
+          $ref: '#/definitions/request.Person'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Persona actualizada exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Persona no encontrada
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflicto con datos existentes
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Actualizar persona
+      tags:
+      - Persons
+  /printer:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene la lista de todas las impresoras
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de impresoras
+          schema:
+            items:
+              $ref: '#/definitions/responses.Printer'
+            type: array
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Listar impresoras
+      tags:
+      - Printers
+    post:
+      consumes:
+      - application/json
+      description: Crea una nueva impresora en el sistema
+      parameters:
+      - description: Datos de la impresora
+        in: body
+        name: printer
+        required: true
+        schema:
+          $ref: '#/definitions/request.Printer'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Impresora creada exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Impresora duplicada
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Crear nueva impresora
+      tags:
+      - Printers
+  /profile:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene la lista de todos los perfiles
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de perfiles
+          schema:
+            items:
+              $ref: '#/definitions/responses.Profile'
+            type: array
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Listar perfiles
+      tags:
+      - Profiles
+    post:
+      consumes:
+      - application/json
+      description: Crea un nuevo perfil de usuario en el sistema
+      parameters:
+      - description: Datos del perfil
+        in: body
+        name: profile
+        required: true
+        schema:
+          $ref: '#/definitions/request.Profile'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Perfil creado exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Perfil duplicado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Crear nuevo perfil
+      tags:
+      - Profiles
+  /profile/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Elimina un perfil del sistema
+      parameters:
+      - description: ID del perfil
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Perfil eliminado exitosamente
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Perfil no encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: No se puede eliminar, existen dependencias
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Eliminar perfil
+      tags:
+      - Profiles
+    get:
+      consumes:
+      - application/json
+      description: Obtiene un perfil específico por su ID
+      parameters:
+      - description: ID del perfil
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Perfil encontrado
+          schema:
+            $ref: '#/definitions/responses.Profile'
+        "400":
+          description: Parámetros inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Perfil no encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Obtener perfil por ID
+      tags:
+      - Profiles
+    put:
+      consumes:
+      - application/json
+      description: Actualiza un perfil existente
+      parameters:
+      - description: ID del perfil
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Datos actualizados del perfil
+        in: body
+        name: profile
+        required: true
+        schema:
+          $ref: '#/definitions/request.Profile'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Perfil actualizado exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Perfil no encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflicto con datos existentes
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Actualizar perfil
+      tags:
+      - Profiles
+  /sign-in:
+    post:
+      consumes:
+      - application/json
+      description: Autentica un usuario y devuelve un token JWT
+      parameters:
+      - description: Credenciales de usuario
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/request.AuthCredentials'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Usuario autenticado exitosamente
+          schema:
+            $ref: '#/definitions/responses.AuthResponse'
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Credenciales incorrectas
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Iniciar sesión
+      tags:
+      - Authentication
+  /test-cases:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene la lista de todos los casos de prueba
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de casos de prueba
+          schema:
+            items:
+              $ref: '#/definitions/responses.TestCase'
+            type: array
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Listar casos de prueba
+      tags:
+      - Test Cases
+    post:
+      consumes:
+      - application/json
+      description: Crea un nuevo caso de prueba en el sistema
+      parameters:
+      - description: Datos del caso de prueba
+        in: body
+        name: testCase
+        required: true
+        schema:
+          $ref: '#/definitions/request.TestCase'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Caso de prueba creado exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Caso de prueba duplicado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Crear nuevo caso de prueba
+      tags:
+      - Test Cases
+  /test-cases/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Elimina un caso de prueba del sistema
+      parameters:
+      - description: ID del caso de prueba
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Caso eliminado exitosamente
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Caso no encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Eliminar caso de prueba
+      tags:
+      - Test Cases
+    get:
+      consumes:
+      - application/json
+      description: Obtiene un caso de prueba específico por su ID
+      parameters:
+      - description: ID del caso de prueba
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Caso de prueba encontrado
+          schema:
+            $ref: '#/definitions/responses.TestCase'
+        "400":
+          description: Parámetros inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Caso de prueba no encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Obtener caso de prueba por ID
+      tags:
+      - Test Cases
+    put:
+      consumes:
+      - application/json
+      description: Actualiza un caso de prueba existente
+      parameters:
+      - description: ID del caso de prueba
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Datos actualizados del caso
+        in: body
+        name: testCase
+        required: true
+        schema:
+          $ref: '#/definitions/request.TestCase'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Caso actualizado exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Caso no encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflicto con datos existentes
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Actualizar caso de prueba
+      tags:
+      - Test Cases
+  /test-cases/{id}/upgrade:
+    put:
+      consumes:
+      - application/json
+      description: Actualiza la versión de un caso de prueba
+      parameters:
+      - description: ID del caso de prueba
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Datos de la nueva versión
+        in: body
+        name: testCase
+        required: true
+        schema:
+          $ref: '#/definitions/request.TestCase'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Versión actualizada exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Caso no encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflicto con datos existentes
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Actualizar versión de caso de prueba
+      tags:
+      - Test Cases
+  /test-cases/fileUpload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Procesa y carga casos de prueba desde un archivo
+      parameters:
+      - description: Archivo de casos de prueba
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Casos cargados exitosamente
+          schema:
+            $ref: '#/definitions/responses.TestCaseFileUpload'
+        "400":
+          description: Formato de archivo inválido
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Cargar archivo de casos de prueba
+      tags:
+      - Test Cases
+  /test-categories:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene la lista de todas las categorías de prueba
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de categorías
+          schema:
+            items:
+              $ref: '#/definitions/responses.TestCategory'
+            type: array
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Listar categorías de prueba
+      tags:
+      - Test Categories
+    post:
+      consumes:
+      - application/json
+      description: Crea una nueva categoría de prueba en el sistema
+      parameters:
+      - description: Datos de la categoría
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/request.TestCategory'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Categoría creada exitosamente
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Categoría duplicada
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Crear nueva categoría de prueba
+      tags:
+      - Test Categories
+  /test-plan:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene la lista de todos los planes de pruebas
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de planes de pruebas
+          schema:
+            items:
+              $ref: '#/definitions/responses.TestPlan'
+            type: array
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Listar planes de pruebas
+      tags:
+      - Test Plans
+    post:
+      consumes:
+      - application/json
+      description: Crea un nuevo plan de pruebas en el sistema
+      parameters:
+      - description: Datos del plan de pruebas
+        in: body
+        name: testPlan
+        required: true
+        schema:
+          $ref: '#/definitions/request.TestPlan'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Plan de pruebas creado exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Plan duplicado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Crear nuevo plan de pruebas
+      tags:
+      - Test Plans
+  /test-plan/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Elimina un plan de pruebas del sistema
+      parameters:
+      - description: ID del plan de pruebas
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Plan eliminado exitosamente
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Plan no encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: No se puede eliminar, existen homologaciones asociadas
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Eliminar plan de pruebas
+      tags:
+      - Test Plans
+    get:
+      consumes:
+      - application/json
+      description: Obtiene un plan de pruebas específico por su ID
+      parameters:
+      - description: ID del plan de pruebas
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Plan de pruebas encontrado
+          schema:
+            $ref: '#/definitions/responses.TestPlan'
+        "400":
+          description: Parámetros inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Plan no encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Obtener plan de pruebas por ID
+      tags:
+      - Test Plans
+    put:
+      consumes:
+      - application/json
+      description: Actualiza un plan de pruebas existente
+      parameters:
+      - description: ID del plan de pruebas
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Datos actualizados del plan
+        in: body
+        name: testPlan
+        required: true
+        schema:
+          $ref: '#/definitions/request.TestPlan'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Plan actualizado exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Plan no encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflicto con datos existentes
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Actualizar plan de pruebas
+      tags:
+      - Test Plans
+  /upload/images:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Sube un archivo al storage
+      parameters:
+      - description: Archivo a subir
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: URL del archivo subido
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Archivo inválido
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Cargar archivo
+      tags:
+      - Storage
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene la lista de usuarios del sistema
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de usuarios
+          schema:
+            items:
+              $ref: '#/definitions/responses.User'
+            type: array
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Listar usuarios
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Crea un nuevo usuario en el sistema
+      parameters:
+      - description: Datos del usuario
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/request.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Usuario creado exitosamente
+          schema:
+            $ref: '#/definitions/responses.User'
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Crear nuevo usuario
+      tags:
+      - Users
+schemes:
+- http
+- https
+securityDefinitions:
+  Bearer:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

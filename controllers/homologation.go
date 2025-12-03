@@ -41,7 +41,20 @@ func NewHomologationController(homologationService services.IHomologationService
 	}
 }
 
-// Create creates a category
+// Create godoc
+// @Summary Crear nueva homologación
+// @Description Crea una nueva homologación en el sistema
+// @Tags Homologations
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param homologation body request.Homologation true "Datos de la homologación"
+// @Success 201 "Homologación creada exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 409 {object} map[string]interface{} "Conflicto - error con código"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /homologation [post]
 func (c *homologationController) Create() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -74,6 +87,17 @@ func (c *homologationController) Create() gin.HandlerFunc {
 	}
 }
 
+// Get godoc
+// @Summary Listar homologaciones
+// @Description Obtiene la lista de todas las homologaciones
+// @Tags Homologations
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Success 200 {array} responses.Homologation "Lista de homologaciones"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /homologation [get]
 func (c *homologationController) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -88,6 +112,20 @@ func (c *homologationController) Get() gin.HandlerFunc {
 	}
 
 }
+
+// GetReport godoc
+// @Summary Obtener reporte de homologación
+// @Description Obtiene el reporte completo de una homologación
+// @Tags Homologations
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID de la homologación"
+// @Success 200 {object} responses.HomologationReport "Reporte de la homologación"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Homologación no encontrada"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /homologation/{id}/report [get]
 func (c *homologationController) GetReport() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -101,6 +139,20 @@ func (c *homologationController) GetReport() gin.HandlerFunc {
 		ctx.JSON(http.StatusOK, homologationReport)
 	}
 }
+
+// GetCategoriesWithTest godoc
+// @Summary Obtener categorías con tests
+// @Description Obtiene las categorías de prueba con sus tests para una homologación
+// @Tags Homologations
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID de la homologación"
+// @Success 200 {array} responses.TestCategoryExpanded "Categorías con tests"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Homologación no encontrada"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /homologation/{id}/categories/test [get]
 func (c *homologationController) GetCategoriesWithTest() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -115,6 +167,22 @@ func (c *homologationController) GetCategoriesWithTest() gin.HandlerFunc {
 	}
 
 }
+
+// UpdateTestResult godoc
+// @Summary Actualizar resultado de prueba
+// @Description Actualiza el resultado de una prueba en la homologación
+// @Tags Homologations
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID de la homologación"
+// @Param testResult body request.TestResultResume true "Resultado de la prueba"
+// @Success 200 "Resultado actualizado exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Homologación no encontrada"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /homologation/{id} [put]
 func (c *homologationController) UpdateTestResult() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -137,6 +205,22 @@ func (c *homologationController) UpdateTestResult() gin.HandlerFunc {
 	}
 
 }
+
+// PhaseChange godoc
+// @Summary Cambiar fase de homologación
+// @Description Cambia la fase/estado de una homologación
+// @Tags Homologations
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID de la homologación"
+// @Param homologation body request.HomologationResume true "Datos de la fase"
+// @Success 200 "Fase actualizada exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Homologación no encontrada"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /homologation/{id}/phase [put]
 func (c *homologationController) PhaseChange() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -159,6 +243,20 @@ func (c *homologationController) PhaseChange() gin.HandlerFunc {
 	}
 
 }
+
+// GetHomologationFails godoc
+// @Summary Obtener pruebas fallidas
+// @Description Obtiene las pruebas fallidas de una homologación
+// @Tags Homologations
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID de la homologación"
+// @Success 200 {array} responses.TestResult "Lista de pruebas fallidas"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Homologación no encontrada"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /homologation/{id}/test/fails [get]
 func (c *homologationController) GetHomologationFails() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -174,6 +272,22 @@ func (c *homologationController) GetHomologationFails() gin.HandlerFunc {
 	}
 
 }
+
+// CreateFailTest godoc
+// @Summary Crear prueba fallida
+// @Description Registra una nueva prueba fallida en la homologación
+// @Tags Homologations
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID de la homologación"
+// @Param testResult body request.TestResultResume true "Datos de la prueba fallida"
+// @Success 200 "Prueba fallida registrada exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Homologación no encontrada"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /homologation/{id}/failTest [post]
 func (c *homologationController) CreateFailTest() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -196,6 +310,22 @@ func (c *homologationController) CreateFailTest() gin.HandlerFunc {
 	}
 
 }
+
+// UpdateDocument godoc
+// @Summary Actualizar documento de homologación
+// @Description Actualiza los documentos asociados a una homologación
+// @Tags Homologations
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID de la homologación"
+// @Param homologation body request.Homologation true "Datos de los documentos"
+// @Success 200 "Documentos actualizados exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Homologación no encontrada"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /homologation/{id}/document [put]
 func (c *homologationController) UpdateDocument() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -218,6 +348,20 @@ func (c *homologationController) UpdateDocument() gin.HandlerFunc {
 	}
 
 }
+
+// Delete godoc
+// @Summary Eliminar homologación
+// @Description Elimina una homologación del sistema
+// @Tags Homologations
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID de la homologación"
+// @Success 200 "Homologación eliminada exitosamente"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Homologación no encontrada"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /homologation/{id} [delete]
 func (c *homologationController) Delete() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -231,6 +375,23 @@ func (c *homologationController) Delete() gin.HandlerFunc {
 		ctx.Status(http.StatusOK)
 	}
 }
+
+// Update godoc
+// @Summary Actualizar homologación
+// @Description Actualiza los datos de una homologación existente
+// @Tags Homologations
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID de la homologación"
+// @Param homologation body request.Homologation true "Datos actualizados de la homologación"
+// @Success 200 "Homologación actualizada exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Homologación no encontrada"
+// @Failure 409 {object} map[string]string "Conflicto con datos existentes"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /homologation/{id}/homologation [put]
 func (c *homologationController) Update() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -261,6 +422,18 @@ func (c *homologationController) Update() gin.HandlerFunc {
 		ctx.Status(http.StatusOK)
 	}
 }
+
+// ExportHomologation godoc
+// @Summary Exportar homologaciones a Excel
+// @Description Exporta todas las homologaciones del usuario a un archivo Excel
+// @Tags Homologations
+// @Accept json
+// @Produce application/octet-stream
+// @Security Bearer
+// @Success 200 {file} binary "Archivo Excel"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /export/homologation [get]
 func (c *homologationController) ExportHomologation() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -279,6 +452,20 @@ func (c *homologationController) ExportHomologation() gin.HandlerFunc {
 		ctx.Status(http.StatusOK)
 	}
 }
+
+// ExportFailTest godoc
+// @Summary Exportar pruebas fallidas a Excel
+// @Description Exporta las pruebas fallidas de una homologación a un archivo Excel
+// @Tags Homologations
+// @Accept json
+// @Produce application/octet-stream
+// @Security Bearer
+// @Param id path string true "ID de la homologación"
+// @Success 200 {file} binary "Archivo Excel"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Homologación no encontrada"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /export/fail-test/{id} [get]
 func (c *homologationController) ExportFailTest() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -297,6 +484,23 @@ func (c *homologationController) ExportFailTest() gin.HandlerFunc {
 		ctx.Status(http.StatusOK)
 	}
 }
+
+// UpdateFailTest godoc
+// @Summary Actualizar pruebas fallidas
+// @Description Actualiza las pruebas fallidas de una homologación
+// @Tags Homologations
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID de la homologación"
+// @Param testFails body request.TestFails true "Datos de las pruebas fallidas"
+// @Success 200 "Pruebas fallidas actualizadas exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 404 {object} map[string]string "Homologación no encontrada"
+// @Failure 409 {object} map[string]string "Conflicto con datos existentes"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /homologation/{id}/failTest [put]
 func (c *homologationController) UpdateFailTest() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
