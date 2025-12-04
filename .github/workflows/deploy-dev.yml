@@ -48,6 +48,6 @@ jobs:
           echo "⏳ Waiting for deployment to stabilize..."
           sleep 60
           echo "🔍 Checking health endpoint..."
-          curl -f http://lbtechapi.us-east-1.elasticbeanstalk.com/health || exit 1
+          curl -f http://api.testkoi.com/health || exit 1
           echo "✅ Deployment successful!"
 
