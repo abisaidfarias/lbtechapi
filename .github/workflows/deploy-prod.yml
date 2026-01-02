@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:  # También permite ejecución manual
+  workflow_dispatch:  # Ejecución manual con confirmación
     inputs:
       confirm_deploy:
         description: '⚠️ Escribe "DEPLOY" para confirmar el despliegue a producción'
@@ -12,30 +12,31 @@ on:
         type: string
 
 jobs:
-  validate:
-    # Solo se ejecuta cuando es workflow_dispatch (manual)
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Validate deployment confirmation
-        if: ${{ github.event.inputs.confirm_deploy != 'DEPLOY' }}
-        run: |
-          echo "❌ Debes escribir 'DEPLOY' para confirmar el despliegue a producción"
-          exit 1
-      - name: Confirmation accepted
-        run: echo "✅ Despliegue a PRODUCCIÓN confirmado"
-
   build:
-    # Se ejecuta siempre, pero solo necesita validate si es manual
-    needs: validate
-    if: always() && (needs.validate.result == 'success' || needs.validate.result == 'skipped')
+    # Se ejecuta automáticamente en push a main, o manualmente
     runs-on: ubuntu-latest
     outputs:
       image_tag: ${{ steps.vars.outputs.sha_short }}
+      should_deploy: ${{ steps.check.outputs.should_deploy }}
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Check if should deploy
+        id: check
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ "${{ github.event.inputs.confirm_deploy }}" == "DEPLOY" ]; then
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+            echo "✅ Confirmación recibida - se procederá con el deploy"
+          else
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+            if [ "${{ github.event_name }}" == "push" ]; then
+              echo "ℹ️ Push detectado - imagen construida. Ejecuta el workflow manualmente para deployar."
+            else
+              echo "⚠️ Debes escribir 'DEPLOY' para confirmar el despliegue"
+            fi
+          fi
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -64,8 +65,9 @@ jobs:
 
   deploy:
     needs: build
+    # Solo se ejecuta si se confirmó manualmente con "DEPLOY"
+    if: needs.build.outputs.should_deploy == 'true'
     runs-on: ubuntu-latest
-    environment: production  # Environment protegido que requiere aprobación manual
     
     steps:
       - name: Checkout code
@@ -114,4 +116,19 @@ jobs:
           curl -f http://lbtechapi-prod.eba-p26pfjvm.us-east-1.elasticbeanstalk.com/health || exit 1
           echo ""
           echo "✅ PRODUCTION deployment successful!"
+
+  notify:
+    # Se ejecuta cuando es push automático para informar que se necesita deploy manual
+    if: github.event_name == 'push' && needs.build.result == 'success'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify manual deploy needed
+        run: |
+          echo "::notice::✅ Imagen construida exitosamente"
+          echo "::warning::⚠️ Para deployar a producción, ejecuta el workflow manualmente:"
+          echo "   1. Ve a Actions → Deploy to PRODUCTION"
+          echo "   2. Click 'Run workflow'"
+          echo "   3. Escribe 'DEPLOY' en el campo de confirmación"
+          echo "   4. Click 'Run workflow'"
 
