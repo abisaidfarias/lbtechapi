@@ -11,7 +11,7 @@ RUN go mod download
 COPY . .
 
 ENV PORT=8080
-ENV USE_LOCAL_ENV=true
+ENV ENVIRONMENT=prod
 
 RUN go build
 
