@@ -1,0 +1,22 @@
+# CODEOWNERS - Archivos que requieren aprobación del dueño
+# Este archivo define quién debe aprobar cambios en archivos específicos
+
+# Todos los archivos críticos requieren aprobación del dueño
+* @abisaidfarias
+
+# Archivos de configuración críticos (requieren aprobación explícita)
+/.github/ @abisaidfarias
+/.github/workflows/ @abisaidfarias
+/Dockerfile @abisaidfarias
+/Dockerrun.aws.json @abisaidfarias
+/go.mod @abisaidfarias
+/go.sum @abisaidfarias
+
+# Archivos principales de la aplicación
+/main.go @abisaidfarias
+/config/ @abisaidfarias
+
+# Archivos de deployment
+/appspec.yml @abisaidfarias
+/buildspec_build.yml @abisaidfarias
+
