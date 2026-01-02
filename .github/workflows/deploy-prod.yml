@@ -1,7 +1,10 @@
 name: Deploy to PRODUCTION
 
 on:
-  workflow_dispatch:  # Solo ejecución manual - requiere ir a Actions y hacer click en "Run workflow"
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # También permite ejecución manual
     inputs:
       confirm_deploy:
         description: '⚠️ Escribe "DEPLOY" para confirmar el despliegue a producción'
@@ -10,6 +13,8 @@ on:
 
 jobs:
   validate:
+    # Solo se ejecuta cuando es workflow_dispatch (manual)
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Validate deployment confirmation
@@ -21,7 +26,9 @@ jobs:
         run: echo "✅ Despliegue a PRODUCCIÓN confirmado"
 
   build:
+    # Se ejecuta siempre, pero solo necesita validate si es manual
     needs: validate
+    if: always() && (needs.validate.result == 'success' || needs.validate.result == 'skipped')
     runs-on: ubuntu-latest
     outputs:
       image_tag: ${{ steps.vars.outputs.sha_short }}
@@ -58,6 +65,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    environment: production  # Environment protegido que requiere aprobación manual
     
     steps:
       - name: Checkout code
