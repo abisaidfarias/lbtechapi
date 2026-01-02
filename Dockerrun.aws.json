@@ -1,7 +1,7 @@
 {
     "AWSEBDockerrunVersion": "1",
     "Image": {
-        "Name": "abisaid/lbtechapi:latest",
+        "Name": "abisaid/lbtechapi:prod-latest",
         "Update": "true"
     },
     "Ports": [
