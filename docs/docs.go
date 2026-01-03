@@ -4861,6 +4861,70 @@ const docTemplate = `{
                 }
             }
         },
+        "/upgrade": {
+            "post": {
+                "description": "Este endpoint permite crear el primer usuario administrador del sistema. Solo puede ser utilizado si no existen usuarios previamente. Crea automáticamente un perfil \"Admin\" y una compañía \"Default Company\" si no existen.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Crear el primer usuario del sistema (solo una vez)",
+                "parameters": [
+                    {
+                        "description": "Datos del usuario",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.User"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Usuario creado exitosamente",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "No permitido - ya existen usuarios",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/upload/images": {
             "post": {
                 "security": [
@@ -6083,8 +6147,7 @@ const docTemplate = `{
                 "email",
                 "lastName",
                 "name",
-                "password",
-                "profile"
+                "password"
             ],
             "properties": {
                 "brands": {
@@ -6127,6 +6190,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "profile": {
+                    "description": "Opcional - se crea automáticamente si no existe",
                     "type": "string"
                 },
                 "user_id": {

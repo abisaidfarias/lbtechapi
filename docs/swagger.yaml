@@ -716,6 +716,7 @@ definitions:
       phone:
         type: string
       profile:
+        description: Opcional - se crea automáticamente si no existe
         type: string
       user_id:
         type: string
@@ -724,7 +725,6 @@ definitions:
     - lastName
     - name
     - password
-    - profile
     type: object
   request.UserResume:
     properties:
@@ -4646,6 +4646,50 @@ paths:
       summary: Actualizar plan de pruebas
       tags:
       - Test Plans
+  /upgrade:
+    post:
+      consumes:
+      - application/json
+      description: Este endpoint permite crear el primer usuario administrador del
+        sistema. Solo puede ser utilizado si no existen usuarios previamente. Crea
+        automáticamente un perfil "Admin" y una compañía "Default Company" si no existen.
+      parameters:
+      - description: Datos del usuario
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/request.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Usuario creado exitosamente
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: No permitido - ya existen usuarios
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Crear el primer usuario del sistema (solo una vez)
+      tags:
+      - Users
   /upload/images:
     post:
       consumes:
