@@ -67,13 +67,10 @@ func (s *userService) Create(userRequest *request.User) error {
 }
 func (s *userService) Upgrade(userRequest *request.User) error {
 	// Verificar si ya existen usuarios en el sistema
-	fmt.Printf("DEBUG: Verificando conteo de usuarios...\n")
 	userCount, err := s.userRepository.Count()
 	if err != nil {
-		fmt.Printf("DEBUG: Error al contar usuarios: %v\n", err)
 		return err
 	}
-	fmt.Printf("DEBUG: Usuarios encontrados: %d\n", userCount)
 
 	// Si ya hay usuarios, no permitir usar el endpoint upgrade
 	if userCount > 0 {
@@ -99,7 +96,6 @@ func (s *userService) Upgrade(userRequest *request.User) error {
 
 		if profileCount == 0 {
 			// Crear perfil por defecto
-			fmt.Printf("DEBUG: Creando perfil por defecto...\n")
 			defaultProfile := &models.Profile{
 				Name:       "Admin",
 				IsInternal: true,
@@ -107,10 +103,8 @@ func (s *userService) Upgrade(userRequest *request.User) error {
 			}
 			err = s.profileRepository.Create(defaultProfile)
 			if err != nil {
-				fmt.Printf("DEBUG: Error al crear perfil: %v\n", err)
 				return fmt.Errorf("failed to create default profile: %w", err)
 			}
-			fmt.Printf("DEBUG: Perfil creado con ID: %s\n", defaultProfile.ID.Hex())
 			profileID = defaultProfile.ID
 		} else {
 			// Si hay perfiles pero no se proporcionó uno, usar el primero disponible
@@ -156,7 +150,6 @@ func (s *userService) Upgrade(userRequest *request.User) error {
 
 		if companyCount == 0 {
 			// Crear compañía por defecto usando el email del usuario
-			fmt.Printf("DEBUG: Creando compañía por defecto...\n")
 			defaultCompany := &models.Company{
 				Name:    "Default Company",
 				Email:   userRequest.Email,
@@ -165,10 +158,8 @@ func (s *userService) Upgrade(userRequest *request.User) error {
 			}
 			err = s.companyRepository.Create(defaultCompany)
 			if err != nil {
-				fmt.Printf("DEBUG: Error al crear compañía: %v\n", err)
 				return fmt.Errorf("failed to create default company: %w", err)
 			}
-			fmt.Printf("DEBUG: Compañía creada con ID: %s\n", defaultCompany.ID.Hex())
 			companyID = defaultCompany.ID
 		} else {
 			// Si hay compañías pero no se proporcionó una, usar la primera disponible
@@ -181,22 +172,17 @@ func (s *userService) Upgrade(userRequest *request.User) error {
 	}
 
 	// Asignar los IDs obtenidos/creados al request
-	fmt.Printf("DEBUG: Asignando IDs - Profile: %s, Company: %s\n", profileID.Hex(), companyID.Hex())
 	userRequest.Profile = profileID.Hex()
 	userRequest.Company = companyID.Hex()
 
-	fmt.Printf("DEBUG: Mapeando usuario...\n")
 	user := mapping.UserRequestToUser(userRequest)
 
-	fmt.Printf("DEBUG: Creando usuario...\n")
 	err = s.userRepository.Create(user)
 
 	if err != nil {
-		fmt.Printf("DEBUG: Error al crear usuario: %v\n", err)
 		return err
 	}
 
-	fmt.Printf("DEBUG: Usuario creado exitosamente\n")
 	return nil
 }
 func (s *userService) Get(userID string) ([]*bson.M, error) {

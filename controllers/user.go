@@ -95,9 +95,6 @@ func (c *userController) Upgrade() gin.HandlerFunc {
 		err = c.userService.Upgrade(&user)
 
 		if err != nil {
-			// Log del error para debugging
-			fmt.Printf("Error en Upgrade: %v\n", err)
-			
 			if utils.ErrorDuplicatedData(err) {
 				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicated.Error()})
 				return
@@ -107,12 +104,7 @@ func (c *userController) Upgrade() gin.HandlerFunc {
 				ctx.JSON(http.StatusForbidden, gin.H{"error": utils.ErrorUpgradeNotAllowed.Error()})
 				return
 			}
-			// Asegurar que siempre se retorne un mensaje de error
-			errorMsg := err.Error()
-			if errorMsg == "" {
-				errorMsg = "internal server error"
-			}
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": errorMsg})
+			handleErrorResponse(ctx, err)
 			return
 		}
 
