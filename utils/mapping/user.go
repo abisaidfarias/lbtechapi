@@ -14,8 +14,16 @@ func UserRequestToUser(userRequest *request.User) *models.User {
 	brands := functions.StringsToObjectIds(userRequest.Brands)
 	countries := functions.StringsToObjectIds(userRequest.Countries)
 	clients := functions.StringsToObjectIds(userRequest.Clients)
-	company, _ := primitive.ObjectIDFromHex(userRequest.Company)
-	profile, _ := primitive.ObjectIDFromHex(userRequest.Profile)
+	
+	var company primitive.ObjectID
+	var profile primitive.ObjectID
+	
+	if userRequest.Company != "" {
+		company, _ = primitive.ObjectIDFromHex(userRequest.Company)
+	}
+	if userRequest.Profile != "" {
+		profile, _ = primitive.ObjectIDFromHex(userRequest.Profile)
+	}
 	return &models.User{
 		Email:        userRequest.Email,
 		PasswordHash: hashedPassword,
