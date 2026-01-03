@@ -19,6 +19,7 @@ type IProfileRepository interface {
 	GetByCompany(primitive.ObjectID) ([]*bson.M, error)
 	Update(string, *models.Profile) error
 	Delete(string) (bool, error)
+	Count() (int64, error)
 }
 
 type profileRepository struct {
@@ -33,11 +34,17 @@ var profileCollection = database.GetInstance().Collection("profiles")
 // Create a new tet case
 func (r *profileRepository) Create(profile *models.Profile) error {
 
-	_, err := profileCollection.InsertOne(context.TODO(), profile)
+	res, err := profileCollection.InsertOne(context.TODO(), profile)
 
 	if err != nil {
 		return err
 	}
+	
+	// Asignar el ID generado por MongoDB
+	if oid, ok := res.InsertedID.(primitive.ObjectID); ok {
+		profile.ID = oid
+	}
+	
 	return nil
 }
 
@@ -140,4 +147,13 @@ func (r *profileRepository) GetByCompany(companyID primitive.ObjectID) ([]*bson.
 	}
 	cursor.Close(context.TODO())
 	return profiles, nil
+}
+
+// Count returns the total number of profiles in the database
+func (r *profileRepository) Count() (int64, error) {
+	count, err := profileCollection.CountDocuments(context.TODO(), bson.M{})
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
 }

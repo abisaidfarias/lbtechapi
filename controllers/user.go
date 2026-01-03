@@ -91,11 +91,17 @@ func (c *userController) Upgrade() gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+		
 		err = c.userService.Upgrade(&user)
 
 		if err != nil {
 			if utils.ErrorDuplicatedData(err) {
 				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicated.Error()})
+				return
+			}
+			// Verificar si es el error de upgrade no permitido
+			if err.Error() == utils.ErrorUpgradeNotAllowed.Error() {
+				ctx.JSON(http.StatusForbidden, gin.H{"error": utils.ErrorUpgradeNotAllowed.Error()})
 				return
 			}
 			handleErrorResponse(ctx, err)

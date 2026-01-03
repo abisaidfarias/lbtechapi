@@ -36,9 +36,10 @@ Región: us-east-1
 ```
 Cluster: ProdCluster
 Database: lbtechprod
-URI: mongodb+srv://lbtechcloud_db_user:wWwkc37lbFLI8QLo@prodcluster.osehmw9.mongodb.net/lbtechprod?retryWrites=true&w=majority
-Usuario: lbtechcloud_db_user
-Password: wWwkc37lbFLI8QLo
+URI: mongodb+srv://USERNAME:***@prodcluster.osehmw9.mongodb.net/lbtechprod?retryWrites=true&w=majority
+Usuario: [Ver AWS Parameter Store: /lbtechapi/prod/MONGO_URI]
+Password: [Ver AWS Parameter Store: /lbtechapi/prod/MONGO_URI]
+⚠️ CREDENCIALES: Almacenadas en AWS Systems Manager Parameter Store
 ```
 
 ### Docker Hub
@@ -53,7 +54,7 @@ Imagen: abisaid/lbtechapi:prod-latest
 ```bash
 ENVIRONMENT=prod
 USE_LOCAL_ENV=true
-MONGO_URI=mongodb+srv://lbtechcloud_db_user:wWwkc37lbFLI8QLo@prodcluster.osehmw9.mongodb.net/lbtechprod?retryWrites=true&w=majority
+MONGO_URI=[Ver AWS Parameter Store: /lbtechapi/prod/MONGO_URI]
 MONGO_DB=lbtechprod
 SECRET_KEY=[copiar de DEV]
 EMAIL_FROM=soporte@lbtechnology-la.com
@@ -111,7 +112,7 @@ aws elasticbeanstalk update-environment \
 # O manualmente crear archivo JSON:
 cat > /tmp/prod-vars.json << 'EOF'
 [
-  {"Namespace": "aws:elasticbeanstalk:application:environment", "OptionName": "MONGO_URI", "Value": "mongodb+srv://lbtechcloud_db_user:wWwkc37lbFLI8QLo@prodcluster.osehmw9.mongodb.net/lbtechprod?retryWrites=true&w=majority"},
+  {"Namespace": "aws:elasticbeanstalk:application:environment", "OptionName": "MONGO_URI", "Value": "[OBTENER DE AWS PARAMETER STORE: /lbtechapi/prod/MONGO_URI]"},
   {"Namespace": "aws:elasticbeanstalk:application:environment", "OptionName": "MONGO_DB", "Value": "lbtechprod"},
   {"Namespace": "aws:elasticbeanstalk:application:environment", "OptionName": "ENVIRONMENT", "Value": "prod"},
   {"Namespace": "aws:elasticbeanstalk:application:environment", "OptionName": "USE_LOCAL_ENV", "Value": "true"},
@@ -194,7 +195,8 @@ IP: 0.0.0.0/0 (Allow from anywhere)
 ### Usuario Admin
 ```
 Email: abisaidfarias@gmail.com
-Password: @Mipassword123
+Password: [CREDENCIAL PRIVADA - No almacenar en código]
+⚠️ NUNCA commitear contraseñas en archivos
 ```
 
 ---

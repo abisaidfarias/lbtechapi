@@ -22,3 +22,9 @@ __debug_bin
 !.elasticbeanstalk/*.global.yml
 
 ai-documents/
+
+# Archivos con credenciales (NUNCA commitear)
+*_CONFIG.md
+*_SECRETS.md
+*_CREDENTIALS.md
+PROD_ENVIRONMENT_CONFIG.md

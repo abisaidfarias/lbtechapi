@@ -30,6 +30,7 @@ type IUserRepository interface {
 	GetUserByCompany(primitive.ObjectID) (*responses.User, error)
 	GetInternalUser() ([]*responses.User, error)
 	GetUsersByCompany(primitive.ObjectID) ([]*responses.User, error)
+	Count() (int64, error)
 }
 
 type userRepository struct {
@@ -258,4 +259,13 @@ func (r *userRepository) GetInternalUser() ([]*responses.User, error) {
 	}
 	cursor.Close(context.TODO())
 	return users, nil
+}
+
+// Count returns the total number of users in the database
+func (r *userRepository) Count() (int64, error) {
+	count, err := userCollection.CountDocuments(context.TODO(), bson.M{})
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
 }
