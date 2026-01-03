@@ -80,10 +80,18 @@ func (c *userController) Create() gin.HandlerFunc {
 	}
 }
 
-// Upgrade crea el primer usuario del sistema (solo una vez)
-// Este endpoint es de uso interno y no aparece en la documentación Swagger pública
-// por razones de seguridad. Solo puede ser utilizado si no existen usuarios previamente.
-// Crea automáticamente un perfil "Admin" y una compañía "Default Company" si no existen.
+// Upgrade godoc
+// @Summary Crear el primer usuario del sistema (solo una vez)
+// @Description Este endpoint permite crear el primer usuario administrador del sistema. Solo puede ser utilizado si no existen usuarios previamente. Crea automáticamente un perfil "Admin" y una compañía "Default Company" si no existen.
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param user body request.User true "Datos del usuario"
+// @Success 201 {object} map[string]string "Usuario creado exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 403 {object} map[string]string "No permitido - ya existen usuarios"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /upgrade [post]
 func (c *userController) Upgrade() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
