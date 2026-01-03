@@ -36,7 +36,10 @@ var (
 	authService    services.IAuthService        = services.NewAuthService(userRepository)
 	authController controllers.IAuthController  = controllers.NewAuthController(authService)
 
-	userService    services.IUserService       = services.NewUserService(userRepository)
+	profileRepository repositories.IProfileRepository = repositories.NewProfileRepository()
+	companyRepository repositories.ICompanyRepository = repositories.NewCompanyRepository()
+	
+	userService    services.IUserService       = services.NewUserService(userRepository, profileRepository, companyRepository)
 	userController controllers.IUserController = controllers.NewUserController(userService)
 
 	testCategoryRepository repositories.ITestCategoryRepository = repositories.NewTestCategoryRepository()
@@ -47,11 +50,8 @@ var (
 	testCaseService    services.ITestCaseService        = services.NewTestCaseService(testCaseRepository, testCategoryService)
 	testCaseController controllers.ITestCaseController  = controllers.NewTestCaseController(testCaseService)
 
-	profileRepository repositories.IProfileRepository = repositories.NewProfileRepository()
 	profileService    services.IProfileService        = services.NewProfileService(profileRepository, userRepository)
 	profileController controllers.IProfileController  = controllers.NewProfileController(profileService)
-
-	companyRepository repositories.ICompanyRepository = repositories.NewCompanyRepository()
 	companyService    services.ICompanyService        = services.NewCompanyService(companyRepository, homologationRepository,
 		deviceTrackingRepository, userRepository)
 	companyController controllers.ICompanyController = controllers.NewCompanyController(companyService)

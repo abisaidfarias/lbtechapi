@@ -18,6 +18,7 @@ type ICompanyRepository interface {
 	Update(primitive.ObjectID, *models.Company) error
 	Delete(primitive.ObjectID) error
 	GetById(string) (*responses.Company, error)
+	Count() (int64, error)
 }
 
 type companyRepository struct {
@@ -32,11 +33,17 @@ var companyCollection = database.GetInstance().Collection("companies")
 // Create a new tet case
 func (r *companyRepository) Create(company *models.Company) error {
 
-	_, err := companyCollection.InsertOne(context.TODO(), company)
+	res, err := companyCollection.InsertOne(context.TODO(), company)
 
 	if err != nil {
 		return err
 	}
+	
+	// Asignar el ID generado por MongoDB
+	if oid, ok := res.InsertedID.(primitive.ObjectID); ok {
+		company.ID = oid
+	}
+	
 	return nil
 }
 
@@ -92,4 +99,13 @@ func (r *companyRepository) GetById(id string) (*responses.Company, error) {
 	}
 
 	return &result, nil
+}
+
+// Count returns the total number of companies in the database
+func (r *companyRepository) Count() (int64, error) {
+	count, err := companyCollection.CountDocuments(context.TODO(), bson.M{})
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
 }
