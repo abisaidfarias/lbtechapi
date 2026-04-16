@@ -61,6 +61,9 @@ func NewDeviceTrackingService(deviceTrackingRepository repositories.IDeviceTrack
 // Create creates a new cateogry
 func (s *deviceTrackingService) Create(deviceTrackingRequest *request.DeviceTracking, userID string) error {
 
+	if err := enums.ValidateProcessTypes(deviceTrackingRequest.TrackingLog.ProcessTypes); err != nil {
+		return err
+	}
 	for _, imei := range deviceTrackingRequest.Imeis {
 		deviceTracking := mapping.DeviceTrackinRequestToDeviceTracking(deviceTrackingRequest, imei)
 		err := s.deviceTrackingRepository.Create(deviceTracking)
@@ -123,6 +126,9 @@ func (s *deviceTrackingService) Get(userID string) ([]responses.Tracking, error)
 	return trakings, nil
 }
 func (s *deviceTrackingService) AddTrakingLog(trackingLogReq *request.TrackingLogMultiple, userID string) error {
+	if err := enums.ValidateProcessTypes(trackingLogReq.TrackingLog.ProcessTypes); err != nil {
+		return err
+	}
 	var devicesTrackingsId []string
 	for _, id := range trackingLogReq.DeviceTrackings {
 		deviceTranckingID, _ := primitive.ObjectIDFromHex(id)
@@ -153,6 +159,11 @@ func (s *deviceTrackingService) Delete(ids string) error {
 }
 func (s *deviceTrackingService) Update(id string, deviceTrackingRequest *request.DeviceTrackingExpanded) error {
 
+	for _, tl := range deviceTrackingRequest.TrackingLogs {
+		if err := enums.ValidateProcessTypes(tl.ProcessTypes); err != nil {
+			return err
+		}
+	}
 	deviceTracking := mapping.DeviceTrackinRequestToDeviceTrackingUpdate(deviceTrackingRequest)
 
 	err := s.deviceTrackingRepository.Update(id, deviceTracking)
@@ -297,6 +308,8 @@ func exportFileDeviceTracking(deviceTrackings []*responses.DeviceTrackingExpande
 		year, month, day := lastTrackingRegister.TrackingDate.Date()
 		cell, _ = excelize.CoordinatesToCellName(9, index+2)
 		file.SetCellValue(utils.PAGE, cell, fmt.Sprintf("%d/%d/%d", day, month, year))
+		cell, _ = excelize.CoordinatesToCellName(10, index+2)
+		file.SetCellValue(utils.PAGE, cell, strings.Join(lastTrackingRegister.ProcessTypes, ", "))
 	}
 
 	var b bytes.Buffer
