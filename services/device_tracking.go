@@ -82,7 +82,8 @@ func (s *deviceTrackingService) Create(deviceTrackingRequest *request.DeviceTrac
 		deviceTrackingRequest.TrackingLog.Person.Name,
 		deviceTrackingRequest.TrackingLog.Comment,
 		deviceTrackingRequest.TrackingLog.Location.Name, companyId,
-		deviceTrackingRequest.TrackingLog.TrackingDate, utils.CREATE, userID)
+		deviceTrackingRequest.TrackingLog.TrackingDate, deviceTrackingRequest.TrackingLog.ProcessTypes,
+		utils.CREATE, userID)
 
 	return nil
 }
@@ -452,7 +453,7 @@ func exportFileDeviceTracking(deviceTrackings []*responses.DeviceTrackingExpande
 func (s *deviceTrackingService) DeviceTrackingNotification(imeis []string,
 	country string, deviceId string, internal string,
 	external string, comment string, location string,
-	companyId primitive.ObjectID, date time.Time, key string, userID string) {
+	companyId primitive.ObjectID, date time.Time, processTypes []string, key string, userID string) {
 
 	user, err := s.userRepository.GetByID(userID)
 	if err != nil {
@@ -495,7 +496,7 @@ func (s *deviceTrackingService) DeviceTrackingNotification(imeis []string,
 	body, err := functions.GetTrackingBodyMessage(subject, mainMessage, company.Name, brand.Name,
 		device.TechnicalModel, device.CommercialModel, internal,
 		external, country, location, imeis,
-		comment, date, utils.TEMPLATE_TRACKING_PATH, userName)
+		comment, date, processTypes, utils.TEMPLATE_TRACKING_PATH, userName)
 
 	if err != nil {
 		return
@@ -520,7 +521,8 @@ func (s *deviceTrackingService) MoveTrackingNotification(deviceTrackingsId []str
 		s.DeviceTrackingNotification(imeis, trackingLog.Country.Name,
 			deviceId, name, trackingLog.Person.Name,
 			trackingLog.Comment, trackingLog.Location.Name,
-			companyId, trackingLog.TrackingDate, utils.TRACKING_MOVE, userID)
+			companyId, trackingLog.TrackingDate, trackingLog.ProcessTypes,
+			utils.TRACKING_MOVE, userID)
 	}
 }
 func isContained(trackingLog responses.TrackingLog, locations []string, countries []string) bool {

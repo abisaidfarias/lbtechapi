@@ -1,39 +1,96 @@
-<!-- template.html -->
 <!DOCTYPE html>
 <html>
-<body>
+<body style="margin:0; padding:0; background-color:#f3f5f8; font-family:Arial, Helvetica, sans-serif; color:#1f2937;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f3f5f8; padding:24px 0;">
+    <tr>
+        <td align="center">
+            <table role="presentation" width="760" cellspacing="0" cellpadding="0" style="width:760px; max-width:760px; background-color:#ffffff; border:1px solid #e5e7eb; border-radius:10px;">
+                <tr>
+                    <td style="background-color:#111827; color:#ffffff; padding:16px 20px; border-radius:10px 10px 0 0;">
+                        <div style="font-size:18px; font-weight:700;">LB Technology</div>
+                        <div style="font-size:13px; margin-top:4px;">Device Tracking Notification</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:20px;">
+                        <p style="margin:0 0 16px 0; font-size:14px; line-height:1.5;">{{.MainMessage}}</p>
 
-<p>{{.MainMessage}}</p>
-
-<p><strong>Client:</strong> {{.Client}}</p>
-
-<p><strong>Country:</strong> {{.Country}}</p>
-
-<p><strong>Brand:</strong> {{.Brand}}</p>
-
-<p><strong>Technical Model:</strong> {{.TechnicalModel}}</p>
-
-<p><strong>Commercial Model:</strong> {{.CommercialModel}}</p>
-
-<p><strong>LB Responsible:</strong> {{.Responsible}}</p>
-
-<p><strong>External Responsible:</strong> {{.ExternalResponsible}}</p>
-
-<p><strong>New Location:</strong> {{.Location}}</p>
-
-<p><strong>IMEI(s):</strong></p>
-<ul>
-    {{ range .IMEIs }}
-        <li> {{ . }} </li>
-    {{ end }}
-</ul>
-
-<p><strong>Comments:</strong> {{.Comments}}</p>
-
-<p><strong>Registration Date: </strong>{{.Date}}</p>
-
-<p><strong>Responsible: </strong>{{.UserName}}</p>
-
-<h3>Team LB Technology</h3>
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse; border:1px solid #e5e7eb;">
+                            <tr>
+                                <td style="width:220px; background-color:#f9fafb; border:1px solid #e5e7eb; padding:10px; font-weight:600;">Client</td>
+                                <td style="border:1px solid #e5e7eb; padding:10px;">{{.Client}}</td>
+                            </tr>
+                            <tr>
+                                <td style="background-color:#f9fafb; border:1px solid #e5e7eb; padding:10px; font-weight:600;">Country</td>
+                                <td style="border:1px solid #e5e7eb; padding:10px;">{{.Country}}</td>
+                            </tr>
+                            <tr>
+                                <td style="background-color:#f9fafb; border:1px solid #e5e7eb; padding:10px; font-weight:600;">Brand</td>
+                                <td style="border:1px solid #e5e7eb; padding:10px;">{{.Brand}}</td>
+                            </tr>
+                            <tr>
+                                <td style="background-color:#f9fafb; border:1px solid #e5e7eb; padding:10px; font-weight:600;">Technical Model</td>
+                                <td style="border:1px solid #e5e7eb; padding:10px;">{{.TechnicalModel}}</td>
+                            </tr>
+                            <tr>
+                                <td style="background-color:#f9fafb; border:1px solid #e5e7eb; padding:10px; font-weight:600;">Commercial Model</td>
+                                <td style="border:1px solid #e5e7eb; padding:10px;">{{.CommercialModel}}</td>
+                            </tr>
+                            <tr>
+                                <td style="background-color:#f9fafb; border:1px solid #e5e7eb; padding:10px; font-weight:600;">LB Responsible</td>
+                                <td style="border:1px solid #e5e7eb; padding:10px;">{{.Responsible}}</td>
+                            </tr>
+                            <tr>
+                                <td style="background-color:#f9fafb; border:1px solid #e5e7eb; padding:10px; font-weight:600;">External Responsible</td>
+                                <td style="border:1px solid #e5e7eb; padding:10px;">{{.ExternalResponsible}}</td>
+                            </tr>
+                            <tr>
+                                <td style="background-color:#f9fafb; border:1px solid #e5e7eb; padding:10px; font-weight:600;">New Location</td>
+                                <td style="border:1px solid #e5e7eb; padding:10px;">{{.Location}}</td>
+                            </tr>
+                            <tr>
+                                <td style="background-color:#f9fafb; border:1px solid #e5e7eb; padding:10px; font-weight:600; vertical-align:top;">Process Type(s)</td>
+                                <td style="border:1px solid #e5e7eb; padding:10px;">
+                                    {{ if .ProcessTypes }}
+                                        {{ range .ProcessTypes }}
+                                            <div style="margin:0 0 4px 0;">• {{ . }}</div>
+                                        {{ end }}
+                                    {{ else }}
+                                        <div>N/A</div>
+                                    {{ end }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="background-color:#f9fafb; border:1px solid #e5e7eb; padding:10px; font-weight:600; vertical-align:top;">IMEI(s)</td>
+                                <td style="border:1px solid #e5e7eb; padding:10px;">
+                                    {{ range .IMEIs }}
+                                        <div style="margin:0 0 4px 0;">• {{ . }}</div>
+                                    {{ end }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="background-color:#f9fafb; border:1px solid #e5e7eb; padding:10px; font-weight:600;">Comments</td>
+                                <td style="border:1px solid #e5e7eb; padding:10px;">{{.Comments}}</td>
+                            </tr>
+                            <tr>
+                                <td style="background-color:#f9fafb; border:1px solid #e5e7eb; padding:10px; font-weight:600;">Registration Date</td>
+                                <td style="border:1px solid #e5e7eb; padding:10px;">{{.Date}}</td>
+                            </tr>
+                            <tr>
+                                <td style="background-color:#f9fafb; border:1px solid #e5e7eb; padding:10px; font-weight:600;">Responsible</td>
+                                <td style="border:1px solid #e5e7eb; padding:10px;">{{.UserName}}</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:14px 20px; background-color:#f9fafb; border-top:1px solid #e5e7eb; color:#374151; font-size:13px; border-radius:0 0 10px 10px;">
+                        Team LB Technology
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
 </body>
 </html>

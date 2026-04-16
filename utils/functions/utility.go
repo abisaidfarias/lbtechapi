@@ -323,7 +323,7 @@ func GetTrackingBodyMessage(subject string, mainMessge string, client string,
 	brand string, technicalModel string, commercialModel string,
 	responsible string, externalResponsible string, country string,
 	location string, imeis []string, comment string, date time.Time,
-	templatePath string, userName string) (bytes.Buffer, error) {
+	processTypes []string, templatePath string, userName string) (bytes.Buffer, error) {
 
 	xxx := []string{"India", "Canada", "Japan", "Germany", "Italy"}
 
@@ -349,6 +349,7 @@ func GetTrackingBodyMessage(subject string, mainMessge string, client string,
 		Country             string
 		Location            string
 		IMEIs               []string
+		ProcessTypes        []string
 		Comments            string
 		UserName            string
 		Hyperlink           []string
@@ -364,6 +365,7 @@ func GetTrackingBodyMessage(subject string, mainMessge string, client string,
 		Country:             country,
 		Location:            location,
 		IMEIs:               imeis,
+		ProcessTypes:        processTypes,
 		Comments:            comment,
 		UserName:            userName,
 		Hyperlink:           xxx,
