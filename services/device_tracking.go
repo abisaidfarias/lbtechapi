@@ -189,6 +189,9 @@ func (s *deviceTrackingService) AdvancedSearch(searchOption *request.SearchOptio
 
 	trackingGrouped := make(map[string]responses.Tracking)
 	for _, deviceTracking := range deviceTrackings {
+		if len(deviceTracking.TrackingLogs) == 0 {
+			continue
+		}
 
 		lastRecord := deviceTracking.TrackingLogs[len(deviceTracking.TrackingLogs)-1]
 		if !isContained(lastRecord, searchOption.Locations, searchOption.Countries) {
@@ -209,15 +212,31 @@ func (s *deviceTrackingService) AdvancedSearch(searchOption *request.SearchOptio
 	for _, v := range trackingGrouped {
 		trakings = append(trakings, v)
 	}
-	sort.Slice(trakings[0].DeviceTrackings, func(i, j int) bool {
-		return trakings[0].DeviceTrackings[i].Device.Brand.Name < trakings[0].DeviceTrackings[j].Device.Brand.Name
-	})
+	if len(trakings) == 0 {
+		return []responses.Tracking{}, nil
+	}
+	for i := range trakings {
+		sort.Slice(trakings[i].DeviceTrackings, func(j, k int) bool {
+			return trakings[i].DeviceTrackings[j].Device.Brand.Name < trakings[i].DeviceTrackings[k].Device.Brand.Name
+		})
+	}
 	return trakings, nil
 }
 func (s *deviceTrackingService) AdvancedSearchOptions(userId string) (responses.SearchOption, error) {
 
 	user, err := s.userRepository.GetByID(userId)
-	var searchOption responses.SearchOption = responses.SearchOption{}
+	searchOption := responses.SearchOption{
+		Brands:           []string{},
+		CommercialModels: []string{},
+		Countries:        []string{},
+		Locations:        []string{},
+		Relations: responses.SearchOptionRelations{
+			ByBrand:    map[string]responses.SearchOptionRelationByBrand{},
+			ByModel:    map[string]responses.SearchOptionRelationByModel{},
+			ByCountry:  map[string]responses.SearchOptionRelationByCountry{},
+			ByLocation: map[string]responses.SearchOptionRelationByLocation{},
+		},
+	}
 	if err != nil {
 		return searchOption, err
 	}
@@ -230,33 +249,145 @@ func (s *deviceTrackingService) AdvancedSearchOptions(userId string) (responses.
 	if err != nil {
 		return searchOption, err
 	}
-	brandsUnique := make(map[string]bool)
-	modelsUnique := make(map[string]bool)
-	countryUnique := make(map[string]bool)
-	locationUnique := make(map[string]bool)
+	brandsUnique := make(map[string]struct{})
+	modelsUnique := make(map[string]struct{})
+	countryUnique := make(map[string]struct{})
+	locationUnique := make(map[string]struct{})
+
+	byBrandModels := make(map[string]map[string]struct{})
+	byBrandCountries := make(map[string]map[string]struct{})
+	byBrandLocations := make(map[string]map[string]struct{})
+
+	byModelBrands := make(map[string]map[string]struct{})
+	byModelCountries := make(map[string]map[string]struct{})
+	byModelLocations := make(map[string]map[string]struct{})
+
+	byCountryBrands := make(map[string]map[string]struct{})
+	byCountryModels := make(map[string]map[string]struct{})
+	byCountryLocations := make(map[string]map[string]struct{})
+
+	byLocationBrands := make(map[string]map[string]struct{})
+	byLocationModels := make(map[string]map[string]struct{})
+	byLocationCountries := make(map[string]map[string]struct{})
+
 	for _, deviceTracking := range deviceTrackings {
+		brandName := strings.TrimSpace(deviceTracking.Device.Brand.Name)
+		modelName := strings.TrimSpace(deviceTracking.Device.CommercialModel)
 
-		if _, value := brandsUnique[deviceTracking.Device.Brand.Name]; !value {
-			brandsUnique[deviceTracking.Device.Brand.Name] = true
-			searchOption.Brands = append(searchOption.Brands, deviceTracking.Device.Brand.Name)
+		if brandName != "" {
+			brandsUnique[brandName] = struct{}{}
 		}
-		if _, value := modelsUnique[deviceTracking.Device.CommercialModel]; !value {
-			modelsUnique[deviceTracking.Device.CommercialModel] = true
-			searchOption.CommercialModels = append(searchOption.CommercialModels, deviceTracking.Device.CommercialModel)
+		if modelName != "" {
+			modelsUnique[modelName] = struct{}{}
 		}
+		if brandName != "" && modelName != "" {
+			addRelation(byBrandModels, brandName, modelName)
+			addRelation(byModelBrands, modelName, brandName)
+		}
+
 		for _, trackingLog := range deviceTracking.TrackingLogs {
-			if _, value := locationUnique[trackingLog.Location.Name]; !value {
-				locationUnique[trackingLog.Location.Name] = true
-				searchOption.Locations = append(searchOption.Locations, trackingLog.Location.Name)
+			countryName := strings.TrimSpace(trackingLog.Country.Name)
+			locationName := strings.TrimSpace(trackingLog.Location.Name)
+
+			if countryName != "" {
+				countryUnique[countryName] = struct{}{}
 			}
-			if _, value := countryUnique[trackingLog.Country.Name]; !value {
-				countryUnique[trackingLog.Country.Name] = true
-				searchOption.Countries = append(searchOption.Countries, trackingLog.Country.Name)
+			if locationName != "" {
+				locationUnique[locationName] = struct{}{}
 			}
 
+			if brandName != "" {
+				if countryName != "" {
+					addRelation(byBrandCountries, brandName, countryName)
+					addRelation(byCountryBrands, countryName, brandName)
+				}
+				if locationName != "" {
+					addRelation(byBrandLocations, brandName, locationName)
+					addRelation(byLocationBrands, locationName, brandName)
+				}
+			}
+			if modelName != "" {
+				if countryName != "" {
+					addRelation(byModelCountries, modelName, countryName)
+					addRelation(byCountryModels, countryName, modelName)
+				}
+				if locationName != "" {
+					addRelation(byModelLocations, modelName, locationName)
+					addRelation(byLocationModels, locationName, modelName)
+				}
+			}
+			if countryName != "" && locationName != "" {
+				addRelation(byCountryLocations, countryName, locationName)
+				addRelation(byLocationCountries, locationName, countryName)
+			}
 		}
 	}
+
+	searchOption.Brands = sortedKeys(brandsUnique)
+	searchOption.CommercialModels = sortedKeys(modelsUnique)
+	searchOption.Countries = sortedKeys(countryUnique)
+	searchOption.Locations = sortedKeys(locationUnique)
+
+	for _, brandName := range searchOption.Brands {
+		searchOption.Relations.ByBrand[brandName] = responses.SearchOptionRelationByBrand{
+			CommercialModels: sortedValues(byBrandModels, brandName),
+			Countries:        sortedValues(byBrandCountries, brandName),
+			Locations:        sortedValues(byBrandLocations, brandName),
+		}
+	}
+	for _, modelName := range searchOption.CommercialModels {
+		searchOption.Relations.ByModel[modelName] = responses.SearchOptionRelationByModel{
+			Brands:    sortedValues(byModelBrands, modelName),
+			Countries: sortedValues(byModelCountries, modelName),
+			Locations: sortedValues(byModelLocations, modelName),
+		}
+	}
+	for _, countryName := range searchOption.Countries {
+		searchOption.Relations.ByCountry[countryName] = responses.SearchOptionRelationByCountry{
+			Brands:           sortedValues(byCountryBrands, countryName),
+			CommercialModels: sortedValues(byCountryModels, countryName),
+			Locations:        sortedValues(byCountryLocations, countryName),
+		}
+	}
+	for _, locationName := range searchOption.Locations {
+		searchOption.Relations.ByLocation[locationName] = responses.SearchOptionRelationByLocation{
+			Brands:           sortedValues(byLocationBrands, locationName),
+			CommercialModels: sortedValues(byLocationModels, locationName),
+			Countries:        sortedValues(byLocationCountries, locationName),
+		}
+	}
+
 	return searchOption, nil
+}
+
+func addRelation(container map[string]map[string]struct{}, source string, target string) {
+	if source == "" || target == "" {
+		return
+	}
+	if _, exists := container[source]; !exists {
+		container[source] = map[string]struct{}{}
+	}
+	container[source][target] = struct{}{}
+}
+
+func sortedKeys(values map[string]struct{}) []string {
+	items := make([]string, 0, len(values))
+	for key := range values {
+		if key == "" {
+			continue
+		}
+		items = append(items, key)
+	}
+	sort.Strings(items)
+	return items
+}
+
+func sortedValues(container map[string]map[string]struct{}, key string) []string {
+	values, exists := container[key]
+	if !exists {
+		return []string{}
+	}
+	return sortedKeys(values)
 }
 func (s *deviceTrackingService) ExportDeviceTracking(searchOption *request.SearchOption, userId string) (bytes.Buffer, error) {
 	user, err := s.userRepository.GetByID(userId)
