@@ -8,7 +8,9 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
+    env:
+      IMAGE_REPOSITORY: abisaid/lbtechapi
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,15 +24,38 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Get short SHA
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           platforms: linux/amd64
           push: true
-          tags: abisaid/lbtechapi:latest
+          tags: |
+            ${{ env.IMAGE_REPOSITORY }}:dev-${{ steps.vars.outputs.sha_short }}
+            ${{ env.IMAGE_REPOSITORY }}:dev-latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Generate Dockerrun.aws.json for DEV
+        run: |
+          cat > Dockerrun.dev.aws.json << EOF
+          {
+              "AWSEBDockerrunVersion":"1",
+              "Image":{
+                  "Name":"${{ env.IMAGE_REPOSITORY }}:dev-${{ steps.vars.outputs.sha_short }}",
+                  "Update":"true"
+              },
+              "Ports":[
+                  {
+                      "ContainerPort":"8080"
+                  }
+              ]
+          }
+          EOF
 
       - name: Deploy to Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v22
@@ -40,8 +65,8 @@ jobs:
           application_name: lbtechapi
           environment_name: lbtechapi
           region: us-east-1
-          version_label: ${{ github.sha }}
-          deployment_package: Dockerrun.aws.json
+          version_label: dev-${{ github.sha }}
+          deployment_package: Dockerrun.dev.aws.json
 
       - name: Verify deployment
         run: |
@@ -49,5 +74,7 @@ jobs:
           sleep 60
           echo "🔍 Checking health endpoint..."
           curl -f http://api.testkoi.com/health || exit 1
+          echo ""
+          echo "✅ Deployed image tag: dev-${{ steps.vars.outputs.sha_short }}"
           echo "✅ Deployment successful!"
 
