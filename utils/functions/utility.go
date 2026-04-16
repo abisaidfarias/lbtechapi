@@ -319,13 +319,26 @@ func GetHomologationBodyMessage(subject string, mainMessge string, projectType s
 
 	return body, nil
 }
-func GetTrackingBodyMessage(subject string, mainMessge string, client string,
-	brand string, technicalModel string, commercialModel string,
-	responsible string, externalResponsible string, country string,
-	location string, imeis []string, comment string, date time.Time,
-	processTypes []string, templatePath string, userName string) (bytes.Buffer, error) {
 
-	xxx := []string{"India", "Canada", "Japan", "Germany", "Italy"}
+// TrackingEmailDeviceRow is one horizontal row in the tracking email table (one IMEI per row).
+type TrackingEmailDeviceRow struct {
+	Client              string
+	Country             string
+	Brand               string
+	TechnicalModel      string
+	CommercialModel     string
+	Imei                string
+	ProcessTypes        string
+	NewLocation         string
+	LBResponsible       string
+	ExternalResponsible string
+	Comments            string
+	RegistrationDate    string
+	RegisteredBy        string
+}
+
+func GetTrackingBodyMessage(subject string, mainMessge string, rows []TrackingEmailDeviceRow,
+	templatePath string) (bytes.Buffer, error) {
 
 	var body bytes.Buffer
 	body.Write([]byte(fmt.Sprintf("%s \n%s\n\n", subject, utils.MIME_HEADERS)))
@@ -334,41 +347,12 @@ func GetTrackingBodyMessage(subject string, mainMessge string, client string,
 	if err != nil {
 		return body, err
 	}
-	if err != nil {
-		return body, err
-	}
 	t.Execute(&body, struct {
-		MainMessage         string
-		Date                string
-		Client              string
-		Brand               string
-		TechnicalModel      string
-		CommercialModel     string
-		Responsible         string
-		ExternalResponsible string
-		Country             string
-		Location            string
-		IMEIs               []string
-		ProcessTypes        []string
-		Comments            string
-		UserName            string
-		Hyperlink           []string
+		MainMessage string
+		Rows        []TrackingEmailDeviceRow
 	}{
-		MainMessage:         mainMessge,
-		Date:                fmt.Sprintf("%02d/%02d/%d", date.Day(), date.Month(), date.Year()),
-		Client:              client,
-		Brand:               brand,
-		TechnicalModel:      technicalModel,
-		CommercialModel:     commercialModel,
-		Responsible:         responsible,
-		ExternalResponsible: externalResponsible,
-		Country:             country,
-		Location:            location,
-		IMEIs:               imeis,
-		ProcessTypes:        processTypes,
-		Comments:            comment,
-		UserName:            userName,
-		Hyperlink:           xxx,
+		MainMessage: mainMessge,
+		Rows:        rows,
 	})
 
 	return body, nil

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/utils"
@@ -74,16 +73,11 @@ func (s *deviceTrackingService) Create(deviceTrackingRequest *request.DeviceTrac
 	}
 	companyId, _ := primitive.ObjectIDFromHex(deviceTrackingRequest.Company)
 
-	name := fmt.Sprintf("%s %s", deviceTrackingRequest.TrackingLog.InternalResponsible.Name,
-		deviceTrackingRequest.TrackingLog.InternalResponsible.LastName)
-	go s.DeviceTrackingNotification(deviceTrackingRequest.Imeis,
-		deviceTrackingRequest.TrackingLog.Country.Name,
-		deviceTrackingRequest.Device, name,
-		deviceTrackingRequest.TrackingLog.Person.Name,
-		deviceTrackingRequest.TrackingLog.Comment,
-		deviceTrackingRequest.TrackingLog.Location.Name, companyId,
-		deviceTrackingRequest.TrackingLog.TrackingDate, deviceTrackingRequest.TrackingLog.ProcessTypes,
-		utils.CREATE, userID)
+	rows, err := s.buildTrackingEmailRowsSingleDevice(deviceTrackingRequest.Company, deviceTrackingRequest.Device,
+		deviceTrackingRequest.Imeis, &deviceTrackingRequest.TrackingLog, userID)
+	if err == nil && len(rows) > 0 {
+		go s.sendTrackingNotificationMail(rows, companyId, utils.CREATE)
+	}
 
 	return nil
 }
@@ -450,79 +444,160 @@ func exportFileDeviceTracking(deviceTrackings []*responses.DeviceTrackingExpande
 	}
 	return b, nil
 }
-func (s *deviceTrackingService) DeviceTrackingNotification(imeis []string,
-	country string, deviceId string, internal string,
-	external string, comment string, location string,
-	companyId primitive.ObjectID, date time.Time, processTypes []string, key string, userID string) {
+func (s *deviceTrackingService) sendTrackingNotificationMail(rows []functions.TrackingEmailDeviceRow,
+	companyId primitive.ObjectID, key string) {
 
-	user, err := s.userRepository.GetByID(userID)
-	if err != nil {
+	if len(rows) == 0 {
 		return
 	}
-	userName := fmt.Sprintf("%s %s", user.Name, user.LastName)
 	toList, isEmpty := functions.GetEmails(false, companyId)
 	if isEmpty {
 		return
 	}
-	device, err := s.deviceRepository.GetById(deviceId)
-	if err != nil {
-		return
-	}
-	brand, err := s.brandRepository.GetById(device.Brand)
-	if err != nil {
-		return
-	}
-	company, err := s.companyRepository.GetById(companyId.Hex())
-	if err != nil {
-		return
-	}
 
+	first := rows[0]
 	var subject string
 	var mainMessage string
 
 	switch key {
-
 	case utils.CREATE:
 		subject = fmt.Sprintf("Subject: New Sample(s) received at LB Technology for %s %s %s",
-			country, brand.Name, device.CommercialModel)
+			first.Country, first.Brand, first.CommercialModel)
 		mainMessage = utils.CREATE_TRACKING_MAIN_MESSAGE
 	case utils.TRACKING_MOVE:
 		subject = fmt.Sprintf("Subject: Sample(s) has been moved of location to %s %s %s",
-			country, brand.Name, device.CommercialModel)
+			first.Country, first.Brand, first.CommercialModel)
 		mainMessage = utils.MOVE_TRACKING_MAIN_MESSAGE
 	default:
 		return
 	}
-	body, err := functions.GetTrackingBodyMessage(subject, mainMessage, company.Name, brand.Name,
-		device.TechnicalModel, device.CommercialModel, internal,
-		external, country, location, imeis,
-		comment, date, processTypes, utils.TEMPLATE_TRACKING_PATH, userName)
 
+	body, err := functions.GetTrackingBodyMessage(subject, mainMessage, rows, utils.TEMPLATE_TRACKING_PATH)
 	if err != nil {
 		return
 	}
 	functions.SendNotifications(toList, body)
 }
+
+func (s *deviceTrackingService) buildTrackingEmailRowsSingleDevice(companyHex, deviceHex string, imeis []string,
+	tl *request.TrackingLog, actingUserID string) ([]functions.TrackingEmailDeviceRow, error) {
+
+	company, err := s.companyRepository.GetById(companyHex)
+	if err != nil || company == nil {
+		return nil, err
+	}
+	device, err := s.deviceRepository.GetById(deviceHex)
+	if err != nil || device == nil {
+		return nil, err
+	}
+	brand, err := s.brandRepository.GetById(device.Brand)
+	if err != nil || brand == nil {
+		return nil, err
+	}
+	actingUser, err := s.userRepository.GetByID(actingUserID)
+	if err != nil {
+		return nil, err
+	}
+	registeredBy := fmt.Sprintf("%s %s", actingUser.Name, actingUser.LastName)
+
+	lbResp := fmt.Sprintf("%s %s", tl.InternalResponsible.Name, tl.InternalResponsible.LastName)
+	proc := strings.Join(tl.ProcessTypes, ", ")
+	if proc == "" {
+		proc = "N/A"
+	}
+	regDate := fmt.Sprintf("%02d/%02d/%d", tl.TrackingDate.Day(), tl.TrackingDate.Month(), tl.TrackingDate.Year())
+
+	rows := make([]functions.TrackingEmailDeviceRow, 0, len(imeis))
+	for _, imei := range imeis {
+		rows = append(rows, functions.TrackingEmailDeviceRow{
+			Client:              company.Name,
+			Country:             tl.Country.Name,
+			Brand:               brand.Name,
+			TechnicalModel:      device.TechnicalModel,
+			CommercialModel:     device.CommercialModel,
+			Imei:                imei,
+			ProcessTypes:        proc,
+			NewLocation:         tl.Location.Name,
+			LBResponsible:       lbResp,
+			ExternalResponsible: tl.Person.Name,
+			Comments:            tl.Comment,
+			RegistrationDate:    regDate,
+			RegisteredBy:        registeredBy,
+		})
+	}
+	return rows, nil
+}
+
+func (s *deviceTrackingService) buildTrackingEmailRowsFromTrackingDocIDs(trackingDocIDs []string,
+	tl *request.TrackingLog, actingUserID string) ([]functions.TrackingEmailDeviceRow, error) {
+
+	actingUser, err := s.userRepository.GetByID(actingUserID)
+	if err != nil {
+		return nil, err
+	}
+	registeredBy := fmt.Sprintf("%s %s", actingUser.Name, actingUser.LastName)
+
+	lbResp := fmt.Sprintf("%s %s", tl.InternalResponsible.Name, tl.InternalResponsible.LastName)
+	proc := strings.Join(tl.ProcessTypes, ", ")
+	if proc == "" {
+		proc = "N/A"
+	}
+	regDate := fmt.Sprintf("%02d/%02d/%d", tl.TrackingDate.Day(), tl.TrackingDate.Month(), tl.TrackingDate.Year())
+
+	rows := make([]functions.TrackingEmailDeviceRow, 0, len(trackingDocIDs))
+	for _, id := range trackingDocIDs {
+		dt, err := s.deviceTrackingRepository.GetById(id)
+		if err != nil || dt == nil {
+			continue
+		}
+		company, err := s.companyRepository.GetById(dt.Company.Hex())
+		if err != nil || company == nil {
+			continue
+		}
+		device, err := s.deviceRepository.GetById(dt.Device.Hex())
+		if err != nil || device == nil {
+			continue
+		}
+		brand, err := s.brandRepository.GetById(device.Brand)
+		if err != nil || brand == nil {
+			continue
+		}
+		rows = append(rows, functions.TrackingEmailDeviceRow{
+			Client:              company.Name,
+			Country:             tl.Country.Name,
+			Brand:               brand.Name,
+			TechnicalModel:      device.TechnicalModel,
+			CommercialModel:     device.CommercialModel,
+			Imei:                dt.Imei,
+			ProcessTypes:        proc,
+			NewLocation:         tl.Location.Name,
+			LBResponsible:       lbResp,
+			ExternalResponsible: tl.Person.Name,
+			Comments:            tl.Comment,
+			RegistrationDate:    regDate,
+			RegisteredBy:        registeredBy,
+		})
+	}
+	return rows, nil
+}
+
 func (s *deviceTrackingService) MoveTrackingNotification(deviceTrackingsId []string,
 	trackingLog request.TrackingLog, userID string) {
 
 	companyGrouped := make(map[primitive.ObjectID][]string)
-	var deviceId string
 	for _, id := range deviceTrackingsId {
-		deviceTracking, _ := s.deviceTrackingRepository.GetById(id)
-		value := companyGrouped[deviceTracking.Company]
-		value = append(value, deviceTracking.Imei)
-		companyGrouped[deviceTracking.Company] = value
-		deviceId = deviceTracking.Device.Hex()
+		deviceTracking, err := s.deviceTrackingRepository.GetById(id)
+		if err != nil || deviceTracking == nil {
+			continue
+		}
+		companyGrouped[deviceTracking.Company] = append(companyGrouped[deviceTracking.Company], id)
 	}
-	for companyId, imeis := range companyGrouped {
-		name := fmt.Sprintf("%s %s", trackingLog.InternalResponsible.Name,
-			trackingLog.InternalResponsible.LastName)
-		s.DeviceTrackingNotification(imeis, trackingLog.Country.Name,
-			deviceId, name, trackingLog.Person.Name,
-			trackingLog.Comment, trackingLog.Location.Name,
-			companyId, trackingLog.TrackingDate, trackingLog.ProcessTypes,
-			utils.TRACKING_MOVE, userID)
+	for companyId, docIDs := range companyGrouped {
+		rows, err := s.buildTrackingEmailRowsFromTrackingDocIDs(docIDs, &trackingLog, userID)
+		if err != nil || len(rows) == 0 {
+			continue
+		}
+		go s.sendTrackingNotificationMail(rows, companyId, utils.TRACKING_MOVE)
 	}
 }
 func isContained(trackingLog responses.TrackingLog, locations []string, countries []string) bool {
