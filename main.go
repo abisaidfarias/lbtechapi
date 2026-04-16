@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/abisaidfarias/lbtechapi/config"
 	"github.com/abisaidfarias/lbtechapi/controllers"
@@ -15,11 +16,17 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
-	
+
+	_ "github.com/abisaidfarias/lbtechapi/docs"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	_ "github.com/abisaidfarias/lbtechapi/docs"
 )
+
+// appVersion can be injected at build time with:
+// go build -ldflags "-X main.appVersion=v1.2.3"
+var appVersion = "dev"
+var appCommit = "unknown"
+var deployID = "local"
 
 // init loads secrets before any global variables are initialized
 func init() {
@@ -31,6 +38,30 @@ func init() {
 	log.Println("✅ Secrets loaded successfully")
 }
 
+func getAppVersion() string {
+	versionFromEnv := os.Getenv("APP_VERSION")
+	if versionFromEnv != "" {
+		return versionFromEnv
+	}
+	return appVersion
+}
+
+func getAppCommit() string {
+	commitFromEnv := os.Getenv("APP_COMMIT")
+	if commitFromEnv != "" {
+		return commitFromEnv
+	}
+	return appCommit
+}
+
+func getDeployID() string {
+	deployIDFromEnv := os.Getenv("DEPLOY_ID")
+	if deployIDFromEnv != "" {
+		return deployIDFromEnv
+	}
+	return deployID
+}
+
 var (
 	userRepository repositories.IUserRepository = repositories.NewUserRepository()
 	authService    services.IAuthService        = services.NewAuthService(userRepository)
@@ -38,7 +69,7 @@ var (
 
 	profileRepository repositories.IProfileRepository = repositories.NewProfileRepository()
 	companyRepository repositories.ICompanyRepository = repositories.NewCompanyRepository()
-	
+
 	userService    services.IUserService       = services.NewUserService(userRepository, profileRepository, companyRepository)
 	userController controllers.IUserController = controllers.NewUserController(userService)
 
@@ -50,9 +81,9 @@ var (
 	testCaseService    services.ITestCaseService        = services.NewTestCaseService(testCaseRepository, testCategoryService)
 	testCaseController controllers.ITestCaseController  = controllers.NewTestCaseController(testCaseService)
 
-	profileService    services.IProfileService        = services.NewProfileService(profileRepository, userRepository)
-	profileController controllers.IProfileController  = controllers.NewProfileController(profileService)
-	companyService    services.ICompanyService        = services.NewCompanyService(companyRepository, homologationRepository,
+	profileService    services.IProfileService       = services.NewProfileService(profileRepository, userRepository)
+	profileController controllers.IProfileController = controllers.NewProfileController(profileService)
+	companyService    services.ICompanyService       = services.NewCompanyService(companyRepository, homologationRepository,
 		deviceTrackingRepository, userRepository)
 	companyController controllers.ICompanyController = controllers.NewCompanyController(companyService)
 
@@ -149,16 +180,26 @@ func main() {
 		panic("error validation")
 	}
 	server.GET("/health", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{"status": fmt.Sprintf("server is up %s", config.GetValue("MONGO_DB"))})
+		ctx.JSON(http.StatusOK, gin.H{
+			"status":   fmt.Sprintf("server is up %s", config.GetValue("MONGO_DB")),
+			"version":  getAppVersion(),
+			"commit":   getAppCommit(),
+			"deployId": getDeployID(),
+		})
 	})
-	
+
 	// Swagger endpoint
 	server.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	
+
 	v1 := server.Group("/api/v1")
 	{
 		v1.GET("/health", func(ctx *gin.Context) {
-			ctx.JSON(http.StatusOK, gin.H{"status": "server is up"})
+			ctx.JSON(http.StatusOK, gin.H{
+				"status":   "server is up",
+				"version":  getAppVersion(),
+				"commit":   getAppCommit(),
+				"deployId": getDeployID(),
+			})
 		})
 		printer := v1.Group("/printer")
 		{
