@@ -14,6 +14,7 @@ func DeviceTrackinRequestToDeviceTracking(deviceTraking *request.DeviceTracking,
 	user := UserResumeToUser(&deviceTraking.TrackingLog.InternalResponsible)
 	person, _ := PersonRequestToPerson(&deviceTraking.TrackingLog.Person)
 	trackingLog := models.TrackingLog{
+		TrackingID:          deviceTraking.TrackingLog.TrackingID,
 		Country:             *country,
 		Location:            *location,
 		InternalResponsible: *user,
@@ -41,6 +42,7 @@ func TrackinLogRequestToTrackingLog(trackingLogReq *request.TrackingLog) *models
 	person, _ := PersonRequestToPerson(&trackingLogReq.Person)
 
 	return &models.TrackingLog{
+		TrackingID:          trackingLogReq.TrackingID,
 		Country:             *country,
 		Location:            *location,
 		InternalResponsible: *user,

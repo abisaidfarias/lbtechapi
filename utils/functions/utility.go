@@ -4,13 +4,19 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"html/template"
+	"io"
 	"math/rand"
+	"mime/multipart"
 	"net"
 	"net/smtp"
+	"net/textproto"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/abisaidfarias/lbtechapi/config"
@@ -215,6 +221,118 @@ func SendNotifications(toList []string, body bytes.Buffer) {
 	}
 }
 
+const trackingMoveLogoCID = "lbonetrack-logo"
+
+// buildMoveEmailMultipartRelated builds multipart/related (HTML + inline PNG) using mime/multipart.
+func buildMoveEmailMultipartRelated(html []byte, logoPNG []byte) ([]byte, error) {
+	var mpBody bytes.Buffer
+	w := multipart.NewWriter(&mpBody)
+	boundary := w.Boundary()
+
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Type", "text/html; charset=UTF-8")
+	h.Set("Content-Transfer-Encoding", "8bit")
+	htmlPart, err := w.CreatePart(h)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := htmlPart.Write(html); err != nil {
+		return nil, err
+	}
+
+	h2 := make(textproto.MIMEHeader)
+	h2.Set("Content-Type", "image/png")
+	h2.Set("Content-Transfer-Encoding", "base64")
+	h2.Set("Content-Disposition", `inline; filename="lbonetrack_logo.png"`)
+	h2.Set("Content-Id", "<"+trackingMoveLogoCID+">")
+	imgPart, err := w.CreatePart(h2)
+	if err != nil {
+		return nil, err
+	}
+	enc := base64.NewEncoder(base64.StdEncoding, imgPart)
+	if _, err := enc.Write(logoPNG); err != nil {
+		return nil, err
+	}
+	if err := enc.Close(); err != nil {
+		return nil, err
+	}
+	if err := w.Close(); err != nil {
+		return nil, err
+	}
+
+	var msg bytes.Buffer
+	msg.WriteString("MIME-Version: 1.0\r\n")
+	msg.WriteString("Content-Type: multipart/related; type=\"text/html\"; boundary=\"" + boundary + "\"\r\n\r\n")
+	msg.Write(mpBody.Bytes())
+	return msg.Bytes(), nil
+}
+
+// SendNotificationsMoveEmail sends the movement HTML.
+// Logo resolution order:
+//  1. TRACKING_LOGO_URL (https URL to a public PNG) — most reliable in Gmail when images are allowed.
+//  2. Else embedded PNG from logoPNG as multipart/related + cid: (built with mime/multipart).
+//  3. Else HTML only (no logo).
+func SendNotificationsMoveEmail(toList []string, subject string, data TrackingMoveEmailData, templatePath string, logoPNG []byte) error {
+	from := config.GetValue("EMAIL_FROM")
+	password := config.GetValue("EMAIL_PASSWORD")
+	smtpHost := config.GetValue("SMTP_CLIENTE")
+	smtpPort := config.GetValue("EMAIL_PORT")
+
+	publicLogoURL := strings.TrimSpace(os.Getenv("TRACKING_LOGO_URL"))
+
+	d := data
+	switch {
+	case publicLogoURL != "":
+		d.LogoDataURI = template.URL(publicLogoURL)
+	case len(logoPNG) > 0:
+		d.LogoDataURI = template.URL("cid:" + trackingMoveLogoCID)
+	default:
+		d.LogoDataURI = ""
+	}
+
+	t, err := template.ParseFiles(templatePath)
+	if err != nil {
+		return err
+	}
+	var htmlBuf bytes.Buffer
+	if err := t.Execute(&htmlBuf, d); err != nil {
+		return err
+	}
+	html := htmlBuf.Bytes()
+	html = bytes.ReplaceAll(html, []byte("\r\n"), []byte("\n"))
+	html = bytes.ReplaceAll(html, []byte("\n"), []byte("\r\n"))
+
+	subjectValue := strings.TrimSpace(strings.TrimPrefix(subject, "Subject:"))
+	subjectValue = strings.TrimSpace(subjectValue)
+
+	var mimeBody bytes.Buffer
+	if publicLogoURL != "" || len(logoPNG) == 0 {
+		mimeBody.WriteString("MIME-Version: 1.0\r\n")
+		mimeBody.WriteString("Content-Type: text/html; charset=UTF-8\r\n")
+		mimeBody.WriteString("Content-Transfer-Encoding: 8bit\r\n\r\n")
+		mimeBody.Write(html)
+	} else {
+		part, err := buildMoveEmailMultipartRelated(html, logoPNG)
+		if err != nil {
+			return err
+		}
+		if _, err := mimeBody.Write(part); err != nil {
+			return err
+		}
+	}
+
+	var msg bytes.Buffer
+	msg.WriteString("From: " + from + "\r\n")
+	msg.WriteString("To: " + strings.Join(toList, ", ") + "\r\n")
+	msg.WriteString("Subject: " + subjectValue + "\r\n")
+	if _, err := io.Copy(&msg, &mimeBody); err != nil {
+		return err
+	}
+
+	auth := LoginAuth(from, password)
+	return smtp.SendMail(smtpHost+":"+smtpPort, auth, from, toList, msg.Bytes())
+}
+
 func GetEmails(isInternal bool, companyId primitive.ObjectID) ([]string, bool) {
 
 	var toList []string
@@ -328,13 +446,32 @@ type TrackingEmailDeviceRow struct {
 	TechnicalModel      string
 	CommercialModel     string
 	Imei                string
-	ProcessTypes        string
+	PreviousLocation    string
 	NewLocation         string
 	LBResponsible       string
 	ExternalResponsible string
 	Comments            string
 	RegistrationDate    string
 	RegisteredBy        string
+}
+
+// TrackingMoveEmailData is passed to the movement notification HTML template.
+type TrackingMoveEmailData struct {
+	// LogoDataURI is set at send time to cid:lbonetrack-logo (inline PNG) or empty when no logo.
+	LogoDataURI         template.URL
+	ClientName          string
+	Country             string
+	TotalSamples        int
+	PreviousLocation    string
+	NewLocation         string
+	RegistrationDate    string
+	LBResponsible       string
+	ExternalResponsible string
+	RegisteredBy        string
+	Comments            string
+	Year                int
+	MainMessage         string
+	Rows                []TrackingEmailDeviceRow
 }
 
 func GetTrackingBodyMessage(subject string, mainMessge string, rows []TrackingEmailDeviceRow,

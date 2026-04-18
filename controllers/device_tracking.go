@@ -133,7 +133,7 @@ func (c *deviceTrackingController) AddTrakingLog() gin.HandlerFunc {
 			return
 		}
 
-		err = c.deviceTrackingService.AddTrakingLog(trackingLog, userID)
+		trackingID, err := c.deviceTrackingService.AddTrakingLog(trackingLog, userID)
 
 		if err != nil {
 			if utils.ErrorDuplicatedData(err) {
@@ -145,7 +145,7 @@ func (c *deviceTrackingController) AddTrakingLog() gin.HandlerFunc {
 			return
 		}
 
-		ctx.Status(http.StatusOK)
+		ctx.JSON(http.StatusOK, gin.H{"tracking_id": trackingID})
 	}
 }
 

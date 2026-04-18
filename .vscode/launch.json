@@ -13,10 +13,10 @@
                 "SECRET_KEY": "dev-secret-local",
                 "MONGO_URI": "mongodb://127.0.0.1:27017",
                 "MONGO_DB": "lbtechdev",
-                "EMAIL_FROM": "your-email@gmail.com",
-                "EMAIL_PASSWORD": "your-app-password-here",
+                "EMAIL_FROM": "your-email@example.com",
+                "EMAIL_PASSWORD": "your-app-password",
                 "EMAIL_PORT": "587",
-                "SMTP_CLIENTE": "smtp.gmail.com"
+                "SMTP_CLIENTE": "smtp.office365.com"
             },
             "args": []
         }

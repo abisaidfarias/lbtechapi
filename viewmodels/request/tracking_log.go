@@ -6,6 +6,7 @@ import (
 
 // Company model
 type TrackingLog struct {
+	TrackingID          string     `bson:"tracking_id" json:"tracking_id"`
 	Country             Country    `bson:"country" json:"country" binding:"required"`
 	Location            Location   `bson:"location" json:"location" binding:"required"`
 	InternalResponsible UserResume `bson:"internal_responsible" json:"internal_responsible" binding:"required"`

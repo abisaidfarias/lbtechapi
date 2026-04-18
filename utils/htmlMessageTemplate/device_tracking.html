@@ -16,7 +16,7 @@
                         <p style="margin:0 0 16px 0; font-size:14px; line-height:1.5;">{{.MainMessage}}</p>
 
                         <div style="overflow-x:auto;">
-                            <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse:collapse; width:100%; min-width:960px; font-size:13px;">
+                            <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse:collapse; width:100%; min-width:880px; font-size:13px;">
                                 <thead>
                                     <tr>
                                         <th style="background-color:#f3f4f6; border:1px solid #d1d5db; padding:10px 8px; text-align:left; white-space:nowrap;">Client</th>
@@ -25,7 +25,6 @@
                                         <th style="background-color:#f3f4f6; border:1px solid #d1d5db; padding:10px 8px; text-align:left; white-space:nowrap;">Technical Model</th>
                                         <th style="background-color:#f3f4f6; border:1px solid #d1d5db; padding:10px 8px; text-align:left; white-space:nowrap;">Commercial Model</th>
                                         <th style="background-color:#f3f4f6; border:1px solid #d1d5db; padding:10px 8px; text-align:left; white-space:nowrap;">IMEI</th>
-                                        <th style="background-color:#f3f4f6; border:1px solid #d1d5db; padding:10px 8px; text-align:left; white-space:nowrap;">Process Type(s)</th>
                                         <th style="background-color:#f3f4f6; border:1px solid #d1d5db; padding:10px 8px; text-align:left; white-space:nowrap;">New Location</th>
                                         <th style="background-color:#f3f4f6; border:1px solid #d1d5db; padding:10px 8px; text-align:left; white-space:nowrap;">LB Responsible</th>
                                         <th style="background-color:#f3f4f6; border:1px solid #d1d5db; padding:10px 8px; text-align:left; white-space:nowrap;">External Responsible</th>
@@ -43,11 +42,10 @@
                                         <td style="border:1px solid #e5e7eb; padding:8px; vertical-align:top;">{{.TechnicalModel}}</td>
                                         <td style="border:1px solid #e5e7eb; padding:8px; vertical-align:top;">{{.CommercialModel}}</td>
                                         <td style="border:1px solid #e5e7eb; padding:8px; vertical-align:top; white-space:nowrap;">{{.Imei}}</td>
-                                        <td style="border:1px solid #e5e7eb; padding:8px; vertical-align:top;">{{.ProcessTypes}}</td>
                                         <td style="border:1px solid #e5e7eb; padding:8px; vertical-align:top;">{{.NewLocation}}</td>
                                         <td style="border:1px solid #e5e7eb; padding:8px; vertical-align:top;">{{.LBResponsible}}</td>
                                         <td style="border:1px solid #e5e7eb; padding:8px; vertical-align:top;">{{.ExternalResponsible}}</td>
-                                        <td style="border:1px solid #e5e7eb; padding:8px; vertical-align:top;">{{.Comments}}</td>
+                                        <td style="border:1px solid #e5e7eb; padding:8px; vertical-align:top; white-space:pre-line;">{{.Comments}}</td>
                                         <td style="border:1px solid #e5e7eb; padding:8px; vertical-align:top; white-space:nowrap;">{{.RegistrationDate}}</td>
                                         <td style="border:1px solid #e5e7eb; padding:8px; vertical-align:top;">{{.RegisteredBy}}</td>
                                     </tr>

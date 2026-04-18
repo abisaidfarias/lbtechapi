@@ -3,8 +3,10 @@ package services
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/utils"
@@ -23,7 +25,7 @@ import (
 type IDeviceTrackingService interface {
 	Create(*request.DeviceTracking, string) error
 	Get(string) ([]responses.Tracking, error)
-	AddTrakingLog(*request.TrackingLogMultiple, string) error
+	AddTrakingLog(*request.TrackingLogMultiple, string) (string, error)
 	Delete(string) error
 	Update(string, *request.DeviceTrackingExpanded) error
 	AdvancedSearch(*request.SearchOption, string) ([]responses.Tracking, error)
@@ -120,10 +122,13 @@ func (s *deviceTrackingService) Get(userID string) ([]responses.Tracking, error)
 	})
 	return trakings, nil
 }
-func (s *deviceTrackingService) AddTrakingLog(trackingLogReq *request.TrackingLogMultiple, userID string) error {
+func (s *deviceTrackingService) AddTrakingLog(trackingLogReq *request.TrackingLogMultiple, userID string) (string, error) {
 	if err := enums.ValidateProcessTypes(trackingLogReq.TrackingLog.ProcessTypes); err != nil {
-		return err
+		return "", err
 	}
+	trackingID := primitive.NewObjectID().Hex()
+	trackingLogReq.TrackingLog.TrackingID = trackingID
+
 	var devicesTrackingsId []string
 	for _, id := range trackingLogReq.DeviceTrackings {
 		deviceTranckingID, _ := primitive.ObjectIDFromHex(id)
@@ -131,11 +136,11 @@ func (s *deviceTrackingService) AddTrakingLog(trackingLogReq *request.TrackingLo
 		trackingLog := mapping.TrackinLogRequestToTrackingLog(&trackingLogReq.TrackingLog)
 		err := s.deviceTrackingRepository.AddTrakingLog(trackingLog, deviceTranckingID)
 		if err != nil {
-			return err
+			return "", err
 		}
 	}
-	go s.MoveTrackingNotification(devicesTrackingsId, trackingLogReq.TrackingLog, userID)
-	return nil
+	go s.MoveTrackingNotification(devicesTrackingsId, trackingLogReq.TrackingLog, userID, trackingLogReq.WithDelivery)
+	return trackingID, nil
 }
 func (s *deviceTrackingService) Delete(ids string) error {
 
@@ -465,9 +470,32 @@ func (s *deviceTrackingService) sendTrackingNotificationMail(rows []functions.Tr
 			first.Country, first.Brand, first.CommercialModel)
 		mainMessage = utils.CREATE_TRACKING_MAIN_MESSAGE
 	case utils.TRACKING_MOVE:
-		subject = fmt.Sprintf("Subject: Sample(s) has been moved of location to %s %s %s",
-			first.Country, first.Brand, first.CommercialModel)
+		if len(rows) > 1 {
+			subject = fmt.Sprintf("Subject: Sample(s) has been moved of location to %s", first.NewLocation)
+		} else {
+			subject = fmt.Sprintf("Subject: Sample(s) has been moved of location to %s %s %s",
+				first.Country, first.Brand, first.CommercialModel)
+		}
 		mainMessage = utils.MOVE_TRACKING_MAIN_MESSAGE
+		moveData := functions.TrackingMoveEmailData{
+			ClientName:          first.Client,
+			Country:             first.Country,
+			TotalSamples:        len(rows),
+			PreviousLocation:    summarizePreviousLocations(rows),
+			NewLocation:         first.NewLocation,
+			RegistrationDate:    first.RegistrationDate,
+			LBResponsible:       first.LBResponsible,
+			ExternalResponsible: first.ExternalResponsible,
+			RegisteredBy:        first.RegisteredBy,
+			Comments:            first.Comments,
+			Year:                time.Now().Year(),
+			MainMessage:         mainMessage,
+			Rows:                rows,
+		}
+		if err := functions.SendNotificationsMoveEmail(toList, subject, moveData, utils.TEMPLATE_TRACKING_MOVE_PATH, utils.LBOneTrackLogoPNG); err != nil {
+			log.Printf("movement notification email: %v", err)
+		}
+		return
 	default:
 		return
 	}
@@ -477,6 +505,59 @@ func (s *deviceTrackingService) sendTrackingNotificationMail(rows []functions.Tr
 		return
 	}
 	functions.SendNotifications(toList, body)
+}
+
+func summarizePreviousLocations(rows []functions.TrackingEmailDeviceRow) string {
+	seen := make(map[string]struct{})
+	var list []string
+	for _, r := range rows {
+		v := strings.TrimSpace(r.PreviousLocation)
+		if v == "" {
+			continue
+		}
+		if _, ok := seen[v]; ok {
+			continue
+		}
+		seen[v] = struct{}{}
+		list = append(list, v)
+	}
+	if len(list) == 0 {
+		return "—"
+	}
+	return strings.Join(list, ", ")
+}
+
+// mergeCommentsAndProcessTypes appends process types as bullet lines after the comment when both exist.
+func mergeCommentsAndProcessTypes(comment string, processTypes []string) string {
+	comment = strings.TrimSpace(comment)
+	var bullets strings.Builder
+	for _, pt := range processTypes {
+		pt = strings.TrimSpace(pt)
+		if pt == "" {
+			continue
+		}
+		if bullets.Len() > 0 {
+			bullets.WriteString("\n")
+		}
+		bullets.WriteString("• ")
+		bullets.WriteString(pt)
+	}
+	procBlock := bullets.String()
+	switch {
+	case comment != "" && procBlock != "":
+		return comment + "\n" + procBlock
+	case comment != "":
+		return comment
+	default:
+		return procBlock
+	}
+}
+
+func formatTrackingDateTimeForEmail(t time.Time) string {
+	if t.IsZero() {
+		return ""
+	}
+	return t.Format("02/01/2006 15:04")
 }
 
 func (s *deviceTrackingService) buildTrackingEmailRowsSingleDevice(companyHex, deviceHex string, imeis []string,
@@ -501,11 +582,8 @@ func (s *deviceTrackingService) buildTrackingEmailRowsSingleDevice(companyHex, d
 	registeredBy := fmt.Sprintf("%s %s", actingUser.Name, actingUser.LastName)
 
 	lbResp := fmt.Sprintf("%s %s", tl.InternalResponsible.Name, tl.InternalResponsible.LastName)
-	proc := strings.Join(tl.ProcessTypes, ", ")
-	if proc == "" {
-		proc = "N/A"
-	}
-	regDate := fmt.Sprintf("%02d/%02d/%d", tl.TrackingDate.Day(), tl.TrackingDate.Month(), tl.TrackingDate.Year())
+	commentsCell := mergeCommentsAndProcessTypes(tl.Comment, tl.ProcessTypes)
+	regDate := formatTrackingDateTimeForEmail(tl.TrackingDate)
 
 	rows := make([]functions.TrackingEmailDeviceRow, 0, len(imeis))
 	for _, imei := range imeis {
@@ -516,11 +594,10 @@ func (s *deviceTrackingService) buildTrackingEmailRowsSingleDevice(companyHex, d
 			TechnicalModel:      device.TechnicalModel,
 			CommercialModel:     device.CommercialModel,
 			Imei:                imei,
-			ProcessTypes:        proc,
 			NewLocation:         tl.Location.Name,
 			LBResponsible:       lbResp,
 			ExternalResponsible: tl.Person.Name,
-			Comments:            tl.Comment,
+			Comments:            commentsCell,
 			RegistrationDate:    regDate,
 			RegisteredBy:        registeredBy,
 		})
@@ -538,11 +615,8 @@ func (s *deviceTrackingService) buildTrackingEmailRowsFromTrackingDocIDs(trackin
 	registeredBy := fmt.Sprintf("%s %s", actingUser.Name, actingUser.LastName)
 
 	lbResp := fmt.Sprintf("%s %s", tl.InternalResponsible.Name, tl.InternalResponsible.LastName)
-	proc := strings.Join(tl.ProcessTypes, ", ")
-	if proc == "" {
-		proc = "N/A"
-	}
-	regDate := fmt.Sprintf("%02d/%02d/%d", tl.TrackingDate.Day(), tl.TrackingDate.Month(), tl.TrackingDate.Year())
+	commentsCell := mergeCommentsAndProcessTypes(tl.Comment, tl.ProcessTypes)
+	regDate := formatTrackingDateTimeForEmail(tl.TrackingDate)
 
 	rows := make([]functions.TrackingEmailDeviceRow, 0, len(trackingDocIDs))
 	for _, id := range trackingDocIDs {
@@ -562,6 +636,10 @@ func (s *deviceTrackingService) buildTrackingEmailRowsFromTrackingDocIDs(trackin
 		if err != nil || brand == nil {
 			continue
 		}
+		prevLoc := ""
+		if len(dt.TrackingLogs) >= 2 {
+			prevLoc = dt.TrackingLogs[len(dt.TrackingLogs)-2].Location.Name
+		}
 		rows = append(rows, functions.TrackingEmailDeviceRow{
 			Client:              company.Name,
 			Country:             tl.Country.Name,
@@ -569,11 +647,11 @@ func (s *deviceTrackingService) buildTrackingEmailRowsFromTrackingDocIDs(trackin
 			TechnicalModel:      device.TechnicalModel,
 			CommercialModel:     device.CommercialModel,
 			Imei:                dt.Imei,
-			ProcessTypes:        proc,
+			PreviousLocation:    prevLoc,
 			NewLocation:         tl.Location.Name,
 			LBResponsible:       lbResp,
 			ExternalResponsible: tl.Person.Name,
-			Comments:            tl.Comment,
+			Comments:            commentsCell,
 			RegistrationDate:    regDate,
 			RegisteredBy:        registeredBy,
 		})
@@ -582,7 +660,10 @@ func (s *deviceTrackingService) buildTrackingEmailRowsFromTrackingDocIDs(trackin
 }
 
 func (s *deviceTrackingService) MoveTrackingNotification(deviceTrackingsId []string,
-	trackingLog request.TrackingLog, userID string) {
+	trackingLog request.TrackingLog, userID string, withDelivery bool) {
+	if withDelivery {
+		return
+	}
 
 	companyGrouped := make(map[primitive.ObjectID][]string)
 	for _, id := range deviceTrackingsId {
