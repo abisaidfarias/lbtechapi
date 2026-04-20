@@ -3,8 +3,10 @@ package repositories
 import (
 	"context"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/database/queries"
@@ -27,6 +29,7 @@ type IDeviceTrackingRepository interface {
 		[]primitive.ObjectID) ([]*responses.DeviceTrackingExpanded, error)
 	GetByPerson(primitive.ObjectID) (*responses.DeviceTracking, error)
 	GetById(string) (*responses.DeviceTracking, error)
+	SetTrackingLogDocumentURLByTrackingID(deviceIDs []primitive.ObjectID, trackingID string, documentURL string) error
 }
 
 type deviceTrackingRepository struct {
@@ -189,4 +192,18 @@ func (r *deviceTrackingRepository) GetById(id string) (*responses.DeviceTracking
 	}
 
 	return &result, nil
+}
+
+func (r *deviceTrackingRepository) SetTrackingLogDocumentURLByTrackingID(deviceIDs []primitive.ObjectID,
+	trackingID string, documentURL string) error {
+	if len(deviceIDs) == 0 || trackingID == "" {
+		return nil
+	}
+	filter := bson.M{"_id": bson.M{"$in": deviceIDs}}
+	update := bson.M{"$set": bson.M{"tracking_logs.$[log].document_url": documentURL}}
+	opts := options.Update().SetArrayFilters(options.ArrayFilters{
+		Filters: []interface{}{bson.M{"log.tracking_id": trackingID}},
+	})
+	_, err := deviceTrackingCollection.UpdateMany(context.TODO(), filter, update, opts)
+	return err
 }

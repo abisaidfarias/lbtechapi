@@ -124,7 +124,7 @@ var (
 
 	deviceTrackingRepository repositories.IDeviceTrackingRepository = repositories.NewDeviceTrackingRepository()
 	deviceTrackingService    services.IDeviceTrackingService        = services.NewDeviceTrackingService(deviceTrackingRepository,
-		userRepository, companyRepository, brandRepository, deviceRepository, countryRepository)
+		userRepository, companyRepository, brandRepository, deviceRepository, countryRepository, storageService)
 	deviceTrackingController controllers.IDeviceTrackingController = controllers.NewDeviceTrackingController(deviceTrackingService)
 
 	testPlanRepository repositories.ITestPlanRepository = repositories.NewTestPlanRepository()

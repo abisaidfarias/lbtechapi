@@ -267,6 +267,22 @@ func buildMoveEmailMultipartRelated(html []byte, logoPNG []byte) ([]byte, error)
 	return msg.Bytes(), nil
 }
 
+// RenderTrackingMoveEmailHTML renders the movement email template to HTML bytes (caller sets LogoDataURI).
+func RenderTrackingMoveEmailHTML(data TrackingMoveEmailData, templatePath string) ([]byte, error) {
+	t, err := template.ParseFiles(templatePath)
+	if err != nil {
+		return nil, err
+	}
+	var htmlBuf bytes.Buffer
+	if err := t.Execute(&htmlBuf, data); err != nil {
+		return nil, err
+	}
+	html := htmlBuf.Bytes()
+	html = bytes.ReplaceAll(html, []byte("\r\n"), []byte("\n"))
+	html = bytes.ReplaceAll(html, []byte("\n"), []byte("\r\n"))
+	return html, nil
+}
+
 // SendNotificationsMoveEmail sends the movement HTML.
 // Logo resolution order:
 //  1. TRACKING_LOGO_URL (https URL to a public PNG) — most reliable in Gmail when images are allowed.
@@ -290,17 +306,10 @@ func SendNotificationsMoveEmail(toList []string, subject string, data TrackingMo
 		d.LogoDataURI = ""
 	}
 
-	t, err := template.ParseFiles(templatePath)
+	html, err := RenderTrackingMoveEmailHTML(d, templatePath)
 	if err != nil {
 		return err
 	}
-	var htmlBuf bytes.Buffer
-	if err := t.Execute(&htmlBuf, d); err != nil {
-		return err
-	}
-	html := htmlBuf.Bytes()
-	html = bytes.ReplaceAll(html, []byte("\r\n"), []byte("\n"))
-	html = bytes.ReplaceAll(html, []byte("\n"), []byte("\r\n"))
 
 	subjectValue := strings.TrimSpace(strings.TrimPrefix(subject, "Subject:"))
 	subjectValue = strings.TrimSpace(subjectValue)

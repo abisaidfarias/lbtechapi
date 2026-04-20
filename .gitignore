@@ -23,6 +23,9 @@ __debug_bin
 
 ai-documents/
 
+# Local move-report mirrors (see moveReportDebugArtifactDir)
+move-report-debug/
+
 # Archivos con credenciales (NUNCA commitear)
 *_CONFIG.md
 *_SECRETS.md
