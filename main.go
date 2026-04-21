@@ -330,6 +330,7 @@ func main() {
 			deviceTracking.POST("", deviceTrackingController.Create())
 			deviceTracking.GET("", deviceTrackingController.Get())
 			deviceTracking.PUT("", deviceTrackingController.AddTrakingLog())
+			deviceTracking.POST("confirm-move-delivery", deviceTrackingController.ConfirmMoveDeliveryReport())
 			deviceTracking.DELETE(":id", deviceTrackingController.Delete())
 			deviceTracking.PUT(":id", deviceTrackingController.Update())
 			deviceTracking.POST("advanced-search", deviceTrackingController.AdvancedSearch())

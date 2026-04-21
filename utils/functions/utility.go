@@ -10,6 +10,7 @@ import (
 	"html/template"
 	"io"
 	"math/rand"
+	"mime"
 	"mime/multipart"
 	"net"
 	"net/smtp"
@@ -267,6 +268,60 @@ func buildMoveEmailMultipartRelated(html []byte, logoPNG []byte) ([]byte, error)
 	return msg.Bytes(), nil
 }
 
+// writeMoveEmailMainPart writes a multipart/mixed part: either text/html or multipart/related (HTML + inline logo).
+func writeMoveEmailMainPart(mw *multipart.Writer, html []byte, logoPNG []byte, publicLogoURL string) error {
+	if publicLogoURL != "" || len(logoPNG) == 0 {
+		h := make(textproto.MIMEHeader)
+		h.Set("Content-Type", "text/html; charset=UTF-8")
+		h.Set("Content-Transfer-Encoding", "8bit")
+		p, err := mw.CreatePart(h)
+		if err != nil {
+			return err
+		}
+		_, err = p.Write(html)
+		return err
+	}
+	var nested bytes.Buffer
+	nw := multipart.NewWriter(&nested)
+	h1 := make(textproto.MIMEHeader)
+	h1.Set("Content-Type", "text/html; charset=UTF-8")
+	h1.Set("Content-Transfer-Encoding", "8bit")
+	w1, err := nw.CreatePart(h1)
+	if err != nil {
+		return err
+	}
+	if _, err := w1.Write(html); err != nil {
+		return err
+	}
+	h2 := make(textproto.MIMEHeader)
+	h2.Set("Content-Type", "image/png")
+	h2.Set("Content-Transfer-Encoding", "base64")
+	h2.Set("Content-Disposition", `inline; filename="lbonetrack_logo.png"`)
+	h2.Set("Content-Id", "<"+trackingMoveLogoCID+">")
+	w2, err := nw.CreatePart(h2)
+	if err != nil {
+		return err
+	}
+	enc := base64.NewEncoder(base64.StdEncoding, w2)
+	if _, err := enc.Write(logoPNG); err != nil {
+		return err
+	}
+	if err := enc.Close(); err != nil {
+		return err
+	}
+	if err := nw.Close(); err != nil {
+		return err
+	}
+	hOuter := make(textproto.MIMEHeader)
+	hOuter.Set("Content-Type", fmt.Sprintf(`multipart/related; type="text/html"; boundary="%s"`, nw.Boundary()))
+	relPart, err := mw.CreatePart(hOuter)
+	if err != nil {
+		return err
+	}
+	_, err = relPart.Write(nested.Bytes())
+	return err
+}
+
 // RenderTrackingMoveEmailHTML renders the movement email template to HTML bytes (caller sets LogoDataURI).
 func RenderTrackingMoveEmailHTML(data TrackingMoveEmailData, templatePath string) ([]byte, error) {
 	t, err := template.ParseFiles(templatePath)
@@ -284,11 +339,12 @@ func RenderTrackingMoveEmailHTML(data TrackingMoveEmailData, templatePath string
 }
 
 // SendNotificationsMoveEmail sends the movement HTML.
+// If pdfAttachment is non-empty, the message is multipart/mixed: HTML body (same rules as below) + PDF attachment.
 // Logo resolution order:
 //  1. TRACKING_LOGO_URL (https URL to a public PNG) — most reliable in Gmail when images are allowed.
 //  2. Else embedded PNG from logoPNG as multipart/related + cid: (built with mime/multipart).
 //  3. Else HTML only (no logo).
-func SendNotificationsMoveEmail(toList []string, subject string, data TrackingMoveEmailData, templatePath string, logoPNG []byte) error {
+func SendNotificationsMoveEmail(toList []string, subject string, data TrackingMoveEmailData, templatePath string, logoPNG []byte, pdfAttachment []byte, pdfFileName string) error {
 	from := config.GetValue("EMAIL_FROM")
 	password := config.GetValue("EMAIL_PASSWORD")
 	smtpHost := config.GetValue("SMTP_CLIENTE")
@@ -314,28 +370,62 @@ func SendNotificationsMoveEmail(toList []string, subject string, data TrackingMo
 	subjectValue := strings.TrimSpace(strings.TrimPrefix(subject, "Subject:"))
 	subjectValue = strings.TrimSpace(subjectValue)
 
-	var mimeBody bytes.Buffer
-	if publicLogoURL != "" || len(logoPNG) == 0 {
-		mimeBody.WriteString("MIME-Version: 1.0\r\n")
-		mimeBody.WriteString("Content-Type: text/html; charset=UTF-8\r\n")
-		mimeBody.WriteString("Content-Transfer-Encoding: 8bit\r\n\r\n")
-		mimeBody.Write(html)
-	} else {
-		part, err := buildMoveEmailMultipartRelated(html, logoPNG)
-		if err != nil {
-			return err
-		}
-		if _, err := mimeBody.Write(part); err != nil {
-			return err
-		}
-	}
-
 	var msg bytes.Buffer
 	msg.WriteString("From: " + from + "\r\n")
 	msg.WriteString("To: " + strings.Join(toList, ", ") + "\r\n")
 	msg.WriteString("Subject: " + subjectValue + "\r\n")
-	if _, err := io.Copy(&msg, &mimeBody); err != nil {
-		return err
+
+	if len(pdfAttachment) == 0 {
+		var mimeBody bytes.Buffer
+		if publicLogoURL != "" || len(logoPNG) == 0 {
+			mimeBody.WriteString("MIME-Version: 1.0\r\n")
+			mimeBody.WriteString("Content-Type: text/html; charset=UTF-8\r\n")
+			mimeBody.WriteString("Content-Transfer-Encoding: 8bit\r\n\r\n")
+			mimeBody.Write(html)
+		} else {
+			part, err := buildMoveEmailMultipartRelated(html, logoPNG)
+			if err != nil {
+				return err
+			}
+			if _, err := mimeBody.Write(part); err != nil {
+				return err
+			}
+		}
+		if _, err := io.Copy(&msg, &mimeBody); err != nil {
+			return err
+		}
+	} else {
+		var mixedBody bytes.Buffer
+		mw := multipart.NewWriter(&mixedBody)
+		boundary := mw.Boundary()
+		if err := writeMoveEmailMainPart(mw, html, logoPNG, publicLogoURL); err != nil {
+			return err
+		}
+		fn := strings.TrimSpace(pdfFileName)
+		if fn == "" {
+			fn = "move-report.pdf"
+		}
+		pdfh := make(textproto.MIMEHeader)
+		pdfh.Set("Content-Type", "application/pdf")
+		pdfh.Set("Content-Transfer-Encoding", "base64")
+		pdfh.Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{"filename": fn}))
+		pw, err := mw.CreatePart(pdfh)
+		if err != nil {
+			return err
+		}
+		b64 := base64.NewEncoder(base64.StdEncoding, pw)
+		if _, err := b64.Write(pdfAttachment); err != nil {
+			return err
+		}
+		if err := b64.Close(); err != nil {
+			return err
+		}
+		if err := mw.Close(); err != nil {
+			return err
+		}
+		msg.WriteString("MIME-Version: 1.0\r\n")
+		msg.WriteString("Content-Type: multipart/mixed; boundary=" + boundary + "\r\n\r\n")
+		msg.Write(mixedBody.Bytes())
 	}
 
 	auth := LoginAuth(from, password)
@@ -470,6 +560,7 @@ type TrackingMoveEmailData struct {
 	LogoDataURI         template.URL
 	ClientName          string
 	Country             string
+	TrackingID          string
 	TotalSamples        int
 	PreviousLocation    string
 	NewLocation         string
@@ -481,6 +572,12 @@ type TrackingMoveEmailData struct {
 	Year                int
 	MainMessage         string
 	Rows                []TrackingEmailDeviceRow
+	// In-store delivery confirmation (confirm-move-delivery); when true, template shows receiver + signature.
+	HasDeliveryConfirmation bool
+	ReceiverFullName        string
+	ReceiverRUT             string
+	ReceiverDeliveredAt     string
+	ReceiverSignatureDataURI template.URL
 }
 
 func GetTrackingBodyMessage(subject string, mainMessge string, rows []TrackingEmailDeviceRow,

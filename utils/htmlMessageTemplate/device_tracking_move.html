@@ -4,6 +4,19 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Device Movement Notification</title>
+  <style type="text/css">
+    /* PDF / print: keep delivery block on its own page (Chrome PrintToPDF honors @media print). */
+    @media print {
+      tr.in-store-delivery-section {
+        break-before: page;
+        page-break-before: always;
+      }
+      tr.in-store-delivery-section > td > table {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
 </head>
 <body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, Helvetica, sans-serif; color:#1f2937;">
   <table width="100%" cellpadding="0" cellspacing="0" style="padding:24px 0;">
@@ -58,9 +71,10 @@
                 </tr>
 
                 <tr>
+                  <td style="padding:10px;"><strong>Track Id</strong></td>
+                  <td style="padding:10px;">{{ if .TrackingID }}{{ .TrackingID }}{{ else }}—{{ end }}</td>
                   <td style="padding:10px;"><strong>Total Samples</strong></td>
                   <td style="padding:10px;">{{ .TotalSamples }}</td>
-                  <td style="padding:10px;" colspan="2"></td>
                 </tr>
 
                 <tr>
@@ -127,6 +141,42 @@
               </table>
             </td>
           </tr>
+
+          {{ if .HasDeliveryConfirmation }}
+          <tr class="in-store-delivery-section" style="break-before:page; page-break-before:always;">
+            <td style="padding:0 32px 24px 32px; break-inside:avoid; page-break-inside:avoid;">
+              <table width="100%" style="border:1px solid #e5e7eb; background:#fafafa; break-inside:avoid; page-break-inside:avoid;">
+                <tr>
+                  <td colspan="2" style="padding:12px 16px; background:#0b1736; color:#ffffff; font-weight:bold;">
+                    In-store delivery confirmation
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:10px; width:35%;"><strong>Receiver name</strong></td>
+                  <td style="padding:10px;">{{ .ReceiverFullName }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>ID / RUT</strong></td>
+                  <td style="padding:10px;">{{ .ReceiverRUT }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>Delivered at</strong></td>
+                  <td style="padding:10px;">{{ .ReceiverDeliveredAt }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px; vertical-align:top;"><strong>Signature</strong></td>
+                  <td style="padding:10px;">
+                    {{ if .ReceiverSignatureDataURI }}
+                    <img src="{{ .ReceiverSignatureDataURI }}" alt="Receiver signature" style="max-width:420px; max-height:180px; border:1px solid #e5e7eb; background:#fff;" />
+                    {{ else }}
+                    —
+                    {{ end }}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          {{ end }}
 
           <tr>
             <td style="padding:0 32px 32px 32px;">

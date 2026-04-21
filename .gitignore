@@ -16,6 +16,9 @@
 __debug_bin
 .env
 
+# Runbook local (no commitear; ver RUN_LOCAL.md)
+RUN_LOCAL.md
+
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
