@@ -22,6 +22,7 @@ func DeviceTrackinRequestToDeviceTracking(deviceTraking *request.DeviceTracking,
 		Comment:             deviceTraking.TrackingLog.Comment,
 		DocumentUrl:         deviceTraking.TrackingLog.DocumentUrl,
 		TrackingDate:        deviceTraking.TrackingLog.TrackingDate,
+		ExternalDelivery:    deviceTraking.TrackingLog.ExternalDelivery,
 		ProcessTypes:        append([]string{}, deviceTraking.TrackingLog.ProcessTypes...),
 	}
 	var trakings []models.TrackingLog = []models.TrackingLog{}
@@ -50,6 +51,7 @@ func TrackinLogRequestToTrackingLog(trackingLogReq *request.TrackingLog) *models
 		Comment:             trackingLogReq.Comment,
 		DocumentUrl:         trackingLogReq.DocumentUrl,
 		TrackingDate:        trackingLogReq.TrackingDate,
+		ExternalDelivery:    trackingLogReq.ExternalDelivery,
 		ProcessTypes:        append([]string{}, trackingLogReq.ProcessTypes...),
 	}
 }

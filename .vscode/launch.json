@@ -9,12 +9,13 @@
             "program": "${workspaceFolder}",
             "cwd": "${workspaceFolder}",
             "env": {
+                "AWS_PROFILE": "eb-cli",
                 "USE_LOCAL_ENV": "true",
                 "SECRET_KEY": "dev-secret-local",
-                "MONGO_URI": "mongodb://127.0.0.1:27017",
+                "MONGO_URI": "mongodb+srv://sa:abisaidvero1317@cluster0.lbp6r.mongodb.net/lbtechdev?retryWrites=true&w=majority",
                 "MONGO_DB": "lbtechdev",
-                "EMAIL_FROM": "your-email@example.com",
-                "EMAIL_PASSWORD": "your-app-password",
+                "EMAIL_FROM": "soporte@lbtechnology-la.com",
+                "EMAIL_PASSWORD": "sodaStereo04",
                 "EMAIL_PORT": "587",
                 "SMTP_CLIENTE": "smtp.office365.com"
             },

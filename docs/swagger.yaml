@@ -114,6 +114,32 @@ definitions:
     required:
     - name
     type: object
+  request.DeliveryConfirmMoveReportItem:
+    properties:
+      imeis:
+        items:
+          type: string
+        minItems: 1
+        type: array
+      tracking_id:
+        type: string
+    required:
+    - imeis
+    - tracking_id
+    type: object
+  request.DeliveryConfirmMoveReportRequest:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/request.DeliveryConfirmMoveReportItem'
+        minItems: 1
+        type: array
+      receiver:
+        $ref: '#/definitions/request.MoveDeliveryReceiver'
+    required:
+    - items
+    - receiver
+    type: object
   request.Device:
     properties:
       band_5g:
@@ -429,6 +455,22 @@ definitions:
     required:
     - name
     type: object
+  request.MoveDeliveryReceiver:
+    properties:
+      delivered_at:
+        type: string
+      full_name:
+        type: string
+      rut:
+        type: string
+      signature_png_data_url:
+        type: string
+    required:
+    - delivered_at
+    - full_name
+    - rut
+    - signature_png_data_url
+    type: object
   request.Notification:
     properties:
       company:
@@ -661,13 +703,21 @@ definitions:
         $ref: '#/definitions/request.Country'
       document_url:
         type: string
+      external_delivery:
+        type: boolean
       internal_responsible:
         $ref: '#/definitions/request.UserResume'
       location:
         $ref: '#/definitions/request.Location'
       person:
         $ref: '#/definitions/request.Person'
+      process_types:
+        items:
+          type: string
+        type: array
       tracking_date:
+        type: string
+      tracking_id:
         type: string
     required:
     - country
@@ -683,6 +733,10 @@ definitions:
         type: array
       tracking_log:
         $ref: '#/definitions/request.TrackingLog'
+      with_delivery:
+        description: 'WithDelivery when true: perform move but do not send notification
+          email.'
+        type: boolean
     required:
     - device_trackings
     - tracking_log
@@ -1266,6 +1320,87 @@ definitions:
         items:
           type: string
         type: array
+      relations:
+        $ref: '#/definitions/responses.SearchOptionRelations'
+    type: object
+  responses.SearchOptionRelationByBrand:
+    properties:
+      commercial_models:
+        items:
+          type: string
+        type: array
+      countries:
+        items:
+          type: string
+        type: array
+      locations:
+        items:
+          type: string
+        type: array
+    type: object
+  responses.SearchOptionRelationByCountry:
+    properties:
+      brands:
+        items:
+          type: string
+        type: array
+      commercial_models:
+        items:
+          type: string
+        type: array
+      locations:
+        items:
+          type: string
+        type: array
+    type: object
+  responses.SearchOptionRelationByLocation:
+    properties:
+      brands:
+        items:
+          type: string
+        type: array
+      commercial_models:
+        items:
+          type: string
+        type: array
+      countries:
+        items:
+          type: string
+        type: array
+    type: object
+  responses.SearchOptionRelationByModel:
+    properties:
+      brands:
+        items:
+          type: string
+        type: array
+      countries:
+        items:
+          type: string
+        type: array
+      locations:
+        items:
+          type: string
+        type: array
+    type: object
+  responses.SearchOptionRelations:
+    properties:
+      byBrand:
+        additionalProperties:
+          $ref: '#/definitions/responses.SearchOptionRelationByBrand'
+        type: object
+      byCountry:
+        additionalProperties:
+          $ref: '#/definitions/responses.SearchOptionRelationByCountry'
+        type: object
+      byLocation:
+        additionalProperties:
+          $ref: '#/definitions/responses.SearchOptionRelationByLocation'
+        type: object
+      byModel:
+        additionalProperties:
+          $ref: '#/definitions/responses.SearchOptionRelationByModel'
+        type: object
     type: object
   responses.StackedSerieChart:
     properties:
@@ -1442,6 +1577,8 @@ definitions:
         $ref: '#/definitions/responses.Country'
       document_url:
         type: string
+      external_delivery:
+        type: boolean
       external_responsible:
         type: string
       internal_responsible:
@@ -1450,7 +1587,13 @@ definitions:
         $ref: '#/definitions/responses.Location'
       person:
         $ref: '#/definitions/responses.Person'
+      process_types:
+        items:
+          type: string
+        type: array
       tracking_date:
+        type: string
+      tracking_id:
         type: string
     type: object
   responses.User:
@@ -2434,6 +2577,54 @@ paths:
       security:
       - Bearer: []
       summary: Búsqueda avanzada de trackings
+      tags:
+      - Device Tracking
+  /device-tracking/confirm-move-delivery:
+    post:
+      consumes:
+      - application/json
+      description: Para cada tracking_id + IMEIs, valida el mismo tracking log en
+        todos los device_tracking y dispara el correo + PDF como un movimiento con
+        with_delivery false.
+      parameters:
+      - description: Receiver + listas tracking_id + imeis
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.DeliveryConfirmMoveReportRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Proceso iniciado
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: No encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Datos inconsistentes
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Confirmar entrega en local y generar informe de movimiento
       tags:
       - Device Tracking
   /device-tracking/search-options:

@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/abisaidfarias/lbtechapi/repositories"
@@ -28,6 +29,25 @@ import (
 
 // ErrDeliveryConfirmNotFound means no device_tracking document matched imei + tracking_id (or log missing).
 var ErrDeliveryConfirmNotFound = errors.New("device tracking not found for imei and tracking_id")
+
+var (
+	santiagoTZOnce sync.Once
+	santiagoTZ     *time.Location
+)
+
+// santiagoLocation returns IANA America/Santiago for email/PDF display (Chile time).
+func santiagoLocation() *time.Location {
+	santiagoTZOnce.Do(func() {
+		loc, err := time.LoadLocation("America/Santiago")
+		if err != nil {
+			log.Printf("timezone America/Santiago unavailable (%v); using UTC-3 fallback for tracking email dates", err)
+			santiagoTZ = time.FixedZone("CLT", -3*60*60)
+			return
+		}
+		santiagoTZ = loc
+	})
+	return santiagoTZ
+}
 
 // ErrDeliveryConfirmInconsistent means the tracking log for the same tracking_id differs between devices.
 var ErrDeliveryConfirmInconsistent = errors.New("tracking log mismatch across devices for the same tracking_id")
@@ -83,21 +103,51 @@ func (s *deviceTrackingService) Create(deviceTrackingRequest *request.DeviceTrac
 	if err := enums.ValidateProcessTypes(deviceTrackingRequest.TrackingLog.ProcessTypes); err != nil {
 		return err
 	}
+
+	trackingID, err := s.deviceTrackingRepository.ReserveNextSequentialMoveTrackingID()
+	if err != nil {
+		return err
+	}
+	deviceTrackingRequest.TrackingLog.TrackingID = trackingID
+
+	var docIDs []string
 	for _, imei := range deviceTrackingRequest.Imeis {
 		deviceTracking := mapping.DeviceTrackinRequestToDeviceTracking(deviceTrackingRequest, imei)
 		err := s.deviceTrackingRepository.Create(deviceTracking)
-
 		if err != nil {
 			return err
+		}
+		if !deviceTracking.ID.IsZero() {
+			docIDs = append(docIDs, deviceTracking.ID.Hex())
 		}
 	}
 	companyId, _ := primitive.ObjectIDFromHex(deviceTrackingRequest.Company)
 
-	rows, err := s.buildTrackingEmailRowsSingleDevice(deviceTrackingRequest.Company, deviceTrackingRequest.Device,
+	rows, mailErr := s.buildTrackingEmailRowsSingleDevice(deviceTrackingRequest.Company, deviceTrackingRequest.Device,
 		deviceTrackingRequest.Imeis, &deviceTrackingRequest.TrackingLog, userID)
-	if err == nil && len(rows) > 0 {
-		go s.sendTrackingNotificationMail(rows, companyId, utils.CREATE, nil, "", nil, "")
+	if mailErr != nil || len(rows) == 0 {
+		return nil
 	}
+
+	idsCopy := append([]string(nil), docIDs...)
+	tid := trackingID
+	rws := rows
+	cid := companyId
+	go func() {
+		var pdfBytes []byte
+		if tid != "" && len(rws) > 0 {
+			b, err := renderMoveReportPDFBytes(tid, rws, nil, true)
+			if err != nil {
+				log.Printf("create report pdf: %v — email will be sent without attachment (install Chrome/Chromium or set CHROME_PATH)", err)
+			} else {
+				pdfBytes = b
+				saveMoveReportDebugPDF(moveReportDebugArtifactDir(), tid, pdfBytes)
+			}
+		}
+		pdfName := fmt.Sprintf("move-report-%s.pdf", sanitizeMoveReportIDForPath(tid))
+		s.sendTrackingNotificationMail(rws, cid, utils.CREATE, nil, tid, pdfBytes, pdfName)
+		s.persistMoveReportDocumentURL(idsCopy, tid, pdfBytes)
+	}()
 
 	return nil
 }
@@ -210,6 +260,9 @@ func moveDeliveryTrackingLogsEqual(a, b responses.TrackingLog) bool {
 	if !equalStringSlicesSorted(a.ProcessTypes, b.ProcessTypes) {
 		return false
 	}
+	if a.ExternalDelivery != b.ExternalDelivery {
+		return false
+	}
 	ta := a.TrackingDate.UTC().Truncate(time.Minute)
 	tb := b.TrackingDate.UTC().Truncate(time.Minute)
 	if !ta.Equal(tb) {
@@ -241,11 +294,12 @@ func responseTrackingLogToRequest(tl responses.TrackingLog) request.TrackingLog 
 			IsInternal: tl.InternalResponsible.IsInternal,
 			UserID:     uid,
 		},
-		Person:       request.Person{Name: tl.Person.Name},
-		Comment:      tl.Comment,
-		DocumentUrl:  tl.DocumentUrl,
-		TrackingDate: tl.TrackingDate,
-		ProcessTypes: append([]string{}, tl.ProcessTypes...),
+		Person:           request.Person{Name: tl.Person.Name},
+		Comment:          tl.Comment,
+		DocumentUrl:      tl.DocumentUrl,
+		TrackingDate:     tl.TrackingDate,
+		ExternalDelivery: tl.ExternalDelivery,
+		ProcessTypes:     append([]string{}, tl.ProcessTypes...),
 	}
 }
 
@@ -645,6 +699,11 @@ func (s *deviceTrackingService) sendTrackingNotificationMail(rows []functions.Tr
 		subject = fmt.Sprintf("Subject: New Sample(s) received at LB Technology for %s %s %s",
 			first.Country, first.Brand, first.CommercialModel)
 		mainMessage = utils.CREATE_TRACKING_MAIN_MESSAGE
+		moveData := createTrackingRowsToEmailData(rows, mainMessage, moveTrackingID)
+		if err := functions.SendNotificationsMoveEmail(toList, subject, moveData, utils.TEMPLATE_TRACKING_MOVE_PATH, utils.LBOneTrackLogoPNG, pdfAttachment, pdfFileName); err != nil {
+			log.Printf("tracking create notification email: %v", err)
+		}
+		return
 	case utils.TRACKING_MOVE:
 		if len(rows) > 1 {
 			subject = fmt.Sprintf("Subject: Sample(s) has been moved of location to %s", first.NewLocation)
@@ -664,22 +723,38 @@ func (s *deviceTrackingService) sendTrackingNotificationMail(rows []functions.Tr
 	default:
 		return
 	}
-
-	body, err := functions.GetTrackingBodyMessage(subject, mainMessage, rows, utils.TEMPLATE_TRACKING_PATH)
-	if err != nil {
-		return
-	}
-	functions.SendNotifications(toList, body)
 }
 
 func moveTrackingRowsToEmailData(rows []functions.TrackingEmailDeviceRow, mainMessage string, trackingID string) functions.TrackingMoveEmailData {
 	first := rows[0]
 	return functions.TrackingMoveEmailData{
+		IsMovement:          true,
 		ClientName:          first.Client,
 		Country:             first.Country,
 		TrackingID:          strings.TrimSpace(trackingID),
 		TotalSamples:        len(rows),
 		PreviousLocation:    summarizePreviousLocations(rows),
+		NewLocation:         first.NewLocation,
+		RegistrationDate:    first.RegistrationDate,
+		LBResponsible:       first.LBResponsible,
+		ExternalResponsible: first.ExternalResponsible,
+		RegisteredBy:        first.RegisteredBy,
+		Comments:            first.Comments,
+		Year:                time.Now().Year(),
+		MainMessage:         mainMessage,
+		Rows:                rows,
+	}
+}
+
+func createTrackingRowsToEmailData(rows []functions.TrackingEmailDeviceRow, mainMessage string, trackingID string) functions.TrackingMoveEmailData {
+	first := rows[0]
+	return functions.TrackingMoveEmailData{
+		IsMovement:          false,
+		ClientName:          first.Client,
+		Country:             first.Country,
+		TrackingID:          strings.TrimSpace(trackingID),
+		TotalSamples:        len(rows),
+		PreviousLocation:    "—",
 		NewLocation:         first.NewLocation,
 		RegistrationDate:    first.RegistrationDate,
 		LBResponsible:       first.LBResponsible,
@@ -744,16 +819,22 @@ func saveMoveReportDebugPDF(debugDir, trackingID string, pdfBytes []byte) {
 	}
 }
 
-// renderMoveReportPDFBytes builds the same HTML as the stored move report and renders it to PDF (Chrome).
+// renderMoveReportPDFBytes builds the same HTML as the move/registration email and renders it to PDF (Chrome).
+// registration=true uses CREATE copy and Registration Summary layout; otherwise movement layout.
 func renderMoveReportPDFBytes(trackingID string,
-	rows []functions.TrackingEmailDeviceRow, receiver *request.MoveDeliveryReceiver) ([]byte, error) {
+	rows []functions.TrackingEmailDeviceRow, receiver *request.MoveDeliveryReceiver, registration bool) ([]byte, error) {
 	if trackingID == "" || len(rows) == 0 {
 		return nil, fmt.Errorf("move report pdf: missing tracking id or rows")
 	}
 	if strings.TrimSpace(os.Getenv("TRACKING_SKIP_MOVE_PDF")) == "true" {
 		return nil, fmt.Errorf("TRACKING_SKIP_MOVE_PDF=true")
 	}
-	moveData := moveTrackingRowsToEmailData(rows, utils.MOVE_TRACKING_MAIN_MESSAGE, trackingID)
+	var moveData functions.TrackingMoveEmailData
+	if registration {
+		moveData = createTrackingRowsToEmailData(rows, utils.CREATE_TRACKING_MAIN_MESSAGE, trackingID)
+	} else {
+		moveData = moveTrackingRowsToEmailData(rows, utils.MOVE_TRACKING_MAIN_MESSAGE, trackingID)
+	}
 	publicLogoURL := strings.TrimSpace(os.Getenv("TRACKING_LOGO_URL"))
 	switch {
 	case publicLogoURL != "":
@@ -869,7 +950,8 @@ func formatTrackingDateTimeForEmail(t time.Time) string {
 	if t.IsZero() {
 		return ""
 	}
-	return t.Format("02/01/2006 15:04")
+	// DB stores an instant (UTC); show Chile (Santiago) civil time in notifications.
+	return t.In(santiagoLocation()).Format("02/01/2006 15:04")
 }
 
 func (s *deviceTrackingService) buildTrackingEmailRowsSingleDevice(companyHex, deviceHex string, imeis []string,
@@ -996,7 +1078,7 @@ func (s *deviceTrackingService) MoveTrackingNotification(deviceTrackingsId []str
 		go func() {
 			var pdfBytes []byte
 			if tid != "" && len(rws) > 0 {
-				b, err := renderMoveReportPDFBytes(tid, rws, rcv)
+				b, err := renderMoveReportPDFBytes(tid, rws, rcv, false)
 				if err != nil {
 					log.Printf("move report pdf: %v — email will be sent without attachment (install Chrome/Chromium or set CHROME_PATH)", err)
 				} else {

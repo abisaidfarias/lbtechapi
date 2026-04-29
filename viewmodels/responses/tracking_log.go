@@ -15,5 +15,6 @@ type TrackingLog struct {
 	DocumentUrl         string    `bson:"document_url" json:"document_url"`
 	TrackingDate        time.Time `bson:"tracking_date" json:"tracking_date"`
 	ExternalResponsible string    `bson:"external_responsible" json:"external_responsible"`
+	ExternalDelivery    bool      `bson:"external_delivery" json:"external_delivery"`
 	ProcessTypes        []string  `bson:"process_types" json:"process_types"`
 }

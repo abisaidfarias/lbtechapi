@@ -61,10 +61,13 @@ var moveTrackingIDSeqCollection = database.GetInstance().Collection("move_tracki
 // Create a new tet case
 func (r *deviceTrackingRepository) Create(deviceTracking *models.DeviceTracking) error {
 
-	_, err := deviceTrackingCollection.InsertOne(context.TODO(), deviceTracking)
+	res, err := deviceTrackingCollection.InsertOne(context.TODO(), deviceTracking)
 
 	if err != nil {
 		return err
+	}
+	if oid, ok := res.InsertedID.(primitive.ObjectID); ok {
+		deviceTracking.ID = oid
 	}
 	return nil
 }

@@ -1283,6 +1283,78 @@ const docTemplate = `{
                 }
             }
         },
+        "/device-tracking/confirm-move-delivery": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Para cada tracking_id + IMEIs, valida el mismo tracking log en todos los device_tracking y dispara el correo + PDF como un movimiento con with_delivery false.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Device Tracking"
+                ],
+                "summary": "Confirmar entrega en local y generar informe de movimiento",
+                "parameters": [
+                    {
+                        "description": "Receiver + listas tracking_id + imeis",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.DeliveryConfirmMoveReportRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Proceso iniciado"
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No encontrado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Datos inconsistentes",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/device-tracking/search-options": {
             "get": {
                 "security": [
@@ -5279,6 +5351,44 @@ const docTemplate = `{
                 }
             }
         },
+        "request.DeliveryConfirmMoveReportItem": {
+            "type": "object",
+            "required": [
+                "imeis",
+                "tracking_id"
+            ],
+            "properties": {
+                "imeis": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tracking_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.DeliveryConfirmMoveReportRequest": {
+            "type": "object",
+            "required": [
+                "items",
+                "receiver"
+            ],
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/request.DeliveryConfirmMoveReportItem"
+                    }
+                },
+                "receiver": {
+                    "$ref": "#/definitions/request.MoveDeliveryReceiver"
+                }
+            }
+        },
         "request.Device": {
             "type": "object",
             "required": [
@@ -5752,6 +5862,29 @@ const docTemplate = `{
                 }
             }
         },
+        "request.MoveDeliveryReceiver": {
+            "type": "object",
+            "required": [
+                "delivered_at",
+                "full_name",
+                "rut",
+                "signature_png_data_url"
+            ],
+            "properties": {
+                "delivered_at": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "rut": {
+                    "type": "string"
+                },
+                "signature_png_data_url": {
+                    "type": "string"
+                }
+            }
+        },
         "request.Notification": {
             "type": "object",
             "required": [
@@ -6109,6 +6242,9 @@ const docTemplate = `{
                 "document_url": {
                     "type": "string"
                 },
+                "external_delivery": {
+                    "type": "boolean"
+                },
                 "internal_responsible": {
                     "$ref": "#/definitions/request.UserResume"
                 },
@@ -6118,7 +6254,16 @@ const docTemplate = `{
                 "person": {
                     "$ref": "#/definitions/request.Person"
                 },
+                "process_types": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "tracking_date": {
+                    "type": "string"
+                },
+                "tracking_id": {
                     "type": "string"
                 }
             }
@@ -6138,6 +6283,10 @@ const docTemplate = `{
                 },
                 "tracking_log": {
                     "$ref": "#/definitions/request.TrackingLog"
+                },
+                "with_delivery": {
+                    "description": "WithDelivery when true: perform move but do not send notification email.",
+                    "type": "boolean"
                 }
             }
         },
@@ -7017,6 +7166,130 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "relations": {
+                    "$ref": "#/definitions/responses.SearchOptionRelations"
+                }
+            }
+        },
+        "responses.SearchOptionRelationByBrand": {
+            "type": "object",
+            "properties": {
+                "commercial_models": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "countries": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "locations": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "responses.SearchOptionRelationByCountry": {
+            "type": "object",
+            "properties": {
+                "brands": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "commercial_models": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "locations": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "responses.SearchOptionRelationByLocation": {
+            "type": "object",
+            "properties": {
+                "brands": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "commercial_models": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "countries": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "responses.SearchOptionRelationByModel": {
+            "type": "object",
+            "properties": {
+                "brands": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "countries": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "locations": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "responses.SearchOptionRelations": {
+            "type": "object",
+            "properties": {
+                "byBrand": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/responses.SearchOptionRelationByBrand"
+                    }
+                },
+                "byCountry": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/responses.SearchOptionRelationByCountry"
+                    }
+                },
+                "byLocation": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/responses.SearchOptionRelationByLocation"
+                    }
+                },
+                "byModel": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/responses.SearchOptionRelationByModel"
+                    }
                 }
             }
         },
@@ -7283,6 +7556,9 @@ const docTemplate = `{
                 "document_url": {
                     "type": "string"
                 },
+                "external_delivery": {
+                    "type": "boolean"
+                },
                 "external_responsible": {
                     "type": "string"
                 },
@@ -7295,7 +7571,16 @@ const docTemplate = `{
                 "person": {
                     "$ref": "#/definitions/responses.Person"
                 },
+                "process_types": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "tracking_date": {
+                    "type": "string"
+                },
+                "tracking_id": {
                     "type": "string"
                 }
             }

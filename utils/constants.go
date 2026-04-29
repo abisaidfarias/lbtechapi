@@ -41,7 +41,6 @@ var APPROVED_MAIN_MESSAGE = "Homologation process has been APPROVED for the Carr
 var REJECTED_MAIN_MESSAGE = "Homologation process has been REJECTED for the Carrier on date"
 var CREATE_TRACKING_MAIN_MESSAGE = "New Sample(s) arrives to our Laboratory/Office"
 var MOVE_TRACKING_MAIN_MESSAGE = "Following Sample(s) has been moved of location"
-var TEMPLATE_TRACKING_PATH = "utils/htmlMessageTemplate/device_tracking.html"
 var TEMPLATE_TRACKING_MOVE_PATH = "utils/htmlMessageTemplate/device_tracking_move.html"
 var TEMPLATE_HOMOLOGATION_PATH = "utils/htmlMessageTemplate/createHomologation.html"
 var TEMPLATE_FAIL_PATH = "utils/htmlMessageTemplate/createFail.html"

@@ -554,8 +554,10 @@ type TrackingEmailDeviceRow struct {
 	RegisteredBy        string
 }
 
-// TrackingMoveEmailData is passed to the movement notification HTML template.
+// TrackingMoveEmailData is passed to the movement / registration notification HTML template.
 type TrackingMoveEmailData struct {
+	// IsMovement distinguishes move notifications from new-sample (CREATE) registration emails (copy + summary title).
+	IsMovement bool
 	// LogoDataURI is set at send time to cid:lbonetrack-logo (inline PNG) or empty when no logo.
 	LogoDataURI         template.URL
 	ClientName          string
@@ -578,27 +580,6 @@ type TrackingMoveEmailData struct {
 	ReceiverRUT             string
 	ReceiverDeliveredAt     string
 	ReceiverSignatureDataURI template.URL
-}
-
-func GetTrackingBodyMessage(subject string, mainMessge string, rows []TrackingEmailDeviceRow,
-	templatePath string) (bytes.Buffer, error) {
-
-	var body bytes.Buffer
-	body.Write([]byte(fmt.Sprintf("%s \n%s\n\n", subject, utils.MIME_HEADERS)))
-
-	t, err := template.ParseFiles(templatePath)
-	if err != nil {
-		return body, err
-	}
-	t.Execute(&body, struct {
-		MainMessage string
-		Rows        []TrackingEmailDeviceRow
-	}{
-		MainMessage: mainMessge,
-		Rows:        rows,
-	})
-
-	return body, nil
 }
 
 type loginAuth struct {

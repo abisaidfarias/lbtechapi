@@ -7,12 +7,14 @@ const (
 	ProcessTypeTesting                  = "Testing"
 	ProcessTypeCertificadoMultibandaSAE = "Certificado Multibanda SAE"
 	ProcessTypeATP                      = "ATP"
+	ProcessTypeDevolucionDispositivos   = "Devolucion de dispositivo(s)"
 )
 
 var allowedProcessTypes = map[string]struct{}{
 	ProcessTypeTesting:                  {},
 	ProcessTypeCertificadoMultibandaSAE: {},
 	ProcessTypeATP:                      {},
+	ProcessTypeDevolucionDispositivos:   {},
 }
 
 // AllowedProcessTypes is the ordered list for clients (dropdowns, docs).
@@ -20,6 +22,7 @@ var AllowedProcessTypes = []string{
 	ProcessTypeTesting,
 	ProcessTypeCertificadoMultibandaSAE,
 	ProcessTypeATP,
+	ProcessTypeDevolucionDispositivos,
 }
 
 // ValidateProcessTypes returns an error if any value is not one of the allowed labels.

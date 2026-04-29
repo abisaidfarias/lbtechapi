@@ -45,7 +45,7 @@ func movementHTMLToPDF(html []byte) ([]byte, error) {
 	defer cancelAlloc()
 	ctx, cancelCtx := chromedp.NewContext(allocCtx)
 	defer cancelCtx()
-	ctx, cancelTO := context.WithTimeout(ctx, 90*time.Second)
+	ctx, cancelTO := context.WithTimeout(ctx, 180*time.Second)
 	defer cancelTO()
 
 	var pdf []byte
