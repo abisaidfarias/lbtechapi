@@ -57,6 +57,31 @@ jobs:
           }
           EOF
 
+      - name: Wait until Beanstalk environment is Ready
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          set -e
+          for i in $(seq 1 40); do
+            STATUS=$(aws elasticbeanstalk describe-environments \
+              --environment-names lbtechapi \
+              --query 'Environments[0].Status' \
+              --output text)
+            HEALTH=$(aws elasticbeanstalk describe-environments \
+              --environment-names lbtechapi \
+              --query 'Environments[0].Health' \
+              --output text)
+            echo "[$i/40] lbtechapi Status=$STATUS Health=$HEALTH"
+            if [ "$STATUS" = "Ready" ]; then
+              exit 0
+            fi
+            sleep 30
+          done
+          echo "::error::Timed out waiting for Ready (20m). Check Elastic Beanstalk: abort stuck update or fix the environment."
+          exit 1
+
       - name: Deploy to Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v22
         with:
