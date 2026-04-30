@@ -67,6 +67,7 @@ jobs:
           region: us-east-1
           version_label: dev-${{ github.sha }}
           deployment_package: Dockerrun.dev.aws.json
+          use_existing_version_if_available: true
 
       - name: Verify deployment
         run: |
