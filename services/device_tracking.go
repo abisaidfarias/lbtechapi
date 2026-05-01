@@ -133,21 +133,19 @@ func (s *deviceTrackingService) Create(deviceTrackingRequest *request.DeviceTrac
 	tid := trackingID
 	rws := rows
 	cid := companyId
-	go func() {
-		var pdfBytes []byte
-		if tid != "" && len(rws) > 0 {
-			b, err := renderMoveReportPDFBytes(tid, rws, nil, true)
-			if err != nil {
-				log.Printf("create report pdf: %v — email will be sent without attachment (install Chrome/Chromium or set CHROME_PATH)", err)
-			} else {
-				pdfBytes = b
-				saveMoveReportDebugPDF(moveReportDebugArtifactDir(), tid, pdfBytes)
-			}
+	var pdfBytes []byte
+	if tid != "" && len(rws) > 0 {
+		b, err := renderMoveReportPDFBytes(tid, rws, nil, true)
+		if err != nil {
+			log.Printf("create report pdf: %v — %s", err, moveReportPDFErrHint(err))
+		} else {
+			pdfBytes = b
+			saveMoveReportDebugPDF(moveReportDebugArtifactDir(), tid, pdfBytes)
 		}
-		pdfName := fmt.Sprintf("move-report-%s.pdf", sanitizeMoveReportIDForPath(tid))
-		s.sendTrackingNotificationMail(rws, cid, utils.CREATE, nil, tid, pdfBytes, pdfName)
-		s.persistMoveReportDocumentURL(idsCopy, tid, pdfBytes)
-	}()
+	}
+	pdfName := fmt.Sprintf("move-report-%s.pdf", sanitizeMoveReportIDForPath(tid))
+	s.sendTrackingNotificationMail(rws, cid, utils.CREATE, nil, tid, pdfBytes, pdfName)
+	s.persistMoveReportDocumentURL(idsCopy, tid, pdfBytes)
 
 	return nil
 }
@@ -210,7 +208,7 @@ func (s *deviceTrackingService) AddTrakingLog(trackingLogReq *request.TrackingLo
 			return "", err
 		}
 	}
-	go s.MoveTrackingNotification(devicesTrackingsId, trackingLogReq.TrackingLog, userID, trackingLogReq.WithDelivery, nil)
+	s.MoveTrackingNotification(devicesTrackingsId, trackingLogReq.TrackingLog, userID, trackingLogReq.WithDelivery, nil)
 	return trackingID, nil
 }
 
@@ -1075,23 +1073,21 @@ func (s *deviceTrackingService) MoveTrackingNotification(deviceTrackingsId []str
 		cid := companyId
 		wDel := withDelivery
 		rcv := receiver
-		go func() {
-			var pdfBytes []byte
-			if tid != "" && len(rws) > 0 {
-				b, err := renderMoveReportPDFBytes(tid, rws, rcv, false)
-				if err != nil {
-					log.Printf("move report pdf: %v — email will be sent without attachment (install Chrome/Chromium or set CHROME_PATH)", err)
-				} else {
-					pdfBytes = b
-					saveMoveReportDebugPDF(moveReportDebugArtifactDir(), tid, pdfBytes)
-				}
+		var pdfBytes []byte
+		if tid != "" && len(rws) > 0 {
+			b, err := renderMoveReportPDFBytes(tid, rws, rcv, false)
+			if err != nil {
+				log.Printf("move report pdf: %v — %s", err, moveReportPDFErrHint(err))
+			} else {
+				pdfBytes = b
+				saveMoveReportDebugPDF(moveReportDebugArtifactDir(), tid, pdfBytes)
 			}
-			pdfName := fmt.Sprintf("move-report-%s.pdf", sanitizeMoveReportIDForPath(tid))
-			if !wDel {
-				s.sendTrackingNotificationMail(rws, cid, utils.TRACKING_MOVE, rcv, tid, pdfBytes, pdfName)
-			}
-			s.persistMoveReportDocumentURL(idsCopy, tid, pdfBytes)
-		}()
+		}
+		pdfName := fmt.Sprintf("move-report-%s.pdf", sanitizeMoveReportIDForPath(tid))
+		if !wDel {
+			s.sendTrackingNotificationMail(rws, cid, utils.TRACKING_MOVE, rcv, tid, pdfBytes, pdfName)
+		}
+		s.persistMoveReportDocumentURL(idsCopy, tid, pdfBytes)
 	}
 }
 func isContained(trackingLog responses.TrackingLog, locations []string, countries []string) bool {
