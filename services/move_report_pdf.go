@@ -16,7 +16,7 @@ import (
 )
 
 func moveReportPDFTimeout() time.Duration {
-	const defaultSec = 300
+	const defaultSec = 600 // 10m; dev/EB often needs more than 5m for chromedp + heavy HTML
 	s := strings.TrimSpace(os.Getenv("MOVE_REPORT_PDF_TIMEOUT_SEC"))
 	if s == "" {
 		return time.Duration(defaultSec) * time.Second
