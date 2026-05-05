@@ -78,7 +78,7 @@ func GetDeviceTrackingExpanded(isInternal bool, companyID primitive.ObjectID,
 	}
 	if len(companies) > 0 {
 		var companyStageIn bson.D
-		companyStageIn = append(companyStageIn, primitive.E{Key: "$in", Value: countries})
+		companyStageIn = append(companyStageIn, primitive.E{Key: "$in", Value: companies})
 		objectStage = append(objectStage, primitive.E{Key: "company._id",
 			Value: companyStageIn})
 		hasStage = true
@@ -182,7 +182,7 @@ func GetDeviceTrackingAdvancedSearch(companyID primitive.ObjectID,
 	}
 	if len(companies) > 0 {
 		var companyStageIn bson.D
-		companyStageIn = append(companyStageIn, primitive.E{Key: "$in", Value: countries})
+		companyStageIn = append(companyStageIn, primitive.E{Key: "$in", Value: companies})
 		objectStage = append(objectStage, primitive.E{Key: "company._id",
 			Value: companyStageIn})
 		hasStage = true
