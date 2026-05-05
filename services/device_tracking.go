@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -129,25 +130,7 @@ func (s *deviceTrackingService) Create(deviceTrackingRequest *request.DeviceTrac
 		return nil
 	}
 
-	idsCopy := append([]string(nil), docIDs...)
-	tid := trackingID
-	rws := rows
-	cid := companyId
-	go func() {
-		var pdfBytes []byte
-		if tid != "" && len(rws) > 0 {
-			b, err := renderMoveReportPDFBytes(tid, rws, nil, true)
-			if err != nil {
-				log.Printf("create report pdf: %v — %s", err, moveReportPDFErrHint(err))
-			} else {
-				pdfBytes = b
-				saveMoveReportDebugPDF(moveReportDebugArtifactDir(), tid, pdfBytes)
-			}
-		}
-		pdfName := fmt.Sprintf("move-report-%s.pdf", sanitizeMoveReportIDForPath(tid))
-		s.sendTrackingNotificationMail(rws, cid, utils.CREATE, nil, tid, pdfBytes, pdfName)
-		s.persistMoveReportDocumentURL(idsCopy, tid, pdfBytes)
-	}()
+	go s.ensureMoveReportArtifacts(docIDs, trackingID, rows, nil, true, false, companyId, emailKindCreate)
 
 	return nil
 }
@@ -678,9 +661,12 @@ func exportFileDeviceTracking(deviceTrackings []*responses.DeviceTrackingExpande
 	}
 	return b, nil
 }
+// sendTrackingNotificationMail sends the move/create notification with a link
+// (documentURL) to the PDF report when it is already in S3, or with a fallback
+// note when it is still pending. The PDF is never attached to the email itself.
 func (s *deviceTrackingService) sendTrackingNotificationMail(rows []functions.TrackingEmailDeviceRow,
 	companyId primitive.ObjectID, key string, receiver *request.MoveDeliveryReceiver, moveTrackingID string,
-	pdfAttachment []byte, pdfFileName string) {
+	documentURL string) {
 
 	if len(rows) == 0 {
 		return
@@ -700,7 +686,8 @@ func (s *deviceTrackingService) sendTrackingNotificationMail(rows []functions.Tr
 			first.Country, first.Brand, first.CommercialModel)
 		mainMessage = utils.CREATE_TRACKING_MAIN_MESSAGE
 		moveData := createTrackingRowsToEmailData(rows, mainMessage, moveTrackingID)
-		if err := functions.SendNotificationsMoveEmail(toList, subject, moveData, utils.TEMPLATE_TRACKING_MOVE_PATH, utils.LBOneTrackLogoPNG, pdfAttachment, pdfFileName); err != nil {
+		applyMoveReportLinkToMoveData(&moveData, documentURL)
+		if err := functions.SendNotificationsMoveEmail(toList, subject, moveData, utils.TEMPLATE_TRACKING_MOVE_PATH, utils.LBOneTrackLogoPNG, documentURL); err != nil {
 			log.Printf("tracking create notification email: %v", err)
 		}
 		return
@@ -716,12 +703,28 @@ func (s *deviceTrackingService) sendTrackingNotificationMail(rows []functions.Tr
 		if receiver != nil {
 			applyMoveDeliveryReceiverToMoveData(&moveData, receiver)
 		}
-		if err := functions.SendNotificationsMoveEmail(toList, subject, moveData, utils.TEMPLATE_TRACKING_MOVE_PATH, utils.LBOneTrackLogoPNG, pdfAttachment, pdfFileName); err != nil {
+		applyMoveReportLinkToMoveData(&moveData, documentURL)
+		if err := functions.SendNotificationsMoveEmail(toList, subject, moveData, utils.TEMPLATE_TRACKING_MOVE_PATH, utils.LBOneTrackLogoPNG, documentURL); err != nil {
 			log.Printf("movement notification email: %v", err)
 		}
 		return
 	default:
 		return
+	}
+}
+
+// applyMoveReportLinkToMoveData fills the link / pending-note fields the email
+// template uses to render either the download button or the fallback message.
+func applyMoveReportLinkToMoveData(d *functions.TrackingMoveEmailData, documentURL string) {
+	d.DocumentURL = strings.TrimSpace(documentURL)
+	if d.DocumentURL == "" {
+		note := strings.TrimSpace(os.Getenv("MOVE_REPORT_PENDING_NOTE"))
+		if note == "" {
+			note = "The PDF report is being generated and will be available in the LB Technology platform shortly."
+		}
+		d.DocumentPendingNote = note
+	} else {
+		d.DocumentPendingNote = ""
 	}
 }
 
@@ -819,10 +822,32 @@ func saveMoveReportDebugPDF(debugDir, trackingID string, pdfBytes []byte) {
 	}
 }
 
+// moveReportEmailKind selects which copy/subject family the orchestrator uses
+// when sending the notification email (or skips the email entirely).
+type moveReportEmailKind int
+
+const (
+	emailKindNone moveReportEmailKind = iota
+	emailKindCreate
+	emailKindMove
+)
+
+func emailKindToKey(k moveReportEmailKind) string {
+	switch k {
+	case emailKindCreate:
+		return utils.CREATE
+	case emailKindMove:
+		return utils.TRACKING_MOVE
+	default:
+		return ""
+	}
+}
+
 // renderMoveReportPDFBytes builds the same HTML as the move/registration email and renders it to PDF (Chrome).
 // registration=true uses CREATE copy and Registration Summary layout; otherwise movement layout.
+// Pass a non-zero timeout to override the default Chrome PDF timeout (used for fast vs slow phases).
 func renderMoveReportPDFBytes(trackingID string,
-	rows []functions.TrackingEmailDeviceRow, receiver *request.MoveDeliveryReceiver, registration bool) ([]byte, error) {
+	rows []functions.TrackingEmailDeviceRow, receiver *request.MoveDeliveryReceiver, registration bool, timeout time.Duration) ([]byte, error) {
 	if trackingID == "" || len(rows) == 0 {
 		return nil, fmt.Errorf("move report pdf: missing tracking id or rows")
 	}
@@ -852,35 +877,99 @@ func renderMoveReportPDFBytes(trackingID string,
 	if err != nil {
 		return nil, err
 	}
-	pdfBytes, pdfErr := movementHTMLToPDF(htmlBytes)
+	pdfBytes, pdfErr := movementHTMLToPDFWithTimeout(htmlBytes, timeout)
 	if pdfErr != nil {
 		return nil, pdfErr
 	}
 	return pdfBytes, nil
 }
 
-func (s *deviceTrackingService) persistMoveReportDocumentURL(docIDHexes []string, trackingID string, pdfBytes []byte) {
-	if trackingID == "" || len(docIDHexes) == 0 || len(pdfBytes) == 0 {
-		return
-	}
+// uploadMoveReportToS3 uploads the PDF bytes to S3 with up to 3 retries.
+// Returns the resulting public URL, or an error if every attempt failed.
+func (s *deviceTrackingService) uploadMoveReportToS3(trackingID string, pdfBytes []byte, objectKey string) (string, error) {
 	if s.storageService == nil {
-		log.Printf("move report: storage not configured, document_url not saved (tracking_id=%s)", trackingID)
-		return
+		return "", fmt.Errorf("storage not configured")
+	}
+	if len(pdfBytes) == 0 {
+		return "", fmt.Errorf("empty pdf bytes")
 	}
 	var url string
 	var err error
 	for attempt := 1; attempt <= 3; attempt++ {
-		url, err = s.storageService.UploadFile(pdfBytes)
+		url, err = s.storageService.UploadFileWithKey(pdfBytes, objectKey)
 		if err == nil {
-			break
+			return url, nil
 		}
-		log.Printf("move report s3 upload attempt %d/3: %v", attempt, err)
+		log.Printf("move report s3 upload attempt %d/3 (tracking_id=%s key=%s): %v", attempt, trackingID, objectKey, err)
 		if attempt < 3 {
 			time.Sleep(time.Duration(attempt) * 400 * time.Millisecond)
 		}
 	}
-	if err != nil {
-		log.Printf("move report s3 upload: %v", err)
+	return "", err
+}
+
+// moveReportS3Prefix returns the folder prefix for move-report PDFs (no leading/trailing slash).
+func moveReportS3Prefix() string {
+	p := strings.TrimSpace(os.Getenv("MOVE_REPORT_S3_PREFIX"))
+	if p == "" {
+		return "move-reports"
+	}
+	return strings.Trim(p, "/")
+}
+
+func digitsOnlyImei(s string) string {
+	var b strings.Builder
+	for _, r := range s {
+		if r >= '0' && r <= '9' {
+			b.WriteRune(r)
+		}
+	}
+	return b.String()
+}
+
+// moveReportCreationNumSegment picks the "number of IMEI" segment for the filename:
+// one device → digits of that IMEI; several devices → count of samples (IMEI rows).
+func moveReportCreationNumSegment(rows []functions.TrackingEmailDeviceRow) string {
+	if len(rows) == 1 {
+		d := digitsOnlyImei(rows[0].Imei)
+		if d != "" {
+			return d
+		}
+	}
+	if len(rows) == 0 {
+		return "1"
+	}
+	return strconv.Itoa(len(rows))
+}
+
+// moveReportS3ObjectKey builds the S3 object key for the move-report PDF.
+//
+// Creation (POST device-tracking): C-<imei or count>-<tracking_id>.pdf
+//   — one IMEI: C-<15 dígitos>-<tracking_id>.pdf; varios: C-<cantidad>-<tracking_id>.pdf
+//
+// Movement (PUT move / POST confirm-delivery): M{C|D}-<tracking_id>.pdf
+//   — MC = direct client (external_delivery false), MD = external delivery.
+func moveReportS3ObjectKey(registration bool, trackingID string, externalDelivery bool, rows []functions.TrackingEmailDeviceRow) string {
+	prefix := moveReportS3Prefix()
+	tid := sanitizeMoveReportIDForPath(trackingID)
+	if tid == "" {
+		tid = "unknown"
+	}
+	if registration {
+		num := moveReportCreationNumSegment(rows)
+		return fmt.Sprintf("%s/C-%s-%s.pdf", prefix, num, tid)
+	}
+	channel := "C"
+	if externalDelivery {
+		channel = "D"
+	}
+	return fmt.Sprintf("%s/M%s-%s.pdf", prefix, channel, tid)
+}
+
+// persistMoveReportDocumentURL writes the (already-uploaded) URL into every
+// tracking_log entry that matches the trackingID for the given device-tracking docs.
+func (s *deviceTrackingService) persistMoveReportDocumentURL(docIDHexes []string, trackingID, url string) {
+	if trackingID == "" || len(docIDHexes) == 0 || strings.TrimSpace(url) == "" {
 		return
 	}
 	log.Printf("move report stored document_url=%s tracking_id=%s format=pdf", url, trackingID)
@@ -898,6 +987,127 @@ func (s *deviceTrackingService) persistMoveReportDocumentURL(docIDHexes []string
 	if err := s.deviceTrackingRepository.SetTrackingLogDocumentURLByTrackingID(oids, trackingID, url); err != nil {
 		log.Printf("move report document_url update: %v", err)
 	}
+}
+
+func envIntPositive(name string, def int) int {
+	s := strings.TrimSpace(os.Getenv(name))
+	if s == "" {
+		return def
+	}
+	n, err := strconv.Atoi(s)
+	if err != nil || n <= 0 {
+		return def
+	}
+	return n
+}
+
+// ensureMoveReportArtifacts is the orchestrator that, in a single goroutine,
+// (a) tries to produce the PDF quickly so the notification email can carry a
+// download link, and (b) keeps retrying in background until the PDF lands in S3
+// and tracking_log.document_url is populated. The two concerns are independent:
+// even if the email already went out without a link, the slow phase keeps
+// retrying so the platform's "consult record" flow eventually shows the PDF.
+func (s *deviceTrackingService) ensureMoveReportArtifacts(
+	docIDHexes []string,
+	trackingID string,
+	rows []functions.TrackingEmailDeviceRow,
+	receiver *request.MoveDeliveryReceiver,
+	registration bool,
+	externalDelivery bool,
+	companyId primitive.ObjectID,
+	emailKind moveReportEmailKind,
+) {
+	if trackingID == "" || len(rows) == 0 {
+		return
+	}
+
+	idsCopy := append([]string(nil), docIDHexes...)
+	emailKey := emailKindToKey(emailKind)
+	objectKey := moveReportS3ObjectKey(registration, trackingID, externalDelivery, rows)
+
+	fastAttempts := envIntPositive("MOVE_REPORT_PDF_FAST_ATTEMPTS", 3)
+	fastTimeout := moveReportPDFFastTimeout()
+
+	var pdfBytes []byte
+	var lastErr error
+	for attempt := 1; attempt <= fastAttempts; attempt++ {
+		b, err := renderMoveReportPDFBytes(trackingID, rows, receiver, registration, fastTimeout)
+		if err == nil && len(b) > 0 {
+			pdfBytes = b
+			break
+		}
+		lastErr = err
+		log.Printf("move report pdf fast attempt %d/%d (tracking_id=%s): %v — %s",
+			attempt, fastAttempts, trackingID, err, moveReportPDFErrHint(err))
+		if attempt < fastAttempts {
+			time.Sleep(time.Duration(attempt*2) * time.Second)
+		}
+	}
+
+	if len(pdfBytes) > 0 {
+		saveMoveReportDebugPDF(moveReportDebugArtifactDir(), trackingID, pdfBytes)
+		url, upErr := s.uploadMoveReportToS3(trackingID, pdfBytes, objectKey)
+		if upErr != nil {
+			log.Printf("move report fast s3 upload (tracking_id=%s): %v", trackingID, upErr)
+		} else {
+			s.persistMoveReportDocumentURL(idsCopy, trackingID, url)
+		}
+		if emailKey != "" {
+			s.sendTrackingNotificationMail(rows, companyId, emailKey, receiver, trackingID, url)
+		}
+		if upErr == nil {
+			return
+		}
+		// Fall through to slow phase: PDF was rendered but upload failed; we
+		// retry render+upload to make sure document_url gets populated.
+	} else {
+		log.Printf("move report pdf fast phase exhausted for tracking_id=%s after %d attempts: last err=%v",
+			trackingID, fastAttempts, lastErr)
+		if emailKey != "" {
+			// Send the notification anyway so the customer is informed; the
+			// link will appear in-platform once the slow phase succeeds.
+			s.sendTrackingNotificationMail(rows, companyId, emailKey, receiver, trackingID, "")
+		}
+	}
+
+	slowAttempts := envIntPositive("MOVE_REPORT_PDF_SLOW_ATTEMPTS", 8)
+	baseBackoffSec := envIntPositive("MOVE_REPORT_PDF_SLOW_BACKOFF_BASE_SEC", 30)
+	maxBackoffSec := envIntPositive("MOVE_REPORT_PDF_SLOW_MAX_BACKOFF_SEC", 1800)
+	if maxBackoffSec < baseBackoffSec {
+		maxBackoffSec = baseBackoffSec
+	}
+	slowTimeout := moveReportPDFTimeout()
+
+	for attempt := 1; attempt <= slowAttempts; attempt++ {
+		backoffSec := baseBackoffSec << uint(attempt-1)
+		if backoffSec <= 0 || backoffSec > maxBackoffSec {
+			backoffSec = maxBackoffSec
+		}
+		log.Printf("move report pdf slow attempt %d/%d for tracking_id=%s scheduled in %ds",
+			attempt, slowAttempts, trackingID, backoffSec)
+		time.Sleep(time.Duration(backoffSec) * time.Second)
+
+		b, err := renderMoveReportPDFBytes(trackingID, rows, receiver, registration, slowTimeout)
+		if err != nil || len(b) == 0 {
+			log.Printf("move report pdf slow attempt %d/%d failed (tracking_id=%s): %v — %s",
+				attempt, slowAttempts, trackingID, err, moveReportPDFErrHint(err))
+			continue
+		}
+		saveMoveReportDebugPDF(moveReportDebugArtifactDir(), trackingID, b)
+		url, upErr := s.uploadMoveReportToS3(trackingID, b, objectKey)
+		if upErr != nil {
+			log.Printf("move report slow s3 upload attempt %d/%d (tracking_id=%s): %v",
+				attempt, slowAttempts, trackingID, upErr)
+			continue
+		}
+		s.persistMoveReportDocumentURL(idsCopy, trackingID, url)
+		log.Printf("move report pdf slow phase succeeded on attempt %d/%d for tracking_id=%s",
+			attempt, slowAttempts, trackingID)
+		return
+	}
+
+	log.Printf("move report pdf ABANDONED tracking_id=%s after %d slow attempts; document_url not stored",
+		trackingID, slowAttempts)
 }
 
 func summarizePreviousLocations(rows []functions.TrackingEmailDeviceRow) string {
@@ -1069,29 +1279,14 @@ func (s *deviceTrackingService) MoveTrackingNotification(deviceTrackingsId []str
 		if err != nil || len(rows) == 0 {
 			continue
 		}
-		tid := trackingLog.TrackingID
-		idsCopy := append([]string(nil), docIDs...)
-		rws := rows
-		cid := companyId
-		wDel := withDelivery
-		rcv := receiver
-		go func() {
-			var pdfBytes []byte
-			if tid != "" && len(rws) > 0 {
-				b, err := renderMoveReportPDFBytes(tid, rws, rcv, false)
-				if err != nil {
-					log.Printf("move report pdf: %v — %s", err, moveReportPDFErrHint(err))
-				} else {
-					pdfBytes = b
-					saveMoveReportDebugPDF(moveReportDebugArtifactDir(), tid, pdfBytes)
-				}
-			}
-			pdfName := fmt.Sprintf("move-report-%s.pdf", sanitizeMoveReportIDForPath(tid))
-			if !wDel {
-				s.sendTrackingNotificationMail(rws, cid, utils.TRACKING_MOVE, rcv, tid, pdfBytes, pdfName)
-			}
-			s.persistMoveReportDocumentURL(idsCopy, tid, pdfBytes)
-		}()
+		emailKind := emailKindMove
+		if withDelivery {
+			// withDelivery=true means the customer will confirm delivery later
+			// (see ConfirmMoveDeliveryReport); the move email is suppressed here
+			// but the PDF/document_url must still be produced for the platform.
+			emailKind = emailKindNone
+		}
+		go s.ensureMoveReportArtifacts(docIDs, trackingLog.TrackingID, rows, receiver, false, trackingLog.ExternalDelivery, companyId, emailKind)
 	}
 }
 func isContained(trackingLog responses.TrackingLog, locations []string, countries []string) bool {

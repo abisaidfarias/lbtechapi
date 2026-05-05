@@ -17,7 +17,20 @@ import (
 
 func moveReportPDFTimeout() time.Duration {
 	const defaultSec = 600 // 10m; dev/EB often needs more than 5m for chromedp + heavy HTML
-	s := strings.TrimSpace(os.Getenv("MOVE_REPORT_PDF_TIMEOUT_SEC"))
+	return envDurationSec("MOVE_REPORT_PDF_TIMEOUT_SEC", defaultSec)
+}
+
+// moveReportPDFFastTimeout is the per-attempt timeout used in the "fast" phase
+// (one shot at producing the PDF before the email goes out). Default is short
+// so the email is not held back by a stuck Chrome process; the slow background
+// phase uses moveReportPDFTimeout for retries.
+func moveReportPDFFastTimeout() time.Duration {
+	const defaultSec = 90
+	return envDurationSec("MOVE_REPORT_PDF_FAST_TIMEOUT_SEC", defaultSec)
+}
+
+func envDurationSec(name string, defaultSec int) time.Duration {
+	s := strings.TrimSpace(os.Getenv(name))
 	if s == "" {
 		return time.Duration(defaultSec) * time.Second
 	}
@@ -30,12 +43,23 @@ func moveReportPDFTimeout() time.Duration {
 
 func moveReportPDFErrHint(err error) string {
 	if errors.Is(err, context.DeadlineExceeded) {
-		return "PDF timed out; increase MOVE_REPORT_PDF_TIMEOUT_SEC or instance CPU (email sent without attachment)"
+		return "PDF timed out; increase MOVE_REPORT_PDF_TIMEOUT_SEC / MOVE_REPORT_PDF_FAST_TIMEOUT_SEC or instance CPU (email sent without link this time, retried in background)"
 	}
-	return "install Chrome/Chromium or set CHROME_PATH (email sent without attachment)"
+	return "install Chrome/Chromium or set CHROME_PATH (email sent without link this time, retried in background)"
 }
 
 func movementHTMLToPDF(html []byte) ([]byte, error) {
+	return movementHTMLToPDFWithTimeout(html, moveReportPDFTimeout())
+}
+
+func movementHTMLToPDFWithTimeout(html []byte, timeout time.Duration) ([]byte, error) {
+	if timeout <= 0 {
+		timeout = moveReportPDFTimeout()
+	}
+	return movementHTMLToPDFInternal(html, timeout)
+}
+
+func movementHTMLToPDFInternal(html []byte, timeout time.Duration) ([]byte, error) {
 	tmpDir, err := os.MkdirTemp("", "lbtech-move-report-*")
 	if err != nil {
 		return nil, err
@@ -67,7 +91,7 @@ func movementHTMLToPDF(html []byte) ([]byte, error) {
 	defer cancelAlloc()
 	ctx, cancelCtx := chromedp.NewContext(allocCtx)
 	defer cancelCtx()
-	ctx, cancelTO := context.WithTimeout(ctx, moveReportPDFTimeout())
+	ctx, cancelTO := context.WithTimeout(ctx, timeout)
 	defer cancelTO()
 
 	var pdf []byte

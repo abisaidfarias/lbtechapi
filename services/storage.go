@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"strings"
 
 	"bytes"
 
@@ -16,6 +17,8 @@ import (
 // IStorageService is the storage service
 type IStorageService interface {
 	UploadFile([]byte) (string, error)
+	// UploadFileWithKey uploads bytes using the given S3 object key (path inside the bucket).
+	UploadFileWithKey([]byte, string) (string, error)
 }
 
 type storageService struct {
@@ -51,4 +54,30 @@ func (s *storageService) UploadFile(filesf []byte) (string, error) {
 	}
 	return result.Location, nil
 
+}
+
+func (s *storageService) UploadFileWithKey(filesf []byte, key string) (string, error) {
+	key = strings.TrimSpace(key)
+	if key == "" {
+		return s.UploadFile(filesf)
+	}
+
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String("us-east-1")},
+	)
+	if err != nil {
+		return "", fmt.Errorf("failed to connect to aws s3, %v", err)
+	}
+	uploader := s3manager.NewUploader(sess)
+	reader := bytes.NewReader(filesf)
+	result, err := uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String("lbtechimages"),
+		Key:    aws.String(key),
+		Body:   reader,
+		ACL:    aws.String(s3.BucketCannedACLPublicRead),
+	})
+	if err != nil {
+		return "", fmt.Errorf("failed to upload file, %v", err)
+	}
+	return result.Location, nil
 }
