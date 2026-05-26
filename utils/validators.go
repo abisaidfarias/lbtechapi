@@ -2,6 +2,8 @@ package utils
 
 import (
 	"fmt"
+	"math"
+	"reflect"
 	"regexp"
 	"strings"
 	"unicode"
@@ -77,7 +79,7 @@ func verifyPassword(password string) error {
 	}
 
 	if len(errorString) != 0 {
-		return fmt.Errorf(errorString)
+		return fmt.Errorf("%s", errorString)
 	}
 	return nil
 }
@@ -96,6 +98,35 @@ var ValidTestCaseCode validator.Func = func(fl validator.FieldLevel) bool {
 	var codeRegex = regexp.MustCompile(`^[A-Z]{8}\-[A-Z0-9]{2}[A-Z]$`)
 
 	return codeRegex.MatchString(incomingCode)
+}
+
+const (
+	sarValueMin = 0.01
+	sarValueMax = 2.00
+)
+
+func ValidateSARValue(value float64) bool {
+	if value < sarValueMin || value > sarValueMax {
+		return false
+	}
+	scaled := value * 100
+	return math.Abs(scaled-math.Round(scaled)) < 1e-9
+}
+
+// ValidSARValue validates optional SAR values between 0.01 and 2.00 with up to 2 decimals.
+var ValidSARValue validator.Func = func(fl validator.FieldLevel) bool {
+	field := fl.Field()
+	switch field.Kind() {
+	case reflect.Ptr:
+		if field.IsNil() {
+			return true
+		}
+		return ValidateSARValue(field.Elem().Float())
+	case reflect.Float64:
+		return ValidateSARValue(field.Float())
+	default:
+		return false
+	}
 }
 
 func ValidateHomologationRequest(homologation *responses.Homologation,

@@ -2,6 +2,6 @@ package request
 
 // Claim model
 type Claim struct {
-	Name  string `bson:"name" binding:"required"`
-	Allow bool   `bson:"allow" binding:"required"`
+	Name  string `json:"name" bson:"name" binding:"required"`
+	Allow bool   `json:"allow" bson:"allow"`
 }

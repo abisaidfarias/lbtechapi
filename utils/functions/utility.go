@@ -584,6 +584,54 @@ func GetNotificationMessageAndSubject(homologation *request.Homologation,
 	}
 	return mainMessage, subject
 }
+
+func GetMultibandaNotificationMessageAndSubject(
+	multibanda *request.MultibandaResume,
+	brand string,
+	commercialModel string,
+) (string, string) {
+	var mainMessage string
+	var subject string
+
+	switch multibanda.CurrentPhase {
+	case 0:
+		subject = fmt.Sprintf("Subject: Planning Multibanda %s %s", brand, commercialModel)
+		return utils.PLANNING_MAIN_MESSAGE, subject
+	case 1:
+		if multibanda.SampleEndDate.IsZero() {
+			subject = fmt.Sprintf("Subject: Sample Reception Start Date Multibanda %s %s", brand, commercialModel)
+			return utils.SAMPLE_START_MAIN_MESSAGE, subject
+		}
+		subject = fmt.Sprintf("Subject: Sample Reception End Date Multibanda %s %s", brand, commercialModel)
+		return utils.SAMPLE_END_MAIN_MESSAGE, subject
+	case 2:
+		if multibanda.TestStartDate.IsZero() {
+			subject = fmt.Sprintf("Subject: Sample Reception End Date Multibanda %s %s", brand, commercialModel)
+			return utils.SAMPLE_END_MAIN_MESSAGE, subject
+		}
+		subject = fmt.Sprintf("Subject: Test Start Date Multibanda %s %s", brand, commercialModel)
+		return utils.TEST_MAIN_MESSAGE, subject
+	case 3:
+		subject = fmt.Sprintf("Subject: Test End Date Multibanda %s %s", brand, commercialModel)
+		return utils.UNDER_MAIN_MESSAGE, subject
+	case 4:
+		if enums.HomologationStatus_type[multibanda.Status] == "Approved" {
+			subject = fmt.Sprintf("Subject: Carrier Decision Approved Multibanda %s %s", brand, commercialModel)
+			return utils.APPROVED_MAIN_MESSAGE, subject
+		}
+		if enums.HomologationStatus_type[multibanda.Status] == "Rejected" {
+			subject = fmt.Sprintf("Subject: Carrier Decision Rejected Multibanda %s %s", brand, commercialModel)
+			return utils.REJECTED_MAIN_MESSAGE, subject
+		}
+		if enums.HomologationStatus_type[multibanda.Status] == "Finished" {
+			subject = fmt.Sprintf("Subject: Multibanda Process Finished %s %s", brand, commercialModel)
+			return utils.FINISHED_MAIN_MESSAGE, subject
+		}
+	}
+
+	return mainMessage, subject
+}
+
 func GetFailBodyMessage(subject string, mainMessge string, client string, country string,
 	brand string, technicalModel string, commercialModel string,
 	softwareVersion string, osVersion string, homologationType string,

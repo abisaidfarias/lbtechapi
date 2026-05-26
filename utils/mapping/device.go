@@ -10,6 +10,10 @@ import (
 func DeviceRequestToDevice(device *request.Device) *models.Device {
 
 	objID, _ := primitive.ObjectIDFromHex(device.Brand)
+	sarValue := float64(0)
+	if device.SarValue != nil {
+		sarValue = *device.SarValue
+	}
 	return &models.Device{
 		Type:                   device.Type,
 		Brand:                  objID,
@@ -67,6 +71,7 @@ func DeviceRequestToDevice(device *request.Device) *models.Device {
 		DualSim:                device.DualSim,
 		SimType:                device.SimType,
 		Esim:                   device.Esim,
+		SarValue:               sarValue,
 		BatteryInductedCharger: device.BatteryInductedCharger,
 	}
 }
@@ -132,6 +137,7 @@ func DeviceToDeviceResponse(device *models.Device) *responses.DeviceExpanded {
 		DualSim:                device.DualSim,
 		SimType:                device.SimType,
 		Esim:                   device.Esim,
+		SarValue:               device.SarValue,
 		BatteryInductedCharger: device.BatteryInductedCharger,
 	}
 }

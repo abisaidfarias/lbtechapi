@@ -142,6 +142,10 @@ var (
 	notificationRepository repositories.INotificationRepository = repositories.NewNotificationRepository()
 	notificationService    services.INotificationService        = services.NewNotificationService(notificationRepository)
 	notificationController controllers.INotificationController  = controllers.NewNotificationController(notificationService)
+
+	multibandaRepository repositories.IMultibandaRepository = repositories.NewMultibandaRepository()
+	multibandaService    services.IMultibandaService        = services.NewMultibandaService(multibandaRepository, userRepository, companyRepository, deviceRepository, brandRepository)
+	multibandaController controllers.IMultibandaController  = controllers.NewMultibandaController(multibandaService)
 )
 
 // @title LBTech API
@@ -176,6 +180,11 @@ func main() {
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("testCaseCode", utils.ValidTestCaseCode)
+	} else {
+		panic("error validation")
+	}
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("sarValue", utils.ValidSARValue)
 	} else {
 		panic("error validation")
 	}
@@ -352,6 +361,12 @@ func main() {
 		{
 			notification.POST("", notificationController.Create())
 			notification.GET("/company/:id", notificationController.GetByCompany())
+		}
+		multibanda := v1.Group("/multibanda")
+		{
+			multibanda.POST("", multibandaController.Create())
+			multibanda.GET("", multibandaController.Get())
+			multibanda.PUT(":id/phase", multibandaController.PhaseChange())
 		}
 	}
 

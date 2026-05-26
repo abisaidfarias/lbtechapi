@@ -3076,6 +3076,228 @@ const docTemplate = `{
                 }
             }
         },
+        "/multibanda": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Obtiene la lista de registros Multibanda según el alcance del usuario",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Multibanda"
+                ],
+                "summary": "Listar registros Multibanda",
+                "responses": {
+                    "200": {
+                        "description": "Lista de registros Multibanda",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.MultibandaExpanded"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso para leer Multibanda",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Crea un registro Multibanda en fase Planning (current_phase = 0)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Multibanda"
+                ],
+                "summary": "Crear nuevo registro Multibanda",
+                "parameters": [
+                    {
+                        "description": "Datos del registro Multibanda",
+                        "name": "multibanda",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.Multibanda"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Registro creado exitosamente",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso para crear Multibanda",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/multibanda/{id}/phase": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Cambia la fase/estado de un registro Multibanda",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Multibanda"
+                ],
+                "summary": "Cambiar fase de Multibanda",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del registro Multibanda",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Datos de la fase",
+                        "name": "multibanda",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.MultibandaResume"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Fase actualizada exitosamente"
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso para escribir Multibanda",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Registro Multibanda no encontrado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/notification": {
             "post": {
                 "security": [
@@ -5208,7 +5430,6 @@ const docTemplate = `{
         "request.Claim": {
             "type": "object",
             "required": [
-                "allow",
                 "name"
             ],
             "properties": {
@@ -5551,6 +5772,9 @@ const docTemplate = `{
                 "platform_version": {
                     "type": "string"
                 },
+                "sar_value": {
+                    "type": "number"
+                },
                 "sensor_accelerometer": {
                     "type": "boolean"
                 },
@@ -5881,6 +6105,114 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "signature_png_data_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.Multibanda": {
+            "type": "object",
+            "required": [
+                "brand",
+                "company",
+                "device",
+                "evaluation_type",
+                "planning_date",
+                "type"
+            ],
+            "properties": {
+                "brand": {
+                    "type": "string"
+                },
+                "company": {
+                    "type": "string"
+                },
+                "current_phase": {
+                    "type": "integer"
+                },
+                "device": {
+                    "type": "string"
+                },
+                "evaluation_type": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "hardware_version": {
+                    "type": "string"
+                },
+                "is_internal_project": {
+                    "type": "boolean"
+                },
+                "os_version": {
+                    "type": "string"
+                },
+                "os_version_view": {
+                    "type": "string"
+                },
+                "planning_date": {
+                    "type": "string"
+                },
+                "sample_end_date": {
+                    "type": "string"
+                },
+                "sample_start_date": {
+                    "type": "string"
+                },
+                "software_version": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.MultibandaResume": {
+            "type": "object",
+            "properties": {
+                "completed_date": {
+                    "type": "string"
+                },
+                "current_phase": {
+                    "type": "integer"
+                },
+                "hardware_version": {
+                    "type": "string"
+                },
+                "is_internal_project": {
+                    "type": "boolean"
+                },
+                "os_version": {
+                    "type": "string"
+                },
+                "os_version_view": {
+                    "type": "string"
+                },
+                "planning_date": {
+                    "type": "string"
+                },
+                "sample_end_date": {
+                    "type": "string"
+                },
+                "sample_start_date": {
+                    "type": "string"
+                },
+                "software_version": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "test_end_date": {
+                    "type": "string"
+                },
+                "test_start_date": {
+                    "type": "string"
+                },
+                "under_end_date": {
+                    "type": "string"
+                },
+                "under_start_date": {
                     "type": "string"
                 }
             }
@@ -6836,6 +7168,9 @@ const docTemplate = `{
                 "platform_version": {
                     "type": "string"
                 },
+                "sar_value": {
+                    "type": "number"
+                },
                 "sensor_accelerometer": {
                     "type": "boolean"
                 },
@@ -7021,6 +7356,83 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.MultibandaExpanded": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "brand": {
+                    "$ref": "#/definitions/responses.Brand"
+                },
+                "company": {
+                    "$ref": "#/definitions/responses.Company"
+                },
+                "completed_date": {
+                    "type": "string"
+                },
+                "created_date": {
+                    "type": "string"
+                },
+                "current_phase": {
+                    "type": "integer"
+                },
+                "dashboard_phase": {
+                    "type": "integer"
+                },
+                "device": {
+                    "$ref": "#/definitions/responses.Device"
+                },
+                "evaluation_type": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "hardware_version": {
+                    "type": "string"
+                },
+                "is_internal_project": {
+                    "type": "boolean"
+                },
+                "os_version": {
+                    "type": "string"
+                },
+                "os_version_view": {
+                    "type": "string"
+                },
+                "planning_date": {
+                    "type": "string"
+                },
+                "sample_end_date": {
+                    "type": "string"
+                },
+                "sample_start_date": {
+                    "type": "string"
+                },
+                "software_version": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "test_end_date": {
+                    "type": "string"
+                },
+                "test_start_date": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "under_end_date": {
+                    "type": "string"
+                },
+                "under_start_date": {
                     "type": "string"
                 }
             }
