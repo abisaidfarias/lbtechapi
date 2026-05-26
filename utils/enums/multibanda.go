@@ -46,6 +46,28 @@ var AllowedMultibandaEvaluationTypes = []string{
 	MultibandaEvalSismatePeru,
 }
 
+var MultibandaTypeLabels = map[string]string{
+	MultibandaTypeInitialProcess: "Initial Process",
+	MultibandaTypeSMR:            "SMR",
+	MultibandaTypeMR:             "MR",
+	MultibandaTypeOSUpgrade:      "OS Upgrade",
+	MultibandaTypePretestSAE:     "Pretest SAE",
+}
+
+var MultibandaEvaluationTypeLabels = map[string]string{
+	MultibandaEvalSAEMultibandaCertificate: "SAE Multibanda Certificate",
+	MultibandaEvalSAEOnlyCMASTest:          "SAE Only CMAS Test",
+	MultibandaEvalSismatePeru:              "Sismate Peru",
+}
+
+var MultibandaPhaseLabels = map[int]string{
+	0: "Planning",
+	1: "Sample Reception",
+	2: "Testing",
+	3: "Under Evaluation",
+	4: "Complete",
+}
+
 func ValidateMultibandaType(value string) error {
 	if _, ok := allowedMultibandaTypes[value]; !ok {
 		return fmt.Errorf("invalid type %q: must be one of %v", value, AllowedMultibandaTypes)

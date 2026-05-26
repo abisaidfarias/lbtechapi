@@ -2,8 +2,8 @@ package services
 
 import (
 	"fmt"
+	"log"
 	"strings"
-	"time"
 
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/repositories"
@@ -89,7 +89,19 @@ func (s *multibandaService) Create(multibandaRequest *request.Multibanda, userID
 		brandID,
 	)
 
-	return s.multibandaRepository.Create(multibanda)
+	id, err := s.multibandaRepository.Create(multibanda)
+	if err != nil {
+		return "", err
+	}
+
+	multibandaID, _ := primitive.ObjectIDFromHex(id)
+	multibandaResponse, _ := s.multibandaRepository.GetByIdExpanded(multibandaID)
+	if multibandaResponse != nil {
+		multibandaNotify := mapping.MultibandaResponseToMultibandaNotify(*multibandaResponse)
+		go s.MultibandaNotification(&multibandaNotify, multibandaResponse.Company.ID, utils.CREATE, userID)
+	}
+
+	return id, nil
 }
 
 func (s *multibandaService) Get(userID string) ([]*responses.MultibandaExpanded, error) {
@@ -114,14 +126,21 @@ func (s *multibandaService) PhaseChange(id string, multibandaRequest *request.Mu
 		return err
 	}
 
+	multibandaID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return utils.NewValidationError("invalid multibanda id")
+	}
+
+	existing, _ := s.multibandaRepository.GetByIdExpanded(multibandaID)
+
 	multibanda := mapping.MultibandaRequestToMultibandaResume(multibandaRequest)
+	functions.ApplyMultibandaPhaseDateRules(multibanda, existing)
 	setMultibandaDashboardPhase(multibanda)
 
 	if err := s.multibandaRepository.PhaseChange(id, multibanda); err != nil {
 		return err
 	}
 
-	multibandaID, _ := primitive.ObjectIDFromHex(id)
 	multibandaResponse, _ := s.multibandaRepository.GetByIdExpanded(multibandaID)
 	if multibandaResponse == nil {
 		return nil
@@ -184,20 +203,6 @@ func (s *multibandaService) MultibandaNotification(
 		return
 	}
 
-	projectType := "External"
-	if multibanda.IsInternalProject {
-		projectType = "Internal"
-	}
-
-	planningDate := formatOptionalDate(multibanda.PlanningDate)
-	sampleStartDate := formatOptionalDate(multibanda.SampleStartDate)
-	sampleEndDate := formatOptionalDate(multibanda.SampleEndDate)
-	testStartDate := formatOptionalDate(multibanda.TestStartDate)
-	testEndDate := formatOptionalDate(multibanda.TestEndDate)
-	underStartDate := formatOptionalDate(multibanda.UnderStartDate)
-	underEndDate := formatOptionalDate(multibanda.UnderEndDate)
-	resultDate := formatOptionalDate(multibanda.CompletedDate)
-
 	finished := false
 	desicion := strings.ToUpper(enums.HomologationStatus_type[multibanda.Status])
 	if multibanda.Status != enums.HomologationStatus_value["IN_PROGRESS"] {
@@ -205,16 +210,20 @@ func (s *multibandaService) MultibandaNotification(
 	}
 
 	resume := request.MultibandaResume{
-		CurrentPhase:    multibanda.CurrentPhase,
-		Status:          multibanda.Status,
-		SampleEndDate:   multibanda.SampleEndDate,
-		TestStartDate:   multibanda.TestStartDate,
+		CurrentPhase:  multibanda.CurrentPhase,
+		Status:        multibanda.Status,
+		SampleEndDate: multibanda.SampleEndDate,
+		TestStartDate: multibanda.TestStartDate,
 	}
 
 	var subject string
 	var mainMessage string
 
 	switch key {
+	case utils.CREATE:
+		subject = fmt.Sprintf("Subject: New Multibanda process was created %s %s",
+			brand.Name, device.CommercialModel)
+		mainMessage = utils.MULTIBANDA_CREATE_MAIN_MESSAGE
 	case utils.PHASE:
 		mainMessage, subject = functions.GetMultibandaNotificationMessageAndSubject(
 			&resume,
@@ -225,44 +234,27 @@ func (s *multibandaService) MultibandaNotification(
 		return
 	}
 
-	body, err := functions.GetHomologationBodyMessage(
-		subject,
-		mainMessage,
-		projectType,
+	emailData := functions.BuildMultibandaPhaseEmailData(
+		multibanda,
 		brand.Name,
 		device.TechnicalModel,
 		device.CommercialModel,
-		multibanda.SoftwareVersion,
-		multibanda.OsVersion,
-		"Multibanda",
-		multibanda.Type,
-		"",
-		"",
-		planningDate,
-		sampleStartDate,
-		sampleEndDate,
-		testStartDate,
-		testEndDate,
-		underStartDate,
-		underEndDate,
-		resultDate,
-		utils.TEMPLATE_HOMOLOGATION_PATH,
+		device.PlatformOs,
 		userName,
+		mainMessage,
 		finished,
 		desicion,
 	)
-	if err != nil {
-		return
-	}
 
-	functions.SendNotifications(toList, body)
-}
-
-func formatOptionalDate(date time.Time) string {
-	if date.IsZero() {
-		return "N/A"
+	if err := functions.SendMultibandaPhaseEmail(
+		toList,
+		subject,
+		emailData,
+		utils.TEMPLATE_MULTIBANDA_PHASE_PATH,
+		utils.LBOneTrackLogoPNG,
+	); err != nil {
+		log.Printf("multibanda notification email (%s): %v", key, err)
 	}
-	return fmt.Sprintf("%02d/%02d/%d", date.Day(), date.Month(), date.Year())
 }
 
 func (s *multibandaService) requireProfileClaim(userID, claimName string) error {

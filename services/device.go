@@ -17,8 +17,8 @@ import (
 // IDeviceService is the test case service interface
 type IDeviceService interface {
 	Create(*request.Device, string) (*responses.DeviceExpanded, error)
-	Get() ([]*responses.DeviceExpanded, error)
-	GetById(string) (*responses.Device, error)
+	Get(string) ([]*responses.DeviceExpanded, error)
+	GetById(string, string) (*responses.Device, error)
 	Update(string, *request.Device, string) error
 	Delete(string) (bool, error)
 }
@@ -60,10 +60,19 @@ func (s *deviceService) Create(deviceRequest *request.Device, userID string) (*r
 	return deviceResponse, nil
 }
 
-// Get gets a list of test cases
-func (s *deviceService) Get() ([]*responses.DeviceExpanded, error) {
-	result, err := s.deviceRepository.Get()
+// Get gets devices visible to the user.
+func (s *deviceService) Get(userID string) ([]*responses.DeviceExpanded, error) {
+	user, err := s.userRepository.GetByID(userID)
+	if err != nil {
+		return nil, err
+	}
 
+	var brands []primitive.ObjectID
+	if !user.IsInternal {
+		brands = user.Brands
+	}
+
+	result, err := s.deviceRepository.Get(brands)
 	if err != nil {
 		return nil, err
 	}
@@ -71,14 +80,25 @@ func (s *deviceService) Get() ([]*responses.DeviceExpanded, error) {
 	return result, nil
 }
 
-// GetById gets a case by id
-func (s *deviceService) GetById(id string) (*responses.Device, error) {
-
-	device, err := s.deviceRepository.GetById(id)
-
+// GetById gets a device by id when the user is allowed to see its brand.
+func (s *deviceService) GetById(id string, userID string) (*responses.Device, error) {
+	user, err := s.userRepository.GetByID(userID)
 	if err != nil {
 		return nil, err
 	}
+
+	device, err := s.deviceRepository.GetById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if !user.IsInternal {
+		brandID, parseErr := primitive.ObjectIDFromHex(device.Brand)
+		if parseErr != nil || !userHasBrandAccess(user, brandID) {
+			return nil, fmt.Errorf("%w", utils.ErrorForbidden)
+		}
+	}
+
 	return device, nil
 }
 
@@ -157,4 +177,13 @@ func (s *deviceService) DeviceNotification(device request.Device, key string,use
 		return
 	}
 	functions.SendNotifications(toList, body)
+}
+
+func userHasBrandAccess(user *responses.User, brandID primitive.ObjectID) bool {
+	for _, allowedBrand := range user.Brands {
+		if allowedBrand == brandID {
+			return true
+		}
+	}
+	return false
 }

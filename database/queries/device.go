@@ -10,7 +10,20 @@ import (
 func GetDeviceById(oid primitive.ObjectID) primitive.M {
 	return primitive.M{"_id": oid}
 }
-func GetDevicesExpanded() []bson.D {
+func GetDevicesExpanded(brands []primitive.ObjectID) []bson.D {
+	var pipeline mongo.Pipeline
+
+	if len(brands) > 0 {
+		matchStage := bson.D{
+			primitive.E{Key: "$match", Value: bson.D{
+				primitive.E{Key: "brand", Value: bson.D{
+					primitive.E{Key: "$in", Value: brands},
+				}},
+			}},
+		}
+		pipeline = append(pipeline, matchStage)
+	}
+
 	lookupStage := bson.D{
 		primitive.E{Key: "$lookup", Value: bson.D{
 			primitive.E{Key: "from", Value: "brands"},
@@ -27,7 +40,8 @@ func GetDevicesExpanded() []bson.D {
 		primitive.E{Key: "$sort", Value: bson.D{
 			primitive.E{Key: "commercial_model", Value: -1},
 		}}}
-	return mongo.Pipeline{lookupStage, unwindStage, sort}
+	pipeline = append(pipeline, lookupStage, unwindStage, sort)
+	return pipeline
 }
 func UpdateDevice(device *models.Device, oid primitive.ObjectID) (primitive.M, primitive.M) {
 

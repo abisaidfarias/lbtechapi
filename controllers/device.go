@@ -1,11 +1,13 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/abisaidfarias/lbtechapi/services"
-	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
+	"github.com/abisaidfarias/lbtechapi/utils"
+	utilsErrors "github.com/abisaidfarias/lbtechapi/utils/errors"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 
 	"github.com/gin-gonic/gin"
@@ -61,8 +63,8 @@ func (c *deviceController) Create() gin.HandlerFunc {
 		deviceResponse, err := c.deviceService.Create(&device, userID)
 
 		if err != nil {
-			if utils.ErrorDuplicatedData(err) {
-				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicated.Error()})
+			if utilsErrors.ErrorDuplicatedData(err) {
+				ctx.JSON(http.StatusConflict, gin.H{"error": utilsErrors.ErrorDuplicated.Error()})
 				return
 			}
 			ctx.Status(http.StatusInternalServerError)
@@ -87,8 +89,9 @@ func (c *deviceController) Create() gin.HandlerFunc {
 // @Router /device [get]
 func (c *deviceController) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		userID := ctx.MustGet("userID").(string)
 
-		devices, err := c.deviceService.Get()
+		devices, err := c.deviceService.Get(userID)
 
 		if err != nil {
 			handleErrorResponse(ctx, err)
@@ -119,15 +122,20 @@ func (c *deviceController) GetById() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		id := ctx.Param("id")
+		userID := ctx.MustGet("userID").(string)
 
 		if id == "" {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("%w", utils.ErrorInvalidURLParams)})
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("%w", utilsErrors.ErrorInvalidURLParams)})
 			return
 		}
 
-		device, err := c.deviceService.GetById(id)
+		device, err := c.deviceService.GetById(id, userID)
 
 		if err != nil {
+			if errors.Is(err, utils.ErrorForbidden) {
+				ctx.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+				return
+			}
 			handleErrorResponse(ctx, err)
 			return
 		}
@@ -170,8 +178,8 @@ func (c *deviceController) Update() gin.HandlerFunc {
 		err = c.deviceService.Update(id, &device, userID)
 
 		if err != nil {
-			if utils.ErrorDuplicatedData(err) {
-				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicated.Error()})
+			if utilsErrors.ErrorDuplicatedData(err) {
+				ctx.JSON(http.StatusConflict, gin.H{"error": utilsErrors.ErrorDuplicated.Error()})
 				return
 			}
 			handleErrorResponse(ctx, err)
