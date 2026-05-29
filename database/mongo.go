@@ -124,6 +124,25 @@ func initDB() *mongo.Database {
 			"name": 1,
 		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
 	}
+	indexMultibandaCompanyDeviceSoftwareOs := mongo.IndexModel{
+		Keys: bson.M{
+			"company":          1,
+			"device":           1,
+			"software_version": 1,
+			"os_version":       1,
+		}, Options: options.Index().SetUnique(true).SetName("uniq_multibanda_company_device_sw_os"),
+	}
+	indexShipmentControlMultibanda := mongo.IndexModel{
+		Keys: bson.M{
+			"multibanda": 1,
+		},
+	}
+	indexShipmentControlCompanyCreated := mongo.IndexModel{
+		Keys: bson.M{
+			"company":      1,
+			"created_date": -1,
+		},
+	}
 	database.Collection("users").Indexes().CreateOne(context.Background(), indexEmail)
 	database.Collection("test_cases").Indexes().CreateOne(context.Background(), indexCode)
 	database.Collection("test_categories").Indexes().CreateOne(context.Background(), indexTestCategoryName)
@@ -137,6 +156,9 @@ func initDB() *mongo.Database {
 	database.Collection("locations").Indexes().CreateOne(context.Background(), indexLocationName)
 	database.Collection("device_trackings").Indexes().CreateOne(context.Background(), indexImei)
 	database.Collection("persons").Indexes().CreateOne(context.Background(), indexPersonName)
+	database.Collection("multibandas").Indexes().CreateOne(context.Background(), indexMultibandaCompanyDeviceSoftwareOs)
+	database.Collection("shipment_controls").Indexes().CreateOne(context.Background(), indexShipmentControlMultibanda)
+	database.Collection("shipment_controls").Indexes().CreateOne(context.Background(), indexShipmentControlCompanyCreated)
 	return database
 }
 func GetMongoDBClient() *mongo.Client {

@@ -6,9 +6,9 @@ type Multibanda struct {
 	Company           string     `json:"company" binding:"required"`
 	Device            string     `json:"device" binding:"required"`
 	Brand             string     `json:"brand" binding:"required"`
-	SoftwareVersion   string     `json:"software_version"`
+	SoftwareVersion   string     `json:"software_version" binding:"required"`
 	HardwareVersion   string     `json:"hardware_version"`
-	OsVersion         string     `json:"os_version"`
+	OsVersion         string     `json:"os_version" binding:"required"`
 	OsVersionView     string     `json:"os_version_view"`
 	Type              string     `json:"type" binding:"required"`
 	EvaluationType    []string   `json:"evaluation_type" binding:"required"`

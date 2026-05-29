@@ -146,6 +146,10 @@ var (
 	multibandaRepository repositories.IMultibandaRepository = repositories.NewMultibandaRepository()
 	multibandaService    services.IMultibandaService        = services.NewMultibandaService(multibandaRepository, userRepository, companyRepository, deviceRepository, brandRepository)
 	multibandaController controllers.IMultibandaController  = controllers.NewMultibandaController(multibandaService)
+
+	shipmentControlRepository repositories.IShipmentControlRepository = repositories.NewShipmentControlRepository(multibandaRepository)
+	shipmentControlService    services.IShipmentControlService        = services.NewShipmentControlService(shipmentControlRepository, multibandaRepository, userRepository, companyRepository, countryRepository)
+	shipmentControlController controllers.IShipmentControlController  = controllers.NewShipmentControlController(shipmentControlService)
 )
 
 // @title LBTech API
@@ -367,6 +371,13 @@ func main() {
 			multibanda.POST("", multibandaController.Create())
 			multibanda.GET("", multibandaController.Get())
 			multibanda.PUT(":id/phase", multibandaController.PhaseChange())
+		}
+		shipmentControl := v1.Group("/shipment-control")
+		{
+			shipmentControl.POST("", shipmentControlController.Create())
+			shipmentControl.GET("", shipmentControlController.Get())
+			shipmentControl.GET("/available-multibandas", shipmentControlController.GetAvailableMultibandas())
+			shipmentControl.PUT(":id/phase", shipmentControlController.PhaseChange())
 		}
 	}
 

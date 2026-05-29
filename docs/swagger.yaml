@@ -490,6 +490,8 @@ definitions:
         type: string
       is_internal_project:
         type: boolean
+      multiband_certificate_url:
+        type: string
       os_version:
         type: string
       os_version_view:
@@ -502,6 +504,8 @@ definitions:
         type: string
       software_version:
         type: string
+      test_report_url:
+        type: string
       type:
         type: string
     required:
@@ -509,11 +513,15 @@ definitions:
     - company
     - device
     - evaluation_type
+    - os_version
     - planning_date
+    - software_version
     - type
     type: object
   request.MultibandaResume:
     properties:
+      certificate_number:
+        type: string
       completed_date:
         type: string
       current_phase:
@@ -522,6 +530,8 @@ definitions:
         type: string
       is_internal_project:
         type: boolean
+      multiband_certificate_url:
+        type: string
       os_version:
         type: string
       os_version_view:
@@ -537,6 +547,8 @@ definitions:
       status:
         type: integer
       test_end_date:
+        type: string
+      test_report_url:
         type: string
       test_start_date:
         type: string
@@ -631,6 +643,62 @@ definitions:
         items:
           type: string
         type: array
+    type: object
+  request.ShipmentControl:
+    properties:
+      client:
+        type: string
+      country:
+        type: string
+      imei_quantity:
+        type: integer
+      multibanda_id:
+        type: string
+      oabi_certificate:
+        type: string
+      rework_number:
+        type: string
+    required:
+    - country
+    - imei_quantity
+    - multibanda_id
+    type: object
+  request.ShipmentControlResume:
+    properties:
+      client:
+        type: string
+      comment:
+        type: string
+      completed_date:
+        type: string
+      country:
+        type: string
+      current_phase:
+        type: integer
+      imei_quantity:
+        type: integer
+      oabi_certificate:
+        type: string
+      oabi_certificate_number:
+        type: string
+      oabi_certificate_url:
+        type: string
+      registered_imei_count:
+        type: integer
+      rework_number:
+        type: string
+      subtel_certificate_number:
+        type: string
+      subtel_certificate_url:
+        type: string
+      under_revision_end_date:
+        type: string
+      under_revision_start_date:
+        type: string
+      validation_end_date:
+        type: string
+      validation_start_date:
+        type: string
     type: object
   request.TestCase:
     properties:
@@ -1309,6 +1377,8 @@ definitions:
         type: string
       brand:
         $ref: '#/definitions/responses.Brand'
+      certificate_number:
+        type: string
       company:
         $ref: '#/definitions/responses.Company'
       completed_date:
@@ -1329,6 +1399,8 @@ definitions:
         type: string
       is_internal_project:
         type: boolean
+      multiband_certificate_url:
+        type: string
       os_version:
         type: string
       os_version_view:
@@ -1344,6 +1416,8 @@ definitions:
       status:
         type: integer
       test_end_date:
+        type: string
+      test_report_url:
         type: string
       test_start_date:
         type: string
@@ -1528,6 +1602,130 @@ definitions:
         additionalProperties:
           $ref: '#/definitions/responses.SearchOptionRelationByModel'
         type: object
+    type: object
+  responses.ShipmentControlAvailableDevice:
+    properties:
+      brand:
+        $ref: '#/definitions/responses.Brand'
+      device:
+        $ref: '#/definitions/responses.Device'
+      options:
+        items:
+          $ref: '#/definitions/responses.ShipmentControlAvailableOption'
+        type: array
+    type: object
+  responses.ShipmentControlAvailableOption:
+    properties:
+      certificate_number:
+        type: string
+      hardware_version:
+        type: string
+      multibanda_id:
+        type: string
+      os_version:
+        type: string
+      os_version_view:
+        type: string
+      software_version:
+        type: string
+    type: object
+  responses.ShipmentControlAvailableResponse:
+    properties:
+      company:
+        $ref: '#/definitions/responses.Company'
+      devices:
+        items:
+          $ref: '#/definitions/responses.ShipmentControlAvailableDevice'
+        type: array
+    type: object
+  responses.ShipmentControlCompanySummary:
+    properties:
+      _id:
+        type: string
+      name:
+        type: string
+    type: object
+  responses.ShipmentControlCountrySummary:
+    properties:
+      _id:
+        type: string
+      name:
+        type: string
+    type: object
+  responses.ShipmentControlDeviceSummary:
+    properties:
+      brand:
+        type: string
+      commercial_model:
+        type: string
+      technical_model:
+        type: string
+    type: object
+  responses.ShipmentControlExpanded:
+    properties:
+      _id:
+        type: string
+      client:
+        type: string
+      comment:
+        type: string
+      company:
+        $ref: '#/definitions/responses.ShipmentControlCompanySummary'
+      completed_date:
+        type: string
+      country:
+        $ref: '#/definitions/responses.ShipmentControlCountrySummary'
+      created_date:
+        type: string
+      current_phase:
+        type: integer
+      device:
+        $ref: '#/definitions/responses.ShipmentControlDeviceSummary'
+      imei_quantity:
+        type: integer
+      multibanda:
+        $ref: '#/definitions/responses.ShipmentControlMultibandaSummary'
+      oabi_certificate:
+        type: string
+      oabi_certificate_number:
+        type: string
+      oabi_certificate_url:
+        type: string
+      planning_date:
+        type: string
+      registered_imei_count:
+        type: integer
+      rework_number:
+        type: string
+      status:
+        type: integer
+      subtel_certificate_number:
+        type: string
+      subtel_certificate_url:
+        type: string
+      under_revision_end_date:
+        type: string
+      under_revision_start_date:
+        type: string
+      validation_end_date:
+        type: string
+      validation_start_date:
+        type: string
+    type: object
+  responses.ShipmentControlMultibandaSummary:
+    properties:
+      _id:
+        type: string
+      certificate_number:
+        type: string
+      hardware_version:
+        type: string
+      os_version:
+        type: string
+      os_version_view:
+        type: string
+      software_version:
+        type: string
     type: object
   responses.StackedSerieChart:
     properties:
@@ -4453,6 +4651,192 @@ paths:
       summary: Actualizar perfil
       tags:
       - Profiles
+  /shipment-control:
+    get:
+      consumes:
+      - application/json
+      description: 'Obtiene controles de embarque. Usuario interno: todas las companies
+        en user.clients (si clients está vacío, todas). Usuario externo: solo su company.'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de controles de embarque
+          schema:
+            items:
+              $ref: '#/definitions/responses.ShipmentControlExpanded'
+            type: array
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Sin permiso
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Listar controles de embarque
+      tags:
+      - ShipmentControl
+    post:
+      consumes:
+      - application/json
+      description: Crea un control de embarque en fase Planning. Solo requiere multibanda_id
+        e imei_quantity; planning_date se asigna en UTC en el servidor.
+      parameters:
+      - description: Datos del control de embarque
+        in: body
+        name: shipmentControl
+        required: true
+        schema:
+          $ref: '#/definitions/request.ShipmentControl'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Control creado exitosamente
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Sin permiso
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Crear Shipment Control
+      tags:
+      - ShipmentControl
+  /shipment-control/{id}/phase:
+    put:
+      consumes:
+      - application/json
+      description: Actualiza la fase y los hitos de un control de embarque
+      parameters:
+      - description: ID del Shipment Control
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Datos de la fase
+        in: body
+        name: shipmentControl
+        required: true
+        schema:
+          $ref: '#/definitions/request.ShipmentControlResume'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Fase actualizada exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Sin permiso
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Cambiar fase de Shipment Control
+      tags:
+      - ShipmentControl
+  /shipment-control/available-multibandas:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene multibandas del cliente agrupadas por device y software_version
+        para crear controles de embarque
+      parameters:
+      - description: Company ID (requerido para usuarios internos)
+        in: query
+        name: company
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Opciones disponibles
+          schema:
+            $ref: '#/definitions/responses.ShipmentControlAvailableResponse'
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Sin permiso
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Multibandas disponibles para Shipment Control
+      tags:
+      - ShipmentControl
   /sign-in:
     post:
       consumes:

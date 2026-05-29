@@ -180,6 +180,9 @@ func (s *deviceService) DeviceNotification(device request.Device, key string,use
 }
 
 func userHasBrandAccess(user *responses.User, brandID primitive.ObjectID) bool {
+	if user.IsInternal && len(user.Brands) == 0 {
+		return true
+	}
 	for _, allowedBrand := range user.Brands {
 		if allowedBrand == brandID {
 			return true

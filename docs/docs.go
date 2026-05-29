@@ -4140,6 +4140,291 @@ const docTemplate = `{
                 }
             }
         },
+        "/shipment-control": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Obtiene controles de embarque. Usuario interno: todas las companies en user.clients (si clients está vacío, todas). Usuario externo: solo su company.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ShipmentControl"
+                ],
+                "summary": "Listar controles de embarque",
+                "responses": {
+                    "200": {
+                        "description": "Lista de controles de embarque",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.ShipmentControlExpanded"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Crea un control de embarque en fase Planning. Solo requiere multibanda_id e imei_quantity; planning_date se asigna en UTC en el servidor.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ShipmentControl"
+                ],
+                "summary": "Crear Shipment Control",
+                "parameters": [
+                    {
+                        "description": "Datos del control de embarque",
+                        "name": "shipmentControl",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.ShipmentControl"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Control creado exitosamente",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/shipment-control/available-multibandas": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Obtiene multibandas del cliente agrupadas por device y software_version para crear controles de embarque",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ShipmentControl"
+                ],
+                "summary": "Multibandas disponibles para Shipment Control",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Company ID (requerido para usuarios internos)",
+                        "name": "company",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Opciones disponibles",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ShipmentControlAvailableResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/shipment-control/{id}/phase": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Actualiza la fase y los hitos de un control de embarque",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ShipmentControl"
+                ],
+                "summary": "Cambiar fase de Shipment Control",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del Shipment Control",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Datos de la fase",
+                        "name": "shipmentControl",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.ShipmentControlResume"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Fase actualizada exitosamente"
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/sign-in": {
             "post": {
                 "description": "Autentica un usuario y devuelve un token JWT",
@@ -6116,7 +6401,9 @@ const docTemplate = `{
                 "company",
                 "device",
                 "evaluation_type",
+                "os_version",
                 "planning_date",
+                "software_version",
                 "type"
             ],
             "properties": {
@@ -6144,6 +6431,9 @@ const docTemplate = `{
                 "is_internal_project": {
                     "type": "boolean"
                 },
+                "multiband_certificate_url": {
+                    "type": "string"
+                },
                 "os_version": {
                     "type": "string"
                 },
@@ -6162,6 +6452,9 @@ const docTemplate = `{
                 "software_version": {
                     "type": "string"
                 },
+                "test_report_url": {
+                    "type": "string"
+                },
                 "type": {
                     "type": "string"
                 }
@@ -6170,6 +6463,9 @@ const docTemplate = `{
         "request.MultibandaResume": {
             "type": "object",
             "properties": {
+                "certificate_number": {
+                    "type": "string"
+                },
                 "completed_date": {
                     "type": "string"
                 },
@@ -6181,6 +6477,9 @@ const docTemplate = `{
                 },
                 "is_internal_project": {
                     "type": "boolean"
+                },
+                "multiband_certificate_url": {
+                    "type": "string"
                 },
                 "os_version": {
                     "type": "string"
@@ -6204,6 +6503,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "test_end_date": {
+                    "type": "string"
+                },
+                "test_report_url": {
                     "type": "string"
                 },
                 "test_start_date": {
@@ -6347,6 +6649,90 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "request.ShipmentControl": {
+            "type": "object",
+            "required": [
+                "country",
+                "imei_quantity",
+                "multibanda_id"
+            ],
+            "properties": {
+                "client": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "imei_quantity": {
+                    "type": "integer"
+                },
+                "multibanda_id": {
+                    "type": "string"
+                },
+                "oabi_certificate": {
+                    "type": "string"
+                },
+                "rework_number": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.ShipmentControlResume": {
+            "type": "object",
+            "properties": {
+                "client": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "completed_date": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "current_phase": {
+                    "type": "integer"
+                },
+                "imei_quantity": {
+                    "type": "integer"
+                },
+                "oabi_certificate": {
+                    "type": "string"
+                },
+                "oabi_certificate_number": {
+                    "type": "string"
+                },
+                "oabi_certificate_url": {
+                    "type": "string"
+                },
+                "registered_imei_count": {
+                    "type": "integer"
+                },
+                "rework_number": {
+                    "type": "string"
+                },
+                "subtel_certificate_number": {
+                    "type": "string"
+                },
+                "subtel_certificate_url": {
+                    "type": "string"
+                },
+                "under_revision_end_date": {
+                    "type": "string"
+                },
+                "under_revision_start_date": {
+                    "type": "string"
+                },
+                "validation_end_date": {
+                    "type": "string"
+                },
+                "validation_start_date": {
+                    "type": "string"
                 }
             }
         },
@@ -7369,6 +7755,9 @@ const docTemplate = `{
                 "brand": {
                     "$ref": "#/definitions/responses.Brand"
                 },
+                "certificate_number": {
+                    "type": "string"
+                },
                 "company": {
                     "$ref": "#/definitions/responses.Company"
                 },
@@ -7399,6 +7788,9 @@ const docTemplate = `{
                 "is_internal_project": {
                     "type": "boolean"
                 },
+                "multiband_certificate_url": {
+                    "type": "string"
+                },
                 "os_version": {
                     "type": "string"
                 },
@@ -7421,6 +7813,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "test_end_date": {
+                    "type": "string"
+                },
+                "test_report_url": {
                     "type": "string"
                 },
                 "test_start_date": {
@@ -7702,6 +8097,196 @@ const docTemplate = `{
                     "additionalProperties": {
                         "$ref": "#/definitions/responses.SearchOptionRelationByModel"
                     }
+                }
+            }
+        },
+        "responses.ShipmentControlAvailableDevice": {
+            "type": "object",
+            "properties": {
+                "brand": {
+                    "$ref": "#/definitions/responses.Brand"
+                },
+                "device": {
+                    "$ref": "#/definitions/responses.Device"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.ShipmentControlAvailableOption"
+                    }
+                }
+            }
+        },
+        "responses.ShipmentControlAvailableOption": {
+            "type": "object",
+            "properties": {
+                "certificate_number": {
+                    "type": "string"
+                },
+                "hardware_version": {
+                    "type": "string"
+                },
+                "multibanda_id": {
+                    "type": "string"
+                },
+                "os_version": {
+                    "type": "string"
+                },
+                "os_version_view": {
+                    "type": "string"
+                },
+                "software_version": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ShipmentControlAvailableResponse": {
+            "type": "object",
+            "properties": {
+                "company": {
+                    "$ref": "#/definitions/responses.Company"
+                },
+                "devices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.ShipmentControlAvailableDevice"
+                    }
+                }
+            }
+        },
+        "responses.ShipmentControlCompanySummary": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ShipmentControlCountrySummary": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ShipmentControlDeviceSummary": {
+            "type": "object",
+            "properties": {
+                "brand": {
+                    "type": "string"
+                },
+                "commercial_model": {
+                    "type": "string"
+                },
+                "technical_model": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ShipmentControlExpanded": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "client": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "company": {
+                    "$ref": "#/definitions/responses.ShipmentControlCompanySummary"
+                },
+                "completed_date": {
+                    "type": "string"
+                },
+                "country": {
+                    "$ref": "#/definitions/responses.ShipmentControlCountrySummary"
+                },
+                "created_date": {
+                    "type": "string"
+                },
+                "current_phase": {
+                    "type": "integer"
+                },
+                "device": {
+                    "$ref": "#/definitions/responses.ShipmentControlDeviceSummary"
+                },
+                "imei_quantity": {
+                    "type": "integer"
+                },
+                "multibanda": {
+                    "$ref": "#/definitions/responses.ShipmentControlMultibandaSummary"
+                },
+                "oabi_certificate": {
+                    "type": "string"
+                },
+                "oabi_certificate_number": {
+                    "type": "string"
+                },
+                "oabi_certificate_url": {
+                    "type": "string"
+                },
+                "planning_date": {
+                    "type": "string"
+                },
+                "registered_imei_count": {
+                    "type": "integer"
+                },
+                "rework_number": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "subtel_certificate_number": {
+                    "type": "string"
+                },
+                "subtel_certificate_url": {
+                    "type": "string"
+                },
+                "under_revision_end_date": {
+                    "type": "string"
+                },
+                "under_revision_start_date": {
+                    "type": "string"
+                },
+                "validation_end_date": {
+                    "type": "string"
+                },
+                "validation_start_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ShipmentControlMultibandaSummary": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "certificate_number": {
+                    "type": "string"
+                },
+                "hardware_version": {
+                    "type": "string"
+                },
+                "os_version": {
+                    "type": "string"
+                },
+                "os_version_view": {
+                    "type": "string"
+                },
+                "software_version": {
+                    "type": "string"
                 }
             }
         },

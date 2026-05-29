@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/database/queries"
@@ -19,6 +20,7 @@ type IMultibandaRepository interface {
 	GetByExternal(primitive.ObjectID, []primitive.ObjectID) ([]*responses.MultibandaExpanded, error)
 	PhaseChange(string, *models.Multibanda) error
 	GetByIdExpanded(primitive.ObjectID) (*responses.MultibandaExpanded, error)
+	ExistsByCompanyDeviceSoftwareOsVersion(primitive.ObjectID, primitive.ObjectID, string, string) (bool, error)
 }
 
 type multibandaRepository struct {
@@ -110,4 +112,23 @@ func (r *multibandaRepository) GetByIdExpanded(multibandaID primitive.ObjectID) 
 	}
 
 	return nil, nil
+}
+
+func (r *multibandaRepository) ExistsByCompanyDeviceSoftwareOsVersion(
+	companyID primitive.ObjectID,
+	deviceID primitive.ObjectID,
+	softwareVersion string,
+	osVersion string,
+) (bool, error) {
+	err := multibandaCollection.FindOne(
+		context.TODO(),
+		queries.GetMultibandaByCompanyDeviceSoftwareOsVersion(companyID, deviceID, softwareVersion, osVersion),
+	).Err()
+	if err == nil {
+		return true, nil
+	}
+	if err == mongo.ErrNoDocuments {
+		return false, nil
+	}
+	return false, err
 }

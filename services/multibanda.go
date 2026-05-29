@@ -82,6 +82,19 @@ func (s *multibandaService) Create(multibandaRequest *request.Multibanda, userID
 		return "", utils.NewValidationError("brand not found")
 	}
 
+	exists, err := s.multibandaRepository.ExistsByCompanyDeviceSoftwareOsVersion(
+		companyID,
+		deviceID,
+		strings.TrimSpace(multibandaRequest.SoftwareVersion),
+		strings.TrimSpace(multibandaRequest.OsVersion),
+	)
+	if err != nil {
+		return "", err
+	}
+	if exists {
+		return "", utils.NewValidationError("a multibanda record already exists for this company, device, software_version and os_version")
+	}
+
 	multibanda := mapping.MultibandaRequestToMultibanda(
 		multibandaRequest,
 		companyID,

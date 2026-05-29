@@ -67,12 +67,14 @@ func TestValidateMultibandaEvaluationTypesAllowsSismateCombination(t *testing.T)
 
 func validMultibandaRequest() *request.Multibanda {
 	return &request.Multibanda{
-		Company:        "507f1f77bcf86cd799439011",
-		Device:         "507f1f77bcf86cd799439012",
-		Brand:          "507f1f77bcf86cd799439013",
-		Type:           enums.MultibandaTypeInitialProcess,
-		EvaluationType: []string{enums.MultibandaEvalSAEMultibandaCertificate},
-		CurrentPhase:   enums.MultibandaPhasePlanning,
-		PlanningDate:   time.Date(2026, 5, 25, 0, 0, 0, 0, time.UTC),
+		Company:         "507f1f77bcf86cd799439011",
+		Device:          "507f1f77bcf86cd799439012",
+		Brand:           "507f1f77bcf86cd799439013",
+		Type:            enums.MultibandaTypeInitialProcess,
+		EvaluationType:  []string{enums.MultibandaEvalSAEMultibandaCertificate},
+		SoftwareVersion: "SW 1.0",
+		OsVersion:       "17",
+		CurrentPhase:    enums.MultibandaPhasePlanning,
+		PlanningDate:    time.Date(2026, 5, 25, 0, 0, 0, 0, time.UTC),
 	}
 }

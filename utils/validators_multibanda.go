@@ -3,6 +3,7 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/abisaidfarias/lbtechapi/utils/enums"
@@ -55,6 +56,14 @@ func ValidateMultibandaCreateRequest(multibanda *request.Multibanda) error {
 
 	if multibanda.Brand == "" {
 		return NewValidationError("brand is required")
+	}
+
+	if strings.TrimSpace(multibanda.SoftwareVersion) == "" {
+		return NewValidationError("software_version is required")
+	}
+
+	if strings.TrimSpace(multibanda.OsVersion) == "" {
+		return NewValidationError("os_version is required")
 	}
 
 	if multibanda.Type == "" {

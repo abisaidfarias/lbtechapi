@@ -8,6 +8,20 @@ import (
 	"github.com/abisaidfarias/lbtechapi/models"
 )
 
+func GetMultibandaByCompanyDeviceSoftwareOsVersion(
+	companyID primitive.ObjectID,
+	deviceID primitive.ObjectID,
+	softwareVersion string,
+	osVersion string,
+) primitive.M {
+	return primitive.M{
+		"company":          companyID,
+		"device":           deviceID,
+		"software_version": softwareVersion,
+		"os_version":       osVersion,
+	}
+}
+
 func GetMultibandaById(oid primitive.ObjectID) primitive.M {
 	return primitive.M{"_id": oid}
 }
@@ -170,6 +184,7 @@ func UpdateMultibandaPhaseChange(multibanda *models.Multibanda, oid primitive.Ob
 				{Key: "completed_date", Value: multibanda.CompletedDate},
 				{Key: "test_report_url", Value: multibanda.TestReportUrl},
 				{Key: "multiband_certificate_url", Value: multibanda.MultibandCertificateUrl},
+				{Key: "certificate_number", Value: multibanda.CertificateNumber},
 				{Key: "dashboard_phase", Value: multibanda.DashBoardPhase},
 			},
 		},
