@@ -420,6 +420,69 @@ func SendMultibandaPhaseEmail(toList []string, subject string, data MultibandaPh
 	return sendBrandedHTMLEmail(toList, subject, html, logoPNG, "")
 }
 
+// ShipmentControlPhaseEmailData is passed to the Shipment Control notification HTML template.
+type ShipmentControlPhaseEmailData struct {
+	LogoDataURI                 template.URL
+	ClientName                  string
+	MainMessage                 string
+	NotificationDate            string
+	CurrentPhase                string
+	Country                     string
+	Client                      string
+	ImeiQuantity                string
+	ReworkNumber                string
+	MultibandaCertificateNumber string
+	Brand                       string
+	TechnicalModel              string
+	CommercialModel             string
+	SoftwareVersion             string
+	HardwareVersion             string
+	OsVersion                   string
+	UpdatedBy                   string
+	PlanningDate                string
+	ValidationStartDate         string
+	ValidationEndDate           string
+	UnderRevisionStartDate      string
+	UnderRevisionEndDate        string
+	ResultDate                  string
+	ShowImeiSubmitted           bool
+	ImeiSubmitted               string
+	ShowCompletedFields         bool
+	OabiCertificate             string
+	Comments                    string
+	ExcelFileURL                string
+	MultibandCertificateURL     string
+	OabiCertificateURL          string
+	Year                        int
+}
+
+func RenderShipmentControlPhaseEmailHTML(data ShipmentControlPhaseEmailData, templatePath string) ([]byte, error) {
+	t, err := template.ParseFiles(templatePath)
+	if err != nil {
+		return nil, err
+	}
+	var htmlBuf bytes.Buffer
+	if err := t.Execute(&htmlBuf, data); err != nil {
+		return nil, err
+	}
+	html := htmlBuf.Bytes()
+	html = bytes.ReplaceAll(html, []byte("\r\n"), []byte("\n"))
+	html = bytes.ReplaceAll(html, []byte("\n"), []byte("\r\n"))
+	return html, nil
+}
+
+func SendShipmentControlPhaseEmail(toList []string, subject string, data ShipmentControlPhaseEmailData, templatePath string, logoPNG []byte) error {
+	d := data
+	d.LogoDataURI = resolveBrandedEmailLogo(logoPNG)
+
+	html, err := RenderShipmentControlPhaseEmailHTML(d, templatePath)
+	if err != nil {
+		return err
+	}
+
+	return sendBrandedHTMLEmail(toList, subject, html, logoPNG, "")
+}
+
 func GetEmails(isInternal bool, companyId primitive.ObjectID) ([]string, bool) {
 
 	var toList []string

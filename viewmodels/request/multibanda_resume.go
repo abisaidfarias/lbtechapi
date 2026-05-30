@@ -20,6 +20,7 @@ type MultibandaResume struct {
 	CertificateNumber       string    `json:"certificate_number"`
 	TestReportUrl           string    `json:"test_report_url"`
 	MultibandCertificateUrl string    `json:"multiband_certificate_url"`
+	Comment                 string    `json:"comment"`
 	IsInternalProject       bool      `json:"is_internal_project,omitempty"`
 }
 

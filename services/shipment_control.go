@@ -5,8 +5,7 @@ package services
 import (
 
 	"fmt"
-
-
+	"log"
 
 	"github.com/abisaidfarias/lbtechapi/models"
 
@@ -184,7 +183,15 @@ func (s *shipmentControlService) Create(req *request.ShipmentControl, userID str
 
 	shipmentControl := mapping.ShipmentControlRequestToShipmentControl(req, multibandaID, multibanda.Company.ID, countryID)
 
-	return s.shipmentControlRepository.Create(shipmentControl)
+	id, err := s.shipmentControlRepository.Create(shipmentControl)
+	if err != nil {
+		return "", err
+	}
+
+	shipmentControlID, _ := primitive.ObjectIDFromHex(id)
+	go s.ShipmentControlNotification(shipmentControlID, nil, utils.CREATE, userID)
+
+	return id, nil
 
 }
 
@@ -370,8 +377,97 @@ func (s *shipmentControlService) PhaseChange(id string, req *request.ShipmentCon
 	functions.ApplyShipmentControlStatusRules(shipmentControl, existing)
 	functions.ApplyShipmentControlPhaseDateRules(shipmentControl, existing)
 
-	return s.shipmentControlRepository.PhaseChange(id, shipmentControl)
+	if err := s.shipmentControlRepository.PhaseChange(id, shipmentControl); err != nil {
+		return err
+	}
 
+	go s.ShipmentControlNotification(shipmentControlID, existing, utils.PHASE, userID)
+
+	return nil
+
+}
+
+func (s *shipmentControlService) ShipmentControlNotification(
+	shipmentControlID primitive.ObjectID,
+	existing *models.ShipmentControl,
+	notifyKey string,
+	userID string,
+) {
+	user, err := s.userRepository.GetByID(userID)
+	if err != nil {
+		return
+	}
+
+	shipment, err := s.shipmentControlRepository.GetById(shipmentControlID)
+	if err != nil || shipment == nil {
+		return
+	}
+
+	toList, isEmpty := functions.GetEmails(false, shipment.Company)
+	if isEmpty {
+		return
+	}
+
+	multibanda, err := s.multibandaRepository.GetByIdExpanded(shipment.Multibanda)
+	if err != nil || multibanda == nil {
+		return
+	}
+
+	company, err := s.companyRepository.GetById(shipment.Company.Hex())
+	if err != nil || company == nil {
+		return
+	}
+
+	countryName := ""
+	country, err := s.countryRepository.GetById(shipment.Country.Hex())
+	if err == nil && country != nil {
+		countryName = country.Name
+	}
+
+	notify := mapping.ShipmentControlToNotify(shipment, multibanda, company.Name, countryName)
+
+	var existingNotify *request.ShipmentControlNotify
+	if existing != nil {
+		en := mapping.ShipmentControlToNotify(existing, multibanda, company.Name, countryName)
+		existingNotify = &en
+	}
+
+	emailKind := functions.ResolveShipmentControlPhaseEmailKind(notifyKey, existingNotify, &notify)
+	if emailKind == "" {
+		return
+	}
+
+	userName := fmt.Sprintf("%s %s", user.Name, user.LastName)
+	mainMessage, subject := functions.GetShipmentControlNotificationMessageAndSubject(
+		emailKind,
+		multibanda.Brand.Name,
+		multibanda.Device.CommercialModel,
+		shipment.ReworkNumber,
+	)
+	if subject == "" {
+		return
+	}
+
+	emailData := functions.BuildShipmentControlPhaseEmailData(
+		&notify,
+		multibanda.Brand.Name,
+		multibanda.Device.TechnicalModel,
+		multibanda.Device.CommercialModel,
+		multibanda.Device.PlatformOs,
+		userName,
+		mainMessage,
+		emailKind,
+	)
+
+	if err := functions.SendShipmentControlPhaseEmail(
+		toList,
+		subject,
+		emailData,
+		utils.TEMPLATE_SHIPMENT_CONTROL_PHASE_PATH,
+		utils.LBOneTrackLogoPNG,
+	); err != nil {
+		log.Printf("shipment control notification email (%s): %v", notifyKey, err)
+	}
 }
 
 

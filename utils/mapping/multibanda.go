@@ -32,6 +32,7 @@ func MultibandaRequestToMultibanda(
 		SampleEndDate:           nil,
 		TestReportUrl:           multibanda.TestReportUrl,
 		MultibandCertificateUrl: multibanda.MultibandCertificateUrl,
+		Comment:                 multibanda.Comment,
 		Status:                  enums.HomologationStatus_value["IN_PROGRESS"],
 		DashBoardPhase:    enums.MultibandaPhasePlanning,
 		IsInternalProject: false,
@@ -58,6 +59,7 @@ func MultibandaRequestToMultibandaResume(multibanda *request.MultibandaResume) *
 		CertificateNumber:     multibanda.CertificateNumber,
 		TestReportUrl:           multibanda.TestReportUrl,
 		MultibandCertificateUrl: multibanda.MultibandCertificateUrl,
+		Comment:                 multibanda.Comment,
 		IsInternalProject:       multibanda.IsInternalProject,
 	}
 }

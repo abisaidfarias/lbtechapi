@@ -133,6 +133,42 @@ func ToShipmentControlMultibandaSummary(multibanda responses.MultibandaExpanded)
 	}
 }
 
+func ShipmentControlToNotify(
+	shipment *models.ShipmentControl,
+	multibanda *responses.MultibandaExpanded,
+	companyName string,
+	countryName string,
+) request.ShipmentControlNotify {
+	notify := request.ShipmentControlNotify{
+		CompanyName:             companyName,
+		CountryName:             countryName,
+		Client:                  shipment.Client,
+		ReworkNumber:            shipment.ReworkNumber,
+		ImeiQuantity:            shipment.ImeiQuantity,
+		RegisteredImeiCount:     shipment.RegisteredImeiCount,
+		CurrentPhase:            shipment.CurrentPhase,
+		PlanningDate:            shipment.PlanningDate,
+		ValidationStartDate:     shipment.ValidationStartDate,
+		ValidationEndDate:       shipment.ValidationEndDate,
+		UnderRevisionStartDate:  shipment.UnderRevisionStartDate,
+		UnderRevisionEndDate:    shipment.UnderRevisionEndDate,
+		CompletedDate:           shipment.CompletedDate,
+		OabiCertificate:         shipment.OabiCertificate,
+		Comment:                 shipment.Comment,
+		SubtelCertificateUrl:    shipment.SubtelCertificateUrl,
+		OabiCertificateUrl:      shipment.OabiCertificateUrl,
+	}
+	if multibanda != nil {
+		notify.CertificateNumber = multibanda.CertificateNumber
+		notify.MultibandCertificateUrl = multibanda.MultibandCertificateUrl
+		notify.SoftwareVersion = multibanda.SoftwareVersion
+		notify.HardwareVersion = multibanda.HardwareVersion
+		notify.OsVersion = multibanda.OsVersion
+		notify.OsVersionView = multibanda.OsVersionView
+	}
+	return notify
+}
+
 func ToShipmentControlDeviceSummary(multibanda responses.MultibandaExpanded) responses.ShipmentControlDeviceSummary {
 	return responses.ShipmentControlDeviceSummary{
 		CommercialModel: multibanda.Device.CommercialModel,

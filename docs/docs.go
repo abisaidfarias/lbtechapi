@@ -6410,6 +6410,9 @@ const docTemplate = `{
                 "brand": {
                     "type": "string"
                 },
+                "comment": {
+                    "type": "string"
+                },
                 "company": {
                     "type": "string"
                 },
@@ -6464,6 +6467,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "certificate_number": {
+                    "type": "string"
+                },
+                "comment": {
                     "type": "string"
                 },
                 "completed_date": {
@@ -7756,6 +7762,9 @@ const docTemplate = `{
                     "$ref": "#/definitions/responses.Brand"
                 },
                 "certificate_number": {
+                    "type": "string"
+                },
+                "comment": {
                     "type": "string"
                 },
                 "company": {

@@ -6408,6 +6408,9 @@
                 "brand": {
                     "type": "string"
                 },
+                "comment": {
+                    "type": "string"
+                },
                 "company": {
                     "type": "string"
                 },
@@ -6462,6 +6465,9 @@
             "type": "object",
             "properties": {
                 "certificate_number": {
+                    "type": "string"
+                },
+                "comment": {
                     "type": "string"
                 },
                 "completed_date": {
@@ -7754,6 +7760,9 @@
                     "$ref": "#/definitions/responses.Brand"
                 },
                 "certificate_number": {
+                    "type": "string"
+                },
+                "comment": {
                     "type": "string"
                 },
                 "company": {
