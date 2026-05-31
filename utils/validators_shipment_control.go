@@ -36,6 +36,12 @@ func ValidateShipmentControlCreateRequest(req *request.ShipmentControl) error {
 
 	}
 
+	if strings.TrimSpace(req.ImeiFileUrl) == "" {
+
+		return NewValidationError("imei_file_url is required")
+
+	}
+
 	if strings.TrimSpace(req.Country) != "" {
 
 		if _, err := ValidateObjectIDField("country", req.Country); err != nil {

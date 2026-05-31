@@ -42,6 +42,8 @@ type ShipmentControl struct {
 
 	ImeiQuantity            int                `bson:"imei_quantity"`
 
+	ImeiFileUrl             string             `bson:"imei_file_url"`
+
 	RegisteredImeiCount     int                `bson:"registered_imei_count"`
 
 	ReworkNumber            string             `bson:"rework_number"`

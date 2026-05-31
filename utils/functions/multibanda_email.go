@@ -47,19 +47,35 @@ func FormatMultibandaEmailDate(date time.Time) string {
 }
 
 func FormatMultibandaOsVersion(osVersionView, platformOs, osVersion string) string {
-	if v := strings.TrimSpace(osVersionView); v != "" {
-		return v
+	platformOs = strings.TrimSpace(platformOs)
+	osVersionView = strings.TrimSpace(osVersionView)
+	osVersion = strings.TrimSpace(osVersion)
+
+	version := osVersionView
+	if version == "" {
+		version = osVersion
 	}
 
-	platformOs = strings.TrimSpace(platformOs)
-	osVersion = strings.TrimSpace(osVersion)
-	if platformOs != "" && osVersion != "" {
-		return platformOs + " " + osVersion
+	if version == "" {
+		return "—"
 	}
-	if osVersion != "" {
-		return osVersion
+
+	if platformOs == "" {
+		return version
 	}
-	return "—"
+
+	if strings.HasPrefix(strings.ToLower(version), strings.ToLower(platformOs)) {
+		return version
+	}
+
+	return platformOs + " " + version
+}
+
+func FormatMultibandaSarValue(value float64) string {
+	if value == 0 {
+		return "—"
+	}
+	return strings.TrimRight(strings.TrimRight(fmt.Sprintf("%.2f", value), "0"), ".")
 }
 
 func BuildMultibandaPhaseEmailData(
@@ -68,6 +84,7 @@ func BuildMultibandaPhaseEmailData(
 	technicalModel string,
 	commercialModel string,
 	platformOs string,
+	sarValue float64,
 	userName string,
 	mainMessage string,
 	finished bool,
@@ -98,6 +115,7 @@ func BuildMultibandaPhaseEmailData(
 		SoftwareVersion:         emptyAsDash(multibanda.SoftwareVersion),
 		HardwareVersion:         emptyAsDash(multibanda.HardwareVersion),
 		OsVersion:               FormatMultibandaOsVersion(multibanda.OsVersionView, platformOs, multibanda.OsVersion),
+		SARValue:                FormatMultibandaSarValue(sarValue),
 		UpdatedBy:               emptyAsDash(userName),
 		PlanningDate:            FormatMultibandaEmailDate(multibanda.PlanningDate),
 		SampleStartDate:         FormatMultibandaEmailDate(multibanda.SampleStartDate),

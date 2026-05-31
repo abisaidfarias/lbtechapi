@@ -22,6 +22,8 @@ type ShipmentControlResume struct {
 
 	ImeiQuantity            int       `json:"imei_quantity"`
 
+	ImeiFileUrl             string    `json:"imei_file_url"`
+
 	RegisteredImeiCount     int       `json:"registered_imei_count"`
 
 	ReworkNumber            string    `json:"rework_number"`

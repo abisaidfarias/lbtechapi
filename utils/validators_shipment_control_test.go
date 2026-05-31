@@ -24,6 +24,8 @@ func TestValidateShipmentControlCreateRequestSuccess(t *testing.T) {
 
 		ImeiQuantity: 10,
 
+		ImeiFileUrl:  "https://example.com/imei.xlsx",
+
 		Country:      "507f1f77bcf86cd799439012",
 
 	}
@@ -72,6 +74,8 @@ func TestValidateShipmentControlCreateRequestAllowsMissingCountry(t *testing.T) 
 
 		ImeiQuantity: 10,
 
+		ImeiFileUrl:  "https://example.com/imei.xlsx",
+
 	}
 
 
@@ -79,6 +83,28 @@ func TestValidateShipmentControlCreateRequestAllowsMissingCountry(t *testing.T) 
 	if err := utils.ValidateShipmentControlCreateRequest(req); err != nil {
 
 		t.Fatalf("expected valid request without country, got %v", err)
+
+	}
+
+}
+
+
+
+func TestValidateShipmentControlCreateRequestRejectsMissingImeiFileUrl(t *testing.T) {
+
+	req := &request.ShipmentControl{
+
+		MultibandaID: "507f1f77bcf86cd799439011",
+
+		ImeiQuantity: 10,
+
+	}
+
+
+
+	if err := utils.ValidateShipmentControlCreateRequest(req); !utils.IsValidationError(err) {
+
+		t.Fatalf("expected validation error, got %v", err)
 
 	}
 

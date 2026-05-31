@@ -53,6 +53,8 @@ func ShipmentControlRequestToShipmentControl(
 
 		ImeiQuantity:        req.ImeiQuantity,
 
+		ImeiFileUrl:         req.ImeiFileUrl,
+
 		RegisteredImeiCount: 0,
 
 		ReworkNumber:        req.ReworkNumber,
@@ -92,6 +94,8 @@ func ShipmentControlRequestToShipmentControlResume(
 		CompletedDate:           req.CompletedDate,
 
 		ImeiQuantity:            req.ImeiQuantity,
+
+		ImeiFileUrl:             req.ImeiFileUrl,
 
 		RegisteredImeiCount:     req.RegisteredImeiCount,
 
@@ -145,6 +149,7 @@ func ShipmentControlToNotify(
 		Client:                  shipment.Client,
 		ReworkNumber:            shipment.ReworkNumber,
 		ImeiQuantity:            shipment.ImeiQuantity,
+		ImeiFileUrl:             shipment.ImeiFileUrl,
 		RegisteredImeiCount:     shipment.RegisteredImeiCount,
 		CurrentPhase:            shipment.CurrentPhase,
 		PlanningDate:            shipment.PlanningDate,

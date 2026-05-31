@@ -118,6 +118,13 @@ func ResolveShipmentControlPhaseEmailKind(
 	}
 }
 
+func imeiFileURLForEmail(emailKind, imeiFileURL string) string {
+	if emailKind != shipmentControlEmailCreate {
+		return ""
+	}
+	return strings.TrimSpace(imeiFileURL)
+}
+
 func BuildShipmentControlPhaseEmailData(
 	notify *request.ShipmentControlNotify,
 	brandName string,
@@ -169,6 +176,7 @@ func BuildShipmentControlPhaseEmailData(
 		OabiCertificate:             emptyAsDash(notify.OabiCertificate),
 		Comments:                    emptyAsDash(notify.Comment),
 		ExcelFileURL:                strings.TrimSpace(notify.SubtelCertificateUrl),
+		ImeiFileURL:                 imeiFileURLForEmail(emailKind, notify.ImeiFileUrl),
 		MultibandCertificateURL:     strings.TrimSpace(notify.MultibandCertificateUrl),
 		OabiCertificateURL:          strings.TrimSpace(notify.OabiCertificateUrl),
 		Year:                        now.Year(),

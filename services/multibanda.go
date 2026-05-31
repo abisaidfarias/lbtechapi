@@ -253,6 +253,7 @@ func (s *multibandaService) MultibandaNotification(
 		device.TechnicalModel,
 		device.CommercialModel,
 		device.PlatformOs,
+		device.SarValue,
 		userName,
 		mainMessage,
 		finished,

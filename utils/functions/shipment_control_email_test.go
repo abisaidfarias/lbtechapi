@@ -48,3 +48,24 @@ func TestGetShipmentControlNotificationSubjectIncludesRework(t *testing.T) {
 		t.Fatal("expected subject")
 	}
 }
+
+func TestBuildShipmentControlPhaseEmailDataIncludesImeiFileURLOnlyOnCreate(t *testing.T) {
+	notify := &request.ShipmentControlNotify{
+		ImeiQuantity: 10,
+		ImeiFileUrl:  "https://example.com/imei.xlsx",
+	}
+
+	createData := BuildShipmentControlPhaseEmailData(
+		notify, "XIAOMI", "TM", "CM", "Android", "User", "msg", shipmentControlEmailCreate,
+	)
+	if createData.ImeiFileURL != notify.ImeiFileUrl {
+		t.Fatalf("expected imei file url on create email, got %q", createData.ImeiFileURL)
+	}
+
+	phaseData := BuildShipmentControlPhaseEmailData(
+		notify, "XIAOMI", "TM", "CM", "Android", "User", "msg", shipmentControlEmailValidationStart,
+	)
+	if phaseData.ImeiFileURL != "" {
+		t.Fatalf("expected empty imei file url on phase email, got %q", phaseData.ImeiFileURL)
+	}
+}

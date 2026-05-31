@@ -94,6 +94,8 @@ type ShipmentControlExpanded struct {
 
 	ImeiQuantity            int                             `bson:"imei_quantity" json:"imei_quantity"`
 
+	ImeiFileUrl             string                          `bson:"imei_file_url" json:"imei_file_url"`
+
 	RegisteredImeiCount     int                             `bson:"registered_imei_count" json:"registered_imei_count"`
 
 	ReworkNumber            string                          `bson:"rework_number" json:"rework_number"`

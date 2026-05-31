@@ -376,6 +376,7 @@ type MultibandaPhaseEmailData struct {
 	SoftwareVersion         string
 	HardwareVersion         string
 	OsVersion               string
+	SARValue                string
 	UpdatedBy               string
 	PlanningDate            string
 	SampleStartDate         string
@@ -451,6 +452,7 @@ type ShipmentControlPhaseEmailData struct {
 	OabiCertificate             string
 	Comments                    string
 	ExcelFileURL                string
+	ImeiFileURL                 string
 	MultibandCertificateURL     string
 	OabiCertificateURL          string
 	Year                        int
@@ -749,11 +751,11 @@ func GetMultibandaNotificationMessageAndSubject(
 		return utils.MULTIBANDA_UNDER_MAIN_MESSAGE, subject
 	case 4:
 		if enums.HomologationStatus_type[multibanda.Status] == "Approved" {
-			subject = fmt.Sprintf("Subject: Carrier Decision Approved Multibanda %s %s", brand, commercialModel)
+			subject = fmt.Sprintf("Subject: Laboratory Decision Approved Multibanda %s %s", brand, commercialModel)
 			return utils.MULTIBANDA_APPROVED_MAIN_MESSAGE, subject
 		}
 		if enums.HomologationStatus_type[multibanda.Status] == "Rejected" {
-			subject = fmt.Sprintf("Subject: Carrier Decision Rejected Multibanda %s %s", brand, commercialModel)
+			subject = fmt.Sprintf("Subject: Laboratory Decision Rejected Multibanda %s %s", brand, commercialModel)
 			return utils.MULTIBANDA_REJECTED_MAIN_MESSAGE, subject
 		}
 		if enums.HomologationStatus_type[multibanda.Status] == "Finished" {

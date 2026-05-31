@@ -23,6 +23,22 @@ func TestFormatMultibandaOsVersionBuildsFromPlatformAndVersion(t *testing.T) {
 	}
 }
 
+func TestFormatMultibandaOsVersionPrefixesOsVersionViewWhenMissingPlatform(t *testing.T) {
+	got := FormatMultibandaOsVersion("17", "Android", "17")
+	if got != "Android 17" {
+		t.Fatalf("expected Android 17, got %q", got)
+	}
+}
+
+func TestFormatMultibandaSarValue(t *testing.T) {
+	if got := FormatMultibandaSarValue(0); got != "—" {
+		t.Fatalf("expected dash for zero SAR, got %q", got)
+	}
+	if got := FormatMultibandaSarValue(1.25); got != "1.25" {
+		t.Fatalf("expected 1.25, got %q", got)
+	}
+}
+
 func TestApplyMultibandaPhaseDateRulesSetsUnderStartFromTestEndOnUnderEvaluation(t *testing.T) {
 	testEnd := time.Date(2026, 5, 29, 6, 0, 0, 0, time.UTC)
 

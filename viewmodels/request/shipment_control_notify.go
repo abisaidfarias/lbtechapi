@@ -8,6 +8,7 @@ type ShipmentControlNotify struct {
 	Client                  string
 	ReworkNumber            string
 	ImeiQuantity            int
+	ImeiFileUrl             string
 	RegisteredImeiCount     int
 	CertificateNumber       string
 	MultibandCertificateUrl string

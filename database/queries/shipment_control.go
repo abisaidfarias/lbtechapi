@@ -179,6 +179,7 @@ func UpdateShipmentControlPhaseChange(shipmentControl *models.ShipmentControl, o
 		{Key: "current_phase", Value: shipmentControl.CurrentPhase},
 		{Key: "status", Value: shipmentControl.Status},
 		{Key: "imei_quantity", Value: shipmentControl.ImeiQuantity},
+		{Key: "imei_file_url", Value: shipmentControl.ImeiFileUrl},
 		{Key: "registered_imei_count", Value: shipmentControl.RegisteredImeiCount},
 		{Key: "rework_number", Value: shipmentControl.ReworkNumber},
 		{Key: "oabi_certificate", Value: shipmentControl.OabiCertificate},
