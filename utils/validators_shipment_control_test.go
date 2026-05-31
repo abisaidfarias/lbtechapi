@@ -64,7 +64,7 @@ func TestValidateShipmentControlCreateRequestRejectsInvalidImeiQuantity(t *testi
 
 
 
-func TestValidateShipmentControlCreateRequestRequiresCountry(t *testing.T) {
+func TestValidateShipmentControlCreateRequestAllowsMissingCountry(t *testing.T) {
 
 	req := &request.ShipmentControl{
 
@@ -76,9 +76,9 @@ func TestValidateShipmentControlCreateRequestRequiresCountry(t *testing.T) {
 
 
 
-	if err := utils.ValidateShipmentControlCreateRequest(req); !utils.IsValidationError(err) {
+	if err := utils.ValidateShipmentControlCreateRequest(req); err != nil {
 
-		t.Fatalf("expected validation error, got %v", err)
+		t.Fatalf("expected valid request without country, got %v", err)
 
 	}
 

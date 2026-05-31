@@ -6,6 +6,7 @@ import (
 
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/abisaidfarias/lbtechapi/models"
 
@@ -105,8 +106,6 @@ func (s *shipmentControlService) Create(req *request.ShipmentControl, userID str
 
 	}
 
-
-
 	user, err := s.userRepository.GetByID(userID)
 
 	if err != nil {
@@ -114,8 +113,6 @@ func (s *shipmentControlService) Create(req *request.ShipmentControl, userID str
 		return "", err
 
 	}
-
-
 
 	multibandaID, err := primitive.ObjectIDFromHex(req.MultibandaID)
 
@@ -125,9 +122,7 @@ func (s *shipmentControlService) Create(req *request.ShipmentControl, userID str
 
 	}
 
-
-
-	countryID, err := parseReferenceID("country", req.Country)
+	countryID, err := s.resolveShipmentControlCountry(req, user)
 
 	if err != nil {
 
@@ -142,8 +137,6 @@ func (s *shipmentControlService) Create(req *request.ShipmentControl, userID str
 		return "", utils.NewValidationError("country not found")
 
 	}
-
-
 
 	multibanda, err := s.multibandaRepository.GetByIdExpanded(multibandaID)
 
@@ -168,6 +161,12 @@ func (s *shipmentControlService) Create(req *request.ShipmentControl, userID str
 
 
 	if !functions.UserHasClientAccess(user, multibanda.Company.ID) {
+
+		return "", fmt.Errorf("%w", utils.ErrorForbidden)
+
+	}
+
+	if !user.IsInternal && multibanda.Company.ID != user.Company {
 
 		return "", fmt.Errorf("%w", utils.ErrorForbidden)
 
@@ -471,6 +470,29 @@ func (s *shipmentControlService) ShipmentControlNotification(
 }
 
 
+
+func (s *shipmentControlService) resolveShipmentControlCountry(
+	req *request.ShipmentControl,
+	user *responses.User,
+) (primitive.ObjectID, error) {
+	if user.IsInternal {
+		if strings.TrimSpace(req.Country) == "" {
+			return primitive.NilObjectID, utils.NewValidationError("country is required")
+		}
+		return parseReferenceID("country", req.Country)
+	}
+
+	if user.Company == primitive.NilObjectID {
+		return primitive.NilObjectID, utils.NewValidationError("user company is not configured")
+	}
+
+	chile, err := s.countryRepository.GetByName(enums.ShipmentControlExternalCountryName)
+	if err != nil || chile == nil {
+		return primitive.NilObjectID, utils.NewValidationError("Chile country not found")
+	}
+
+	return chile.ID, nil
+}
 
 func (s *shipmentControlService) resolveAvailableMultibandasCompany(user *responses.User, companyParam string) (primitive.ObjectID, error) {
 	if user.IsInternal {

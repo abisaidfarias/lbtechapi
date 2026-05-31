@@ -36,15 +36,13 @@ func ValidateShipmentControlCreateRequest(req *request.ShipmentControl) error {
 
 	}
 
-	if strings.TrimSpace(req.Country) == "" {
+	if strings.TrimSpace(req.Country) != "" {
 
-		return NewValidationError("country is required")
+		if _, err := ValidateObjectIDField("country", req.Country); err != nil {
 
-	}
+			return err
 
-	if _, err := ValidateObjectIDField("country", req.Country); err != nil {
-
-		return err
+		}
 
 	}
 

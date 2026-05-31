@@ -29,7 +29,7 @@ func NewShipmentControlController(shipmentControlService services.IShipmentContr
 
 // Create godoc
 // @Summary Crear Shipment Control
-// @Description Crea un control de embarque en fase Planning. Solo requiere multibanda_id e imei_quantity; planning_date se asigna en UTC en el servidor.
+// @Description Crea un control de embarque en fase Planning. Usuario externo: country se asigna automáticamente a Chile. Usuario interno: country es requerido.
 // @Tags ShipmentControl
 // @Accept json
 // @Produce json

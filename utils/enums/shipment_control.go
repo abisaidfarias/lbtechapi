@@ -1,6 +1,8 @@
 package enums
 
 const (
+	ShipmentControlExternalCountryName = "Chile"
+
 	ShipmentControlPhasePlanning      = 0
 	ShipmentControlPhaseValidation    = 1
 	ShipmentControlPhaseUnderRevision = 2
