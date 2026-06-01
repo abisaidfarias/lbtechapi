@@ -174,6 +174,7 @@ var (
 
 func main() {
 	server := gin.Default()
+	server.MaxMultipartMemory = utils.MaxUploadFileSize
 	server.Use(middlewares.CORSMiddleware())
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
@@ -371,6 +372,9 @@ func main() {
 			multibanda.POST("", multibandaController.Create())
 			multibanda.GET("", multibandaController.Get())
 			multibanda.PUT(":id/phase", multibandaController.PhaseChange())
+			multibanda.PATCH(":id/request-delete", multibandaController.PatchRequestDelete())
+			multibanda.PATCH(":id/reject-delete", multibandaController.RejectRequestDelete())
+			multibanda.DELETE(":id", multibandaController.Delete())
 		}
 		shipmentControl := v1.Group("/shipment-control")
 		{
@@ -378,6 +382,9 @@ func main() {
 			shipmentControl.GET("", shipmentControlController.Get())
 			shipmentControl.GET("/available-multibandas", shipmentControlController.GetAvailableMultibandas())
 			shipmentControl.PUT(":id/phase", shipmentControlController.PhaseChange())
+			shipmentControl.PATCH(":id/request-delete", shipmentControlController.PatchRequestDelete())
+			shipmentControl.PATCH(":id/reject-delete", shipmentControlController.RejectRequestDelete())
+			shipmentControl.DELETE(":id", shipmentControlController.Delete())
 		}
 	}
 

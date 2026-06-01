@@ -5,7 +5,9 @@ import (
 	"time"
 
 	"github.com/abisaidfarias/lbtechapi/models"
+	"github.com/abisaidfarias/lbtechapi/utils"
 	"github.com/abisaidfarias/lbtechapi/utils/enums"
+	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 )
 
@@ -30,12 +32,28 @@ func TestFormatMultibandaOsVersionPrefixesOsVersionViewWhenMissingPlatform(t *te
 	}
 }
 
+func TestMultibandaReflashURLForEmailOnlyOnCreate(t *testing.T) {
+	notify := &request.MultibandaNotify{
+		NeedReflash:     true,
+		CommentsReflash: "https://example.com/reflash",
+	}
+	if got := multibandaReflashURLForEmail(utils.CREATE, notify.NeedReflash, notify.CommentsReflash); got != notify.CommentsReflash {
+		t.Fatalf("expected reflash url on create, got %q", got)
+	}
+	if got := multibandaReflashURLForEmail(utils.PHASE, notify.NeedReflash, notify.CommentsReflash); got != "" {
+		t.Fatalf("expected empty reflash url on phase email, got %q", got)
+	}
+}
+
 func TestFormatMultibandaSarValue(t *testing.T) {
 	if got := FormatMultibandaSarValue(0); got != "—" {
 		t.Fatalf("expected dash for zero SAR, got %q", got)
 	}
-	if got := FormatMultibandaSarValue(1.25); got != "1.25" {
-		t.Fatalf("expected 1.25, got %q", got)
+	if got := FormatMultibandaSarValue(1.25); got != "1.25 W/Kg" {
+		t.Fatalf("expected 1.25 W/Kg, got %q", got)
+	}
+	if got := FormatMultibandaSarValue(1.09); got != "1.09 W/Kg" {
+		t.Fatalf("expected 1.09 W/Kg, got %q", got)
 	}
 }
 

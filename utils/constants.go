@@ -63,3 +63,6 @@ var CREATE_FAIL_MAIN_MESSAGE = "A new issue has been created on date"
 var CREATE_DEVICE_MAIN_MESSAGE = "The following Device has been created on date"
 var UPDATE_DEVICE_MAIN_MESSAGE = "The following Device has been updated on date"
 var TEMPLATE_DEVICE_PATH = "utils/htmlMessageTemplate/device.html"
+
+// MaxUploadFileSize is the maximum allowed multipart upload size (50 MiB).
+const MaxUploadFileSize int64 = 50 << 20

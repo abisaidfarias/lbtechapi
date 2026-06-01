@@ -21,6 +21,8 @@ type IMultibandaRepository interface {
 	PhaseChange(string, *models.Multibanda) error
 	GetByIdExpanded(primitive.ObjectID) (*responses.MultibandaExpanded, error)
 	ExistsByCompanyDeviceSoftwareOsVersion(primitive.ObjectID, primitive.ObjectID, string, string) (bool, error)
+	Delete(primitive.ObjectID) error
+	SetRequestDelete(primitive.ObjectID, bool) error
 }
 
 type multibandaRepository struct {
@@ -131,4 +133,27 @@ func (r *multibandaRepository) ExistsByCompanyDeviceSoftwareOsVersion(
 		return false, nil
 	}
 	return false, err
+}
+
+func (r *multibandaRepository) Delete(id primitive.ObjectID) error {
+	res, err := multibandaCollection.DeleteOne(context.TODO(), queries.GetMultibandaById(id))
+	if err != nil {
+		return err
+	}
+	if res.DeletedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+	return nil
+}
+
+func (r *multibandaRepository) SetRequestDelete(id primitive.ObjectID, value bool) error {
+	filter, update := queries.SetMultibandaRequestDelete(id, value)
+	res, err := multibandaCollection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return err
+	}
+	if res.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+	return nil
 }

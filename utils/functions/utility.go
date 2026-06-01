@@ -390,6 +390,7 @@ type MultibandaPhaseEmailData struct {
 	Decision                string
 	TestReportURL           string
 	MultibandCertificateURL string
+	ReflashURL              string
 	Year                    int
 }
 

@@ -14,6 +14,9 @@ type IMultibandaController interface {
 	Create() gin.HandlerFunc
 	Get() gin.HandlerFunc
 	PhaseChange() gin.HandlerFunc
+	Delete() gin.HandlerFunc
+	PatchRequestDelete() gin.HandlerFunc
+	RejectRequestDelete() gin.HandlerFunc
 }
 
 type multibandaController struct {
@@ -77,7 +80,7 @@ func (c *multibandaController) Create() gin.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Success 200 {array} responses.MultibandaExpanded "Lista de registros Multibanda"
+// @Success 200 {array} responses.MultibandaExpanded "Lista de registros Multibanda (incluye request_delete)"
 // @Failure 401 {object} map[string]string "No autorizado"
 // @Failure 403 {object} map[string]string "Sin permiso para leer Multibanda"
 // @Failure 500 {object} map[string]string "Error interno del servidor"
@@ -137,5 +140,125 @@ func (c *multibandaController) PhaseChange() gin.HandlerFunc {
 		}
 
 		ctx.Status(http.StatusOK)
+	}
+}
+
+// Delete godoc
+// @Summary Eliminar registro Multibanda
+// @Description Solo usuario interno. Elimina el registro de forma definitiva.
+// @Tags Multibanda
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID del registro Multibanda"
+// @Success 200 {object} responses.DeleteProcessResult "Resultado de la eliminación"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 403 {object} map[string]string "Sin permiso"
+// @Failure 404 {object} map[string]string "No encontrado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /multibanda/{id} [delete]
+func (c *multibandaController) Delete() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		userID := ctx.MustGet("userID").(string)
+
+		result, err := c.multibandaService.Delete(id, userID)
+		if err != nil {
+			switch {
+			case utils.IsValidationError(err):
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			case errors.Is(err, utils.ErrorForbidden):
+				ctx.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+				return
+			default:
+				handleErrorResponse(ctx, err)
+				return
+			}
+		}
+
+		ctx.JSON(http.StatusOK, result)
+	}
+}
+
+// PatchRequestDelete godoc
+// @Summary Actualizar solicitud de eliminación Multibanda
+// @Description Externo: solicitar borrado con request_delete true.
+// @Tags Multibanda
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID del registro Multibanda"
+// @Param body body request.RequestDeletePatch true "request_delete true"
+// @Success 200 {object} responses.DeleteProcessResult "Resultado"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 403 {object} map[string]string "Sin permiso"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /multibanda/{id}/request-delete [patch]
+func (c *multibandaController) PatchRequestDelete() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		userID := ctx.MustGet("userID").(string)
+		var body request.RequestDeletePatch
+
+		if err := ctx.ShouldBindJSON(&body); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		result, err := c.multibandaService.PatchRequestDelete(id, &body, userID)
+		if err != nil {
+			switch {
+			case utils.IsValidationError(err):
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			case errors.Is(err, utils.ErrorForbidden):
+				ctx.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+				return
+			default:
+				handleErrorResponse(ctx, err)
+				return
+			}
+		}
+
+		ctx.JSON(http.StatusOK, result)
+	}
+}
+
+// RejectRequestDelete godoc
+// @Summary Rechazar solicitud de eliminación Multibanda
+// @Description Usuario interno: cancela una solicitud de borrado pendiente (request_delete pasa a false).
+// @Tags Multibanda
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID del registro Multibanda"
+// @Success 200 {object} responses.DeleteProcessResult "Resultado"
+// @Failure 400 {object} map[string]string "Sin solicitud pendiente o ID inválido"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 403 {object} map[string]string "Solo usuarios internos"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /multibanda/{id}/reject-delete [patch]
+func (c *multibandaController) RejectRequestDelete() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		userID := ctx.MustGet("userID").(string)
+
+		result, err := c.multibandaService.RejectRequestDelete(id, userID)
+		if err != nil {
+			switch {
+			case utils.IsValidationError(err):
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			case errors.Is(err, utils.ErrorForbidden):
+				ctx.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+				return
+			default:
+				handleErrorResponse(ctx, err)
+				return
+			}
+		}
+
+		ctx.JSON(http.StatusOK, result)
 	}
 }

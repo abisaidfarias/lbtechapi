@@ -26,6 +26,18 @@ func GetMultibandaById(oid primitive.ObjectID) primitive.M {
 	return primitive.M{"_id": oid}
 }
 
+func SetMultibandaRequestDelete(oid primitive.ObjectID, value bool) (primitive.M, primitive.D) {
+	filter := primitive.M{"_id": oid}
+	if !value {
+		filter["request_delete"] = true
+	}
+	return filter, primitive.D{
+		{Key: "$set", Value: primitive.D{
+			{Key: "request_delete", Value: value},
+		}},
+	}
+}
+
 func GetMultibandas(
 	companies []primitive.ObjectID,
 	brands []primitive.ObjectID,
@@ -50,6 +62,13 @@ func GetMultibandas(
 		preMatch = append(preMatch, primitive.E{
 			Key:   "brand",
 			Value: bson.D{primitive.E{Key: "$in", Value: brands}},
+		})
+		hasPreMatch = true
+	}
+	if !isInternal {
+		preMatch = append(preMatch, primitive.E{
+			Key:   "request_delete",
+			Value: bson.M{"$ne": true},
 		})
 		hasPreMatch = true
 	}

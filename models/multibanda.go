@@ -32,6 +32,9 @@ type Multibanda struct {
 	MultibandCertificateUrl string           `bson:"multiband_certificate_url,omitempty"`
 	CertificateNumber     string             `bson:"certificate_number,omitempty"`
 	Comment               string             `bson:"comment,omitempty"`
+	NeedReflash           bool               `bson:"need_reflash"`
+	CommentsReflash       string             `bson:"comments_reflash,omitempty"`
+	RequestDelete         bool               `bson:"request_delete"`
 	IsInternalProject     bool               `bson:"is_internal_project"`
 	CreatedDate       time.Time          `bson:"created_date"`
 }

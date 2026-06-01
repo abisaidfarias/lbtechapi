@@ -5,8 +5,9 @@ const (
 	CanWriteMultibanda  = "canWriteMultibanda"
 	CanDeleteMultibanda = "canDeleteMultibanda"
 
-	CanReadShipmentControl  = "canReadShipmentControl"
-	CanWriteShipmentControl = "canWriteShipmentControl"
+	CanReadShipmentControl   = "canReadShipmentControl"
+	CanWriteShipmentControl  = "canWriteShipmentControl"
+	CanDeleteShipmentControl = "canDeleteShipmentControl"
 )
 
 // MultibandaProfileClaims lists the profile permissions for the Multibanda module.
@@ -20,4 +21,5 @@ var MultibandaProfileClaims = []string{
 var ShipmentControlProfileClaims = []string{
 	CanReadShipmentControl,
 	CanWriteShipmentControl,
+	CanDeleteShipmentControl,
 }

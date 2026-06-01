@@ -48,5 +48,7 @@ type MultibandaNotify struct {
 	CertificateNumber       string
 	TestReportUrl           string
 	MultibandCertificateUrl string
+	NeedReflash             bool
+	CommentsReflash         string
 	IsInternalProject       bool
 }

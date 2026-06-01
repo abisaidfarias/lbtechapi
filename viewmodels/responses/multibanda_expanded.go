@@ -32,6 +32,9 @@ type MultibandaExpanded struct {
 	MultibandCertificateUrl string             `bson:"multiband_certificate_url" json:"multiband_certificate_url"`
 	CertificateNumber       string             `bson:"certificate_number" json:"certificate_number"`
 	Comment                 string             `bson:"comment" json:"comment"`
+	NeedReflash             bool               `bson:"need_reflash" json:"need_reflash"`
+	CommentsReflash         string             `bson:"comments_reflash" json:"comments_reflash"`
+	RequestDelete           bool               `bson:"request_delete" json:"request_delete"`
 	IsInternalProject       bool               `bson:"is_internal_project" json:"is_internal_project"`
 	CreatedDate       *time.Time         `bson:"created_date" json:"created_date"`
 }

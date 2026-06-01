@@ -170,6 +170,12 @@
                  Download Multiband Certificate
               </a>
               {{ end }}
+              {{ if .ReflashURL }}
+              <a href="{{ .ReflashURL }}" target="_blank" rel="noopener"
+                 style="display:inline-block; margin-left:12px; background:#0b1736; color:#ffffff; text-decoration:none; padding:12px 22px; font-weight:bold; border-radius:6px;">
+                 Reflash
+              </a>
+              {{ end }}
             </td>
           </tr>
 

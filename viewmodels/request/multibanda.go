@@ -19,5 +19,7 @@ type Multibanda struct {
 	TestReportUrl           string     `json:"test_report_url"`
 	MultibandCertificateUrl string     `json:"multiband_certificate_url"`
 	Comment                 string     `json:"comment"`
+	NeedReflash             bool       `json:"need_reflash"`
+	CommentsReflash         string     `json:"comments_reflash"`
 	IsInternalProject       bool       `json:"is_internal_project"`
 }

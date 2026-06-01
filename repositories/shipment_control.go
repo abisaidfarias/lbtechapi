@@ -42,6 +42,10 @@ type IShipmentControlRepository interface {
 
 	PhaseChange(string, *models.ShipmentControl) error
 
+	Delete(primitive.ObjectID) error
+
+	SetRequestDelete(primitive.ObjectID, bool) error
+
 }
 
 
@@ -279,4 +283,26 @@ func (r *shipmentControlRepository) PhaseChange(id string, shipmentControl *mode
 
 }
 
+func (r *shipmentControlRepository) Delete(id primitive.ObjectID) error {
+	res, err := shipmentControlCollection.DeleteOne(context.TODO(), queries.GetShipmentControlById(id))
+	if err != nil {
+		return err
+	}
+	if res.DeletedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+	return nil
+}
+
+func (r *shipmentControlRepository) SetRequestDelete(id primitive.ObjectID, value bool) error {
+	filter, update := queries.SetShipmentControlRequestDelete(id, value)
+	res, err := shipmentControlCollection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return err
+	}
+	if res.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+	return nil
+}
 

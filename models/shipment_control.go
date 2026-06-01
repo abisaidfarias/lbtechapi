@@ -62,6 +62,8 @@ type ShipmentControl struct {
 
 	Comment                 string             `bson:"comment"`
 
+	RequestDelete           bool               `bson:"request_delete"`
+
 	CreatedDate             time.Time          `bson:"created_date"`
 
 }

@@ -1,6 +1,7 @@
 package mapping
 
 import (
+	"strings"
 	"time"
 
 	"github.com/abisaidfarias/lbtechapi/models"
@@ -33,6 +34,9 @@ func MultibandaRequestToMultibanda(
 		TestReportUrl:           multibanda.TestReportUrl,
 		MultibandCertificateUrl: multibanda.MultibandCertificateUrl,
 		Comment:                 multibanda.Comment,
+		NeedReflash:             multibanda.NeedReflash,
+		CommentsReflash:         strings.TrimSpace(multibanda.CommentsReflash),
+		RequestDelete:           false,
 		Status:                  enums.HomologationStatus_value["IN_PROGRESS"],
 		DashBoardPhase:    enums.MultibandaPhasePlanning,
 		IsInternalProject: false,
@@ -89,6 +93,8 @@ func MultibandaResponseToMultibandaNotify(multibanda responses.MultibandaExpande
 		CertificateNumber:       multibanda.CertificateNumber,
 		TestReportUrl:           multibanda.TestReportUrl,
 		MultibandCertificateUrl: multibanda.MultibandCertificateUrl,
+		NeedReflash:             multibanda.NeedReflash,
+		CommentsReflash:         multibanda.CommentsReflash,
 		IsInternalProject:       multibanda.IsInternalProject,
 	}
 }

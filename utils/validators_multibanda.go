@@ -3,6 +3,7 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"strings"
 	"time"
 
@@ -78,6 +79,29 @@ func ValidateMultibandaCreateRequest(multibanda *request.Multibanda) error {
 		return NewValidationError(err.Error())
 	}
 
+	return validateMultibandaReflashFields(multibanda.NeedReflash, multibanda.CommentsReflash)
+}
+
+func validateMultibandaReflashFields(needReflash bool, commentsReflash string) error {
+	commentsReflash = strings.TrimSpace(commentsReflash)
+	if needReflash {
+		return ValidateHTTPHyperlink("comments_reflash", commentsReflash)
+	}
+	if commentsReflash != "" {
+		return NewValidationError("comments_reflash is only allowed when need_reflash is true")
+	}
+	return nil
+}
+
+func ValidateHTTPHyperlink(fieldName, value string) error {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return NewValidationError(fmt.Sprintf("%s is required", fieldName))
+	}
+	parsed, err := url.Parse(value)
+	if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Host == "" {
+		return NewValidationError(fmt.Sprintf("%s must be a valid http or https URL", fieldName))
+	}
 	return nil
 }
 

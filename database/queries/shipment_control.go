@@ -15,10 +15,23 @@ func GetShipmentControlById(oid primitive.ObjectID) primitive.M {
 	return primitive.M{"_id": oid}
 }
 
+func SetShipmentControlRequestDelete(oid primitive.ObjectID, value bool) (primitive.M, primitive.D) {
+	filter := primitive.M{"_id": oid}
+	if !value {
+		filter["request_delete"] = true
+	}
+	return filter, primitive.D{
+		{Key: "$set", Value: primitive.D{
+			{Key: "request_delete", Value: value},
+		}},
+	}
+}
+
 func GetAvailableMultibandas(companyID primitive.ObjectID, brands []primitive.ObjectID) mongo.Pipeline {
 	preMatch := bson.D{
 		{Key: "company", Value: companyID},
 		{Key: "status", Value: enums.HomologationStatus_value["APPROVED"]},
+		{Key: "request_delete", Value: bson.M{"$ne": true}},
 	}
 	if len(brands) > 0 {
 		preMatch = append(preMatch, primitive.E{
@@ -103,6 +116,13 @@ func GetShipmentControls(
 	}
 	if !isInternal {
 		preMatch = append(preMatch, primitive.E{Key: "company", Value: companyID})
+		hasPreMatch = true
+	}
+	if !isInternal {
+		preMatch = append(preMatch, primitive.E{
+			Key:   "request_delete",
+			Value: bson.M{"$ne": true},
+		})
 		hasPreMatch = true
 	}
 

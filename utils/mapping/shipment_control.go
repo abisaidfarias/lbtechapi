@@ -63,6 +63,8 @@ func ShipmentControlRequestToShipmentControl(
 
 		Client:              req.Client,
 
+		RequestDelete:       false,
+
 		CreatedDate:         now,
 
 	}

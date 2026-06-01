@@ -65,6 +65,29 @@ func TestValidateMultibandaEvaluationTypesAllowsSismateCombination(t *testing.T)
 	}
 }
 
+func TestValidateMultibandaCreateRequestRequiresReflashURLWhenNeeded(t *testing.T) {
+	req := validMultibandaRequest()
+	req.NeedReflash = true
+
+	if err := utils.ValidateMultibandaCreateRequest(req); !utils.IsValidationError(err) {
+		t.Fatalf("expected validation error, got %v", err)
+	}
+
+	req.CommentsReflash = "https://example.com/reflash"
+	if err := utils.ValidateMultibandaCreateRequest(req); err != nil {
+		t.Fatalf("expected valid request, got %v", err)
+	}
+}
+
+func TestValidateMultibandaCreateRequestRejectsReflashURLWithoutFlag(t *testing.T) {
+	req := validMultibandaRequest()
+	req.CommentsReflash = "https://example.com/reflash"
+
+	if err := utils.ValidateMultibandaCreateRequest(req); !utils.IsValidationError(err) {
+		t.Fatalf("expected validation error, got %v", err)
+	}
+}
+
 func validMultibandaRequest() *request.Multibanda {
 	return &request.Multibanda{
 		Company:         "507f1f77bcf86cd799439011",

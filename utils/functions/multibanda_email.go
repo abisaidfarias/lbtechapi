@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/abisaidfarias/lbtechapi/utils"
 	"github.com/abisaidfarias/lbtechapi/utils/enums"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 )
@@ -75,7 +76,15 @@ func FormatMultibandaSarValue(value float64) string {
 	if value == 0 {
 		return "—"
 	}
-	return strings.TrimRight(strings.TrimRight(fmt.Sprintf("%.2f", value), "0"), ".")
+	formatted := strings.TrimRight(strings.TrimRight(fmt.Sprintf("%.2f", value), "0"), ".")
+	return formatted + " W/Kg"
+}
+
+func multibandaReflashURLForEmail(emailKind string, needReflash bool, commentsReflash string) string {
+	if emailKind != utils.CREATE || !needReflash {
+		return ""
+	}
+	return strings.TrimSpace(commentsReflash)
 }
 
 func BuildMultibandaPhaseEmailData(
@@ -89,6 +98,7 @@ func BuildMultibandaPhaseEmailData(
 	mainMessage string,
 	finished bool,
 	decision string,
+	emailKind string,
 ) MultibandaPhaseEmailData {
 	projectType := "External"
 	if multibanda.IsInternalProject {
@@ -129,6 +139,7 @@ func BuildMultibandaPhaseEmailData(
 		Decision:                emptyAsDash(decision),
 		TestReportURL:           strings.TrimSpace(multibanda.TestReportUrl),
 		MultibandCertificateURL: strings.TrimSpace(multibanda.MultibandCertificateUrl),
+		ReflashURL:              multibandaReflashURLForEmail(emailKind, multibanda.NeedReflash, multibanda.CommentsReflash),
 		Year:                    now.Year(),
 	}
 }

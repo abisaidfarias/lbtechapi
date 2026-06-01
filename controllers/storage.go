@@ -1,11 +1,12 @@
 package controllers
 
 import (
-	"io/ioutil"
+	"io"
 	"mime/multipart"
 	"net/http"
 
 	"github.com/abisaidfarias/lbtechapi/services"
+	"github.com/abisaidfarias/lbtechapi/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -31,12 +32,12 @@ func NewStorageController(storageService services.IStorageService) IStorageContr
 
 // UploadFile godoc
 // @Summary Cargar archivo
-// @Description Sube un archivo al storage
+// @Description Sube un archivo al storage (máximo 50 MB)
 // @Tags Storage
 // @Accept multipart/form-data
 // @Produce json
 // @Security Bearer
-// @Param file formData file true "Archivo a subir"
+// @Param file formData file true "Archivo a subir (máx. 50 MB)"
 // @Success 201 {object} map[string]string "URL del archivo subido"
 // @Failure 400 {object} map[string]string "Archivo inválido"
 // @Failure 401 {object} map[string]string "No autorizado"
@@ -52,11 +53,29 @@ func (c *storageController) UploadFile() gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		fileContent, _ := form.File.Open()
-		byteContainer, err := ioutil.ReadAll(fileContent)
-		if err != nil {
+
+		if err := utils.ValidateUploadFileSize(form.File.Size); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+
+		fileContent, err := form.File.Open()
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		defer fileContent.Close()
+
+		byteContainer, err := io.ReadAll(io.LimitReader(fileContent, utils.MaxUploadFileSize+1))
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		if int64(len(byteContainer)) > utils.MaxUploadFileSize {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "file exceeds maximum size of 50MB"})
+			return
+		}
+
 		url, err := c.storageService.UploadFile(byteContainer)
 		if err != nil {
 			handleErrorResponse(ctx, err)

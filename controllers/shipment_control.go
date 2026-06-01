@@ -15,6 +15,9 @@ type IShipmentControlController interface {
 	Get() gin.HandlerFunc
 	GetAvailableMultibandas() gin.HandlerFunc
 	PhaseChange() gin.HandlerFunc
+	Delete() gin.HandlerFunc
+	PatchRequestDelete() gin.HandlerFunc
+	RejectRequestDelete() gin.HandlerFunc
 }
 
 type shipmentControlController struct {
@@ -78,7 +81,7 @@ func (c *shipmentControlController) Create() gin.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Success 200 {array} responses.ShipmentControlExpanded "Lista de controles de embarque"
+// @Success 200 {array} responses.ShipmentControlExpanded "Lista de controles de embarque (incluye request_delete)"
 // @Failure 401 {object} map[string]string "No autorizado"
 // @Failure 403 {object} map[string]string "Sin permiso"
 // @Failure 500 {object} map[string]string "Error interno del servidor"
@@ -185,5 +188,124 @@ func (c *shipmentControlController) PhaseChange() gin.HandlerFunc {
 		}
 
 		ctx.Status(http.StatusOK)
+	}
+}
+
+// Delete godoc
+// @Summary Eliminar Shipment Control
+// @Description Solo usuario interno. Elimina el registro de forma definitiva.
+// @Tags ShipmentControl
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID del Shipment Control"
+// @Success 200 {object} responses.DeleteProcessResult "Resultado de la eliminación"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 403 {object} map[string]string "Sin permiso"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /shipment-control/{id} [delete]
+func (c *shipmentControlController) Delete() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		userID := ctx.MustGet("userID").(string)
+
+		result, err := c.shipmentControlService.Delete(id, userID)
+		if err != nil {
+			switch {
+			case utils.IsValidationError(err):
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			case errors.Is(err, utils.ErrorForbidden):
+				ctx.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+				return
+			default:
+				handleErrorResponse(ctx, err)
+				return
+			}
+		}
+
+		ctx.JSON(http.StatusOK, result)
+	}
+}
+
+// PatchRequestDelete godoc
+// @Summary Actualizar solicitud de eliminación Shipment Control
+// @Description Externo: solicitar borrado con request_delete true.
+// @Tags ShipmentControl
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID del Shipment Control"
+// @Param body body request.RequestDeletePatch true "request_delete true"
+// @Success 200 {object} responses.DeleteProcessResult "Resultado"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 403 {object} map[string]string "Sin permiso"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /shipment-control/{id}/request-delete [patch]
+func (c *shipmentControlController) PatchRequestDelete() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		userID := ctx.MustGet("userID").(string)
+		var body request.RequestDeletePatch
+
+		if err := ctx.ShouldBindJSON(&body); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		result, err := c.shipmentControlService.PatchRequestDelete(id, &body, userID)
+		if err != nil {
+			switch {
+			case utils.IsValidationError(err):
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			case errors.Is(err, utils.ErrorForbidden):
+				ctx.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+				return
+			default:
+				handleErrorResponse(ctx, err)
+				return
+			}
+		}
+
+		ctx.JSON(http.StatusOK, result)
+	}
+}
+
+// RejectRequestDelete godoc
+// @Summary Rechazar solicitud de eliminación Shipment Control
+// @Description Usuario interno: cancela una solicitud de borrado pendiente (request_delete pasa a false).
+// @Tags ShipmentControl
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID del Shipment Control"
+// @Success 200 {object} responses.DeleteProcessResult "Resultado"
+// @Failure 400 {object} map[string]string "Sin solicitud pendiente o ID inválido"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 403 {object} map[string]string "Solo usuarios internos"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /shipment-control/{id}/reject-delete [patch]
+func (c *shipmentControlController) RejectRequestDelete() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		userID := ctx.MustGet("userID").(string)
+
+		result, err := c.shipmentControlService.RejectRequestDelete(id, userID)
+		if err != nil {
+			switch {
+			case utils.IsValidationError(err):
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			case errors.Is(err, utils.ErrorForbidden):
+				ctx.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+				return
+			default:
+				handleErrorResponse(ctx, err)
+				return
+			}
+		}
+
+		ctx.JSON(http.StatusOK, result)
 	}
 }

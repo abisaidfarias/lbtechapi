@@ -40,6 +40,12 @@ type IShipmentControlService interface {
 
 	PhaseChange(string, *request.ShipmentControlResume, string) error
 
+	Delete(string, string) (*responses.DeleteProcessResult, error)
+
+	PatchRequestDelete(string, *request.RequestDeletePatch, string) (*responses.DeleteProcessResult, error)
+
+	RejectRequestDelete(string, string) (*responses.DeleteProcessResult, error)
+
 }
 
 
@@ -155,6 +161,12 @@ func (s *shipmentControlService) Create(req *request.ShipmentControl, userID str
 	if multibanda.Status != enums.HomologationStatus_value["APPROVED"] {
 
 		return "", utils.NewValidationError("multibanda must be approved to create shipment control")
+
+	}
+
+	if multibanda.RequestDelete {
+
+		return "", utils.NewValidationError("multibanda has a pending delete request")
 
 	}
 
@@ -337,6 +349,12 @@ func (s *shipmentControlService) PhaseChange(id string, req *request.ShipmentCon
 
 	}
 
+	if existing.RequestDelete {
+
+		return utils.NewValidationError("shipment control has a pending delete request")
+
+	}
+
 
 
 	if !functions.UserHasClientAccess(user, existing.Company) {
@@ -384,6 +402,153 @@ func (s *shipmentControlService) PhaseChange(id string, req *request.ShipmentCon
 
 	return nil
 
+}
+
+func (s *shipmentControlService) Delete(id string, userID string) (*responses.DeleteProcessResult, error) {
+	if err := s.requireProfileClaim(userID, enums.CanDeleteShipmentControl); err != nil {
+		return nil, err
+	}
+
+	shipmentControlID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, utils.NewValidationError("invalid shipment control id")
+	}
+
+	user, err := s.userRepository.GetByID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	existing, err := s.shipmentControlRepository.GetById(shipmentControlID)
+	if err != nil {
+		return nil, err
+	}
+	if existing == nil {
+		return nil, utils.NewValidationError("shipment control not found")
+	}
+
+	multibanda, err := s.multibandaRepository.GetByIdExpanded(existing.Multibanda)
+	if err != nil {
+		return nil, err
+	}
+	if multibanda == nil {
+		return nil, utils.NewValidationError("multibanda not found")
+	}
+
+	if err := authorizeMultibandaRecordAccess(user, existing.Company, multibanda.Brand.ID); err != nil {
+		return nil, err
+	}
+
+	if !user.IsInternal {
+		return nil, fmt.Errorf("%w", utils.ErrorForbidden)
+	}
+
+	if err := s.shipmentControlRepository.Delete(shipmentControlID); err != nil {
+		return nil, err
+	}
+	return &responses.DeleteProcessResult{Deleted: true}, nil
+}
+
+func (s *shipmentControlService) PatchRequestDelete(id string, body *request.RequestDeletePatch, userID string) (*responses.DeleteProcessResult, error) {
+	if err := s.requireProfileClaim(userID, enums.CanDeleteShipmentControl); err != nil {
+		return nil, err
+	}
+
+	shipmentControlID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, utils.NewValidationError("invalid shipment control id")
+	}
+
+	user, err := s.userRepository.GetByID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if user.IsInternal {
+		return nil, fmt.Errorf("%w", utils.ErrorForbidden)
+	}
+
+	if err := utils.ValidateRequestDeletePatch(body); err != nil {
+		return nil, err
+	}
+
+	existing, err := s.shipmentControlRepository.GetById(shipmentControlID)
+	if err != nil {
+		return nil, err
+	}
+	if existing == nil {
+		return nil, utils.NewValidationError("shipment control not found")
+	}
+
+	multibanda, err := s.multibandaRepository.GetByIdExpanded(existing.Multibanda)
+	if err != nil {
+		return nil, err
+	}
+	if multibanda == nil {
+		return nil, utils.NewValidationError("multibanda not found")
+	}
+
+	if err := authorizeMultibandaRecordAccess(user, existing.Company, multibanda.Brand.ID); err != nil {
+		return nil, err
+	}
+
+	if existing.RequestDelete {
+		return nil, utils.NewValidationError("delete already requested")
+	}
+
+	if err := s.shipmentControlRepository.SetRequestDelete(shipmentControlID, true); err != nil {
+		return nil, err
+	}
+	return &responses.DeleteProcessResult{RequestDelete: true}, nil
+}
+
+func (s *shipmentControlService) RejectRequestDelete(id string, userID string) (*responses.DeleteProcessResult, error) {
+	if err := s.requireProfileClaim(userID, enums.CanDeleteShipmentControl); err != nil {
+		return nil, err
+	}
+
+	shipmentControlID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, utils.NewValidationError("invalid shipment control id")
+	}
+
+	user, err := s.userRepository.GetByID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if !user.IsInternal {
+		return nil, fmt.Errorf("%w", utils.ErrorForbidden)
+	}
+
+	existing, err := s.shipmentControlRepository.GetById(shipmentControlID)
+	if err != nil {
+		return nil, err
+	}
+	if existing == nil {
+		return nil, utils.NewValidationError("shipment control not found")
+	}
+
+	multibanda, err := s.multibandaRepository.GetByIdExpanded(existing.Multibanda)
+	if err != nil {
+		return nil, err
+	}
+	if multibanda == nil {
+		return nil, utils.NewValidationError("multibanda not found")
+	}
+
+	if err := authorizeMultibandaRecordAccess(user, existing.Company, multibanda.Brand.ID); err != nil {
+		return nil, err
+	}
+
+	if !existing.RequestDelete {
+		return nil, utils.NewValidationError("no pending delete request")
+	}
+
+	if err := s.shipmentControlRepository.SetRequestDelete(shipmentControlID, false); err != nil {
+		return nil, err
+	}
+	return &responses.DeleteProcessResult{RequestDelete: false}, nil
 }
 
 func (s *shipmentControlService) ShipmentControlNotification(

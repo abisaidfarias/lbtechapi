@@ -114,6 +114,8 @@ type ShipmentControlExpanded struct {
 
 	Comment                 string                          `bson:"comment" json:"comment"`
 
+	RequestDelete           bool                            `bson:"request_delete" json:"request_delete"`
+
 	CreatedDate             *time.Time                      `bson:"created_date" json:"created_date"`
 
 }

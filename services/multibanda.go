@@ -20,6 +20,9 @@ type IMultibandaService interface {
 	Create(*request.Multibanda, string) (string, error)
 	Get(string) ([]*responses.MultibandaExpanded, error)
 	PhaseChange(string, *request.MultibandaResume, string) error
+	Delete(string, string) (*responses.DeleteProcessResult, error)
+	PatchRequestDelete(string, *request.RequestDeletePatch, string) (*responses.DeleteProcessResult, error)
+	RejectRequestDelete(string, string) (*responses.DeleteProcessResult, error)
 }
 
 type multibandaService struct {
@@ -145,6 +148,12 @@ func (s *multibandaService) PhaseChange(id string, multibandaRequest *request.Mu
 	}
 
 	existing, _ := s.multibandaRepository.GetByIdExpanded(multibandaID)
+	if existing == nil {
+		return utils.NewValidationError("multibanda not found")
+	}
+	if existing.RequestDelete {
+		return utils.NewValidationError("multibanda has a pending delete request")
+	}
 
 	multibanda := mapping.MultibandaRequestToMultibandaResume(multibandaRequest)
 	functions.ApplyMultibandaPhaseDateRules(multibanda, existing)
@@ -163,6 +172,142 @@ func (s *multibandaService) PhaseChange(id string, multibandaRequest *request.Mu
 	multibandaNotify.Status = multibanda.Status
 	go s.MultibandaNotification(&multibandaNotify, multibandaResponse.Company.ID, utils.PHASE, userID)
 
+	return nil
+}
+
+func (s *multibandaService) Delete(id string, userID string) (*responses.DeleteProcessResult, error) {
+	if err := s.requireProfileClaim(userID, enums.CanDeleteMultibanda); err != nil {
+		return nil, err
+	}
+
+	multibandaID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, utils.NewValidationError("invalid multibanda id")
+	}
+
+	user, err := s.userRepository.GetByID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	existing, err := s.multibandaRepository.GetByIdExpanded(multibandaID)
+	if err != nil {
+		return nil, err
+	}
+	if existing == nil {
+		return nil, utils.NewValidationError("multibanda not found")
+	}
+
+	if err := authorizeMultibandaRecordAccess(user, existing.Company.ID, existing.Brand.ID); err != nil {
+		return nil, err
+	}
+
+	if !user.IsInternal {
+		return nil, fmt.Errorf("%w", utils.ErrorForbidden)
+	}
+
+	if err := s.multibandaRepository.Delete(multibandaID); err != nil {
+		return nil, err
+	}
+	return &responses.DeleteProcessResult{Deleted: true}, nil
+}
+
+func (s *multibandaService) PatchRequestDelete(id string, body *request.RequestDeletePatch, userID string) (*responses.DeleteProcessResult, error) {
+	if err := s.requireProfileClaim(userID, enums.CanDeleteMultibanda); err != nil {
+		return nil, err
+	}
+
+	multibandaID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, utils.NewValidationError("invalid multibanda id")
+	}
+
+	user, err := s.userRepository.GetByID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if user.IsInternal {
+		return nil, fmt.Errorf("%w", utils.ErrorForbidden)
+	}
+
+	if err := utils.ValidateRequestDeletePatch(body); err != nil {
+		return nil, err
+	}
+
+	existing, err := s.multibandaRepository.GetByIdExpanded(multibandaID)
+	if err != nil {
+		return nil, err
+	}
+	if existing == nil {
+		return nil, utils.NewValidationError("multibanda not found")
+	}
+
+	if err := authorizeMultibandaRecordAccess(user, existing.Company.ID, existing.Brand.ID); err != nil {
+		return nil, err
+	}
+
+	if existing.RequestDelete {
+		return nil, utils.NewValidationError("delete already requested")
+	}
+
+	if err := s.multibandaRepository.SetRequestDelete(multibandaID, true); err != nil {
+		return nil, err
+	}
+	return &responses.DeleteProcessResult{RequestDelete: true}, nil
+}
+
+func (s *multibandaService) RejectRequestDelete(id string, userID string) (*responses.DeleteProcessResult, error) {
+	if err := s.requireProfileClaim(userID, enums.CanDeleteMultibanda); err != nil {
+		return nil, err
+	}
+
+	multibandaID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, utils.NewValidationError("invalid multibanda id")
+	}
+
+	user, err := s.userRepository.GetByID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if !user.IsInternal {
+		return nil, fmt.Errorf("%w", utils.ErrorForbidden)
+	}
+
+	existing, err := s.multibandaRepository.GetByIdExpanded(multibandaID)
+	if err != nil {
+		return nil, err
+	}
+	if existing == nil {
+		return nil, utils.NewValidationError("multibanda not found")
+	}
+
+	if err := authorizeMultibandaRecordAccess(user, existing.Company.ID, existing.Brand.ID); err != nil {
+		return nil, err
+	}
+
+	if !existing.RequestDelete {
+		return nil, utils.NewValidationError("no pending delete request")
+	}
+
+	if err := s.multibandaRepository.SetRequestDelete(multibandaID, false); err != nil {
+		return nil, err
+	}
+	return &responses.DeleteProcessResult{RequestDelete: false}, nil
+}
+
+func authorizeMultibandaRecordAccess(user *responses.User, companyID, brandID primitive.ObjectID) error {
+	if !functions.UserHasClientAccess(user, companyID) {
+		return fmt.Errorf("%w", utils.ErrorForbidden)
+	}
+	if !user.IsInternal && user.Company != companyID {
+		return fmt.Errorf("%w", utils.ErrorForbidden)
+	}
+	if !userHasBrandAccess(user, brandID) {
+		return fmt.Errorf("%w", utils.ErrorForbidden)
+	}
 	return nil
 }
 
@@ -258,6 +403,7 @@ func (s *multibandaService) MultibandaNotification(
 		mainMessage,
 		finished,
 		desicion,
+		key,
 	)
 
 	if err := functions.SendMultibandaPhaseEmail(
