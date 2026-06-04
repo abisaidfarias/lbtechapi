@@ -62,7 +62,7 @@ jobs:
           mkdir -p bundle/.ebextensions
           cp Dockerrun.dev.aws.json bundle/Dockerrun.aws.json
           cp .ebextensions/02-root-volume.config bundle/.ebextensions/
-          cp .ebextensions/configuration.conf bundle/.ebextensions/
+          cp .ebextensions/03-nginx.config bundle/.ebextensions/
           (cd bundle && zip -r ../beanstalk-app.zip .)
 
       - name: Wait until Beanstalk environment is Ready
