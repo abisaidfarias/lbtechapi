@@ -70,9 +70,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Update Dockerrun.aws.json for PROD
+      - name: Package Beanstalk bundle for PROD
         run: |
-          cat > Dockerrun.aws.json << EOF
+          mkdir -p bundle/.ebextensions
+          mkdir -p bundle/.platform/nginx/conf.d
+          cat > bundle/Dockerrun.aws.json << EOF
           {
               "AWSEBDockerrunVersion":"1",
               "Image":{
@@ -86,6 +88,10 @@ jobs:
               ]
           }
           EOF
+          cp .ebextensions/02-root-volume.config bundle/.ebextensions/
+          cp .ebextensions/03-nginx.config bundle/.ebextensions/
+          cp .platform/nginx/conf.d/proxy.conf bundle/.platform/nginx/conf.d/
+          (cd bundle && zip -r ../beanstalk-prod.zip .)
 
       - name: Wait until Beanstalk environment is Ready
         run: |
@@ -117,7 +123,7 @@ jobs:
           environment_name: lbtechapi-prod
           region: us-east-1
           version_label: prod-${{ github.sha }}
-          deployment_package: Dockerrun.aws.json
+          deployment_package: beanstalk-prod.zip
           use_existing_version_if_available: true
 
       - name: Verify deployment
