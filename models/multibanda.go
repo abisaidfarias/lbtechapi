@@ -30,7 +30,7 @@ type Multibanda struct {
 	DashBoardPhase        int                `bson:"dashboard_phase"`
 	TestReportUrl         string             `bson:"test_report_url,omitempty"`
 	MultibandCertificateUrl string           `bson:"multiband_certificate_url,omitempty"`
-	CertificateNumber     string             `bson:"certificate_number,omitempty"`
+	SubtelCertificateNumber string             `bson:"subtel_certificate_number,omitempty"`
 	Comment               string             `bson:"comment,omitempty"`
 	NeedReflash           bool               `bson:"need_reflash"`
 	CommentsReflash       string             `bson:"comments_reflash,omitempty"`

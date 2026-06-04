@@ -38,7 +38,7 @@ type ShipmentControlMultibandaSummary struct {
 
 	ID                primitive.ObjectID `json:"_id"`
 
-	CertificateNumber string             `json:"certificate_number"`
+	SubtelCertificateNumber string             `json:"subtel_certificate_number"`
 
 	SoftwareVersion   string             `json:"software_version"`
 

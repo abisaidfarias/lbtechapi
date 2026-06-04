@@ -131,7 +131,7 @@ func ShipmentControlRequestToShipmentControlResume(
 func ToShipmentControlMultibandaSummary(multibanda responses.MultibandaExpanded) responses.ShipmentControlMultibandaSummary {
 	return responses.ShipmentControlMultibandaSummary{
 		ID:                multibanda.ID,
-		CertificateNumber: multibanda.CertificateNumber,
+		SubtelCertificateNumber: multibanda.SubtelCertificateNumber,
 		SoftwareVersion:   multibanda.SoftwareVersion,
 		HardwareVersion:   multibanda.HardwareVersion,
 		OsVersion:         multibanda.OsVersion,
@@ -166,7 +166,7 @@ func ShipmentControlToNotify(
 		OabiCertificateUrl:      shipment.OabiCertificateUrl,
 	}
 	if multibanda != nil {
-		notify.CertificateNumber = multibanda.CertificateNumber
+		notify.SubtelCertificateNumber = multibanda.SubtelCertificateNumber
 		notify.MultibandCertificateUrl = multibanda.MultibandCertificateUrl
 		notify.SoftwareVersion = multibanda.SoftwareVersion
 		notify.HardwareVersion = multibanda.HardwareVersion

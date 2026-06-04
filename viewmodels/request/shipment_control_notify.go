@@ -10,7 +10,7 @@ type ShipmentControlNotify struct {
 	ImeiQuantity            int
 	ImeiFileUrl             string
 	RegisteredImeiCount     int
-	CertificateNumber       string
+	SubtelCertificateNumber string
 	MultibandCertificateUrl string
 	SoftwareVersion         string
 	HardwareVersion         string

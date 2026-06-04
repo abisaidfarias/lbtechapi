@@ -203,7 +203,7 @@ func UpdateMultibandaPhaseChange(multibanda *models.Multibanda, oid primitive.Ob
 				{Key: "completed_date", Value: multibanda.CompletedDate},
 				{Key: "test_report_url", Value: multibanda.TestReportUrl},
 				{Key: "multiband_certificate_url", Value: multibanda.MultibandCertificateUrl},
-				{Key: "certificate_number", Value: multibanda.CertificateNumber},
+				{Key: "subtel_certificate_number", Value: multibanda.SubtelCertificateNumber},
 				{Key: "comment", Value: multibanda.Comment},
 				{Key: "dashboard_phase", Value: multibanda.DashBoardPhase},
 			},

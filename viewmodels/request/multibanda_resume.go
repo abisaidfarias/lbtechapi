@@ -17,7 +17,7 @@ type MultibandaResume struct {
 	UnderEndDate      time.Time `json:"under_end_date"`
 	CompletedDate           time.Time `json:"completed_date"`
 	Status                  int       `json:"status"`
-	CertificateNumber       string    `json:"certificate_number"`
+	SubtelCertificateNumber string    `json:"subtel_certificate_number"`
 	TestReportUrl           string    `json:"test_report_url"`
 	MultibandCertificateUrl string    `json:"multiband_certificate_url"`
 	Comment                 string    `json:"comment"`
@@ -45,7 +45,7 @@ type MultibandaNotify struct {
 	UnderEndDate            time.Time
 	CompletedDate           time.Time
 	Status                  int
-	CertificateNumber       string
+	SubtelCertificateNumber string
 	TestReportUrl           string
 	MultibandCertificateUrl string
 	NeedReflash             bool

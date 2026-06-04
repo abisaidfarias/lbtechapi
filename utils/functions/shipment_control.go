@@ -98,7 +98,7 @@ func GroupAvailableMultibandas(
 
 		entry.Options = append(entry.Options, responses.ShipmentControlAvailableOption{
 			MultibandaID:      multibanda.ID.Hex(),
-			CertificateNumber: multibanda.CertificateNumber,
+			SubtelCertificateNumber: multibanda.SubtelCertificateNumber,
 			SoftwareVersion:   multibanda.SoftwareVersion,
 			HardwareVersion:   multibanda.HardwareVersion,
 			OsVersion:         multibanda.OsVersion,

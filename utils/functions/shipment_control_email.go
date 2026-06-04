@@ -156,7 +156,7 @@ func BuildShipmentControlPhaseEmailData(
 		Client:                      emptyAsDash(notify.Client),
 		ImeiQuantity:                strconv.Itoa(notify.ImeiQuantity),
 		ReworkNumber:                emptyAsDash(notify.ReworkNumber),
-		MultibandaCertificateNumber: emptyAsDash(notify.CertificateNumber),
+		MultibandaCertificateNumber: emptyAsDash(notify.SubtelCertificateNumber),
 		Brand:                       brandName,
 		TechnicalModel:              technicalModel,
 		CommercialModel:             commercialModel,

@@ -30,7 +30,7 @@ type MultibandaExpanded struct {
 	DashBoardPhase          int                `bson:"dashboard_phase" json:"dashboard_phase"`
 	TestReportUrl           string             `bson:"test_report_url" json:"test_report_url"`
 	MultibandCertificateUrl string             `bson:"multiband_certificate_url" json:"multiband_certificate_url"`
-	CertificateNumber       string             `bson:"certificate_number" json:"certificate_number"`
+	SubtelCertificateNumber string             `bson:"subtel_certificate_number" json:"subtel_certificate_number"`
 	Comment                 string             `bson:"comment" json:"comment"`
 	NeedReflash             bool               `bson:"need_reflash" json:"need_reflash"`
 	CommentsReflash         string             `bson:"comments_reflash" json:"comments_reflash"`

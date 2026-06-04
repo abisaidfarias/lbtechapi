@@ -13,7 +13,7 @@ type ShipmentControlAvailableDevice struct {
 
 type ShipmentControlAvailableOption struct {
 	MultibandaID      string `json:"multibanda_id"`
-	CertificateNumber string `json:"certificate_number"`
+	SubtelCertificateNumber string `json:"subtel_certificate_number"`
 	SoftwareVersion   string `json:"software_version"`
 	HardwareVersion   string `json:"hardware_version"`
 	OsVersion         string `json:"os_version"`
