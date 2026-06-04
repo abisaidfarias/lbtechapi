@@ -181,6 +181,7 @@ func ToShipmentControlDeviceSummary(multibanda responses.MultibandaExpanded) res
 		CommercialModel: multibanda.Device.CommercialModel,
 		TechnicalModel:  multibanda.Device.TechnicalModel,
 		Brand:           multibanda.Brand.Name,
+		PlatformOs:      multibanda.Device.PlatformOs,
 	}
 }
 

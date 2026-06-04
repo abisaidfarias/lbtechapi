@@ -60,6 +60,8 @@ type ShipmentControlDeviceSummary struct {
 
 	Brand           string `json:"brand"`
 
+	PlatformOs      string `json:"platform_os"`
+
 }
 
 
