@@ -60,9 +60,11 @@ jobs:
       - name: Package Beanstalk bundle (Dockerrun + ebextensions for disk size)
         run: |
           mkdir -p bundle/.ebextensions
+          mkdir -p bundle/.platform/nginx/conf.d
           cp Dockerrun.dev.aws.json bundle/Dockerrun.aws.json
           cp .ebextensions/02-root-volume.config bundle/.ebextensions/
           cp .ebextensions/03-nginx.config bundle/.ebextensions/
+          cp .platform/nginx/conf.d/proxy.conf bundle/.platform/nginx/conf.d/
           (cd bundle && zip -r ../beanstalk-app.zip .)
 
       - name: Wait until Beanstalk environment is Ready
