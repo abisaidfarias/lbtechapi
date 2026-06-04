@@ -60,6 +60,7 @@ type DeviceExpanded struct {
 	LoggingCode            string             `bson:"logging_code" json:"logging_code"`
 	SimSupported           string             `bson:"sim_supported" json:"sim_supported"`
 	DualSim                string             `bson:"dual_sim" json:"dual_sim"`
-	SimType                string             `bson:"sim_type" json:"sim_type"`
-	Esim                   bool               `bson:"e_sim" json:"e_sim"`
+	SimType                string  `bson:"sim_type" json:"sim_type"`
+	Esim                   bool    `bson:"e_sim" json:"e_sim"`
+	SarValue               float64 `bson:"sar_value,omitempty" json:"sar_value,omitempty"`
 }

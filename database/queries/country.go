@@ -25,6 +25,12 @@ func DeleteCountry(oid primitive.ObjectID) primitive.M {
 func GetCountryById(oid primitive.ObjectID) primitive.M {
 	return primitive.M{"_id": oid}
 }
+
+func GetCountryByName(name string) primitive.M {
+	return primitive.M{
+		"name": primitive.Regex{Pattern: "^" + name + "$", Options: "i"},
+	}
+}
 func GetCountriesById(ids []primitive.ObjectID) bson.D {
 	return bson.D{
 		primitive.E{Key: "$in", Value: bson.D{

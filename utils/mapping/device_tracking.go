@@ -14,6 +14,7 @@ func DeviceTrackinRequestToDeviceTracking(deviceTraking *request.DeviceTracking,
 	user := UserResumeToUser(&deviceTraking.TrackingLog.InternalResponsible)
 	person, _ := PersonRequestToPerson(&deviceTraking.TrackingLog.Person)
 	trackingLog := models.TrackingLog{
+		TrackingID:          deviceTraking.TrackingLog.TrackingID,
 		Country:             *country,
 		Location:            *location,
 		InternalResponsible: *user,
@@ -21,6 +22,8 @@ func DeviceTrackinRequestToDeviceTracking(deviceTraking *request.DeviceTracking,
 		Comment:             deviceTraking.TrackingLog.Comment,
 		DocumentUrl:         deviceTraking.TrackingLog.DocumentUrl,
 		TrackingDate:        deviceTraking.TrackingLog.TrackingDate,
+		ExternalDelivery:    deviceTraking.TrackingLog.ExternalDelivery,
+		ProcessTypes:        append([]string{}, deviceTraking.TrackingLog.ProcessTypes...),
 	}
 	var trakings []models.TrackingLog = []models.TrackingLog{}
 
@@ -40,6 +43,7 @@ func TrackinLogRequestToTrackingLog(trackingLogReq *request.TrackingLog) *models
 	person, _ := PersonRequestToPerson(&trackingLogReq.Person)
 
 	return &models.TrackingLog{
+		TrackingID:          trackingLogReq.TrackingID,
 		Country:             *country,
 		Location:            *location,
 		InternalResponsible: *user,
@@ -47,6 +51,8 @@ func TrackinLogRequestToTrackingLog(trackingLogReq *request.TrackingLog) *models
 		Comment:             trackingLogReq.Comment,
 		DocumentUrl:         trackingLogReq.DocumentUrl,
 		TrackingDate:        trackingLogReq.TrackingDate,
+		ExternalDelivery:    trackingLogReq.ExternalDelivery,
+		ProcessTypes:        append([]string{}, trackingLogReq.ProcessTypes...),
 	}
 }
 func DeviceTrackinRequestToDeviceTrackingUpdate(deviceTraking *request.DeviceTrackingExpanded) *models.DeviceTracking {

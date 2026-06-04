@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/abisaidfarias/lbtechapi/config"
 	"github.com/abisaidfarias/lbtechapi/controllers"
@@ -15,11 +16,17 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
-	
+
+	_ "github.com/abisaidfarias/lbtechapi/docs"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	_ "github.com/abisaidfarias/lbtechapi/docs"
 )
+
+// appVersion can be injected at build time with:
+// go build -ldflags "-X main.appVersion=v1.2.3"
+var appVersion = "dev"
+var appCommit = "unknown"
+var deployID = "local"
 
 // init loads secrets before any global variables are initialized
 func init() {
@@ -31,6 +38,30 @@ func init() {
 	log.Println("✅ Secrets loaded successfully")
 }
 
+func getAppVersion() string {
+	versionFromEnv := os.Getenv("APP_VERSION")
+	if versionFromEnv != "" {
+		return versionFromEnv
+	}
+	return appVersion
+}
+
+func getAppCommit() string {
+	commitFromEnv := os.Getenv("APP_COMMIT")
+	if commitFromEnv != "" {
+		return commitFromEnv
+	}
+	return appCommit
+}
+
+func getDeployID() string {
+	deployIDFromEnv := os.Getenv("DEPLOY_ID")
+	if deployIDFromEnv != "" {
+		return deployIDFromEnv
+	}
+	return deployID
+}
+
 var (
 	userRepository repositories.IUserRepository = repositories.NewUserRepository()
 	authService    services.IAuthService        = services.NewAuthService(userRepository)
@@ -38,7 +69,7 @@ var (
 
 	profileRepository repositories.IProfileRepository = repositories.NewProfileRepository()
 	companyRepository repositories.ICompanyRepository = repositories.NewCompanyRepository()
-	
+
 	userService    services.IUserService       = services.NewUserService(userRepository, profileRepository, companyRepository)
 	userController controllers.IUserController = controllers.NewUserController(userService)
 
@@ -50,9 +81,9 @@ var (
 	testCaseService    services.ITestCaseService        = services.NewTestCaseService(testCaseRepository, testCategoryService)
 	testCaseController controllers.ITestCaseController  = controllers.NewTestCaseController(testCaseService)
 
-	profileService    services.IProfileService        = services.NewProfileService(profileRepository, userRepository)
-	profileController controllers.IProfileController  = controllers.NewProfileController(profileService)
-	companyService    services.ICompanyService        = services.NewCompanyService(companyRepository, homologationRepository,
+	profileService    services.IProfileService       = services.NewProfileService(profileRepository, userRepository)
+	profileController controllers.IProfileController = controllers.NewProfileController(profileService)
+	companyService    services.ICompanyService       = services.NewCompanyService(companyRepository, homologationRepository,
 		deviceTrackingRepository, userRepository)
 	companyController controllers.ICompanyController = controllers.NewCompanyController(companyService)
 
@@ -93,7 +124,7 @@ var (
 
 	deviceTrackingRepository repositories.IDeviceTrackingRepository = repositories.NewDeviceTrackingRepository()
 	deviceTrackingService    services.IDeviceTrackingService        = services.NewDeviceTrackingService(deviceTrackingRepository,
-		userRepository, companyRepository, brandRepository, deviceRepository, countryRepository)
+		userRepository, companyRepository, brandRepository, deviceRepository, countryRepository, storageService)
 	deviceTrackingController controllers.IDeviceTrackingController = controllers.NewDeviceTrackingController(deviceTrackingService)
 
 	testPlanRepository repositories.ITestPlanRepository = repositories.NewTestPlanRepository()
@@ -111,6 +142,14 @@ var (
 	notificationRepository repositories.INotificationRepository = repositories.NewNotificationRepository()
 	notificationService    services.INotificationService        = services.NewNotificationService(notificationRepository)
 	notificationController controllers.INotificationController  = controllers.NewNotificationController(notificationService)
+
+	multibandaRepository repositories.IMultibandaRepository = repositories.NewMultibandaRepository()
+	multibandaService    services.IMultibandaService        = services.NewMultibandaService(multibandaRepository, userRepository, companyRepository, deviceRepository, brandRepository)
+	multibandaController controllers.IMultibandaController  = controllers.NewMultibandaController(multibandaService)
+
+	shipmentControlRepository repositories.IShipmentControlRepository = repositories.NewShipmentControlRepository(multibandaRepository)
+	shipmentControlService    services.IShipmentControlService        = services.NewShipmentControlService(shipmentControlRepository, multibandaRepository, userRepository, companyRepository, countryRepository)
+	shipmentControlController controllers.IShipmentControlController  = controllers.NewShipmentControlController(shipmentControlService)
 )
 
 // @title LBTech API
@@ -135,6 +174,7 @@ var (
 
 func main() {
 	server := gin.Default()
+	server.MaxMultipartMemory = utils.MaxUploadFileSize
 	server.Use(middlewares.CORSMiddleware())
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
@@ -148,17 +188,32 @@ func main() {
 	} else {
 		panic("error validation")
 	}
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("sarValue", utils.ValidSARValue)
+	} else {
+		panic("error validation")
+	}
 	server.GET("/health", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{"status": fmt.Sprintf("server is up %s", config.GetValue("MONGO_DB"))})
+		ctx.JSON(http.StatusOK, gin.H{
+			"status":   fmt.Sprintf("server is up %s", config.GetValue("MONGO_DB")),
+			"version":  getAppVersion(),
+			"commit":   getAppCommit(),
+			"deployId": getDeployID(),
+		})
 	})
-	
+
 	// Swagger endpoint
 	server.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	
+
 	v1 := server.Group("/api/v1")
 	{
 		v1.GET("/health", func(ctx *gin.Context) {
-			ctx.JSON(http.StatusOK, gin.H{"status": "server is up"})
+			ctx.JSON(http.StatusOK, gin.H{
+				"status":   "server is up",
+				"version":  getAppVersion(),
+				"commit":   getAppCommit(),
+				"deployId": getDeployID(),
+			})
 		})
 		printer := v1.Group("/printer")
 		{
@@ -289,6 +344,7 @@ func main() {
 			deviceTracking.POST("", deviceTrackingController.Create())
 			deviceTracking.GET("", deviceTrackingController.Get())
 			deviceTracking.PUT("", deviceTrackingController.AddTrakingLog())
+			deviceTracking.POST("confirm-move-delivery", deviceTrackingController.ConfirmMoveDeliveryReport())
 			deviceTracking.DELETE(":id", deviceTrackingController.Delete())
 			deviceTracking.PUT(":id", deviceTrackingController.Update())
 			deviceTracking.POST("advanced-search", deviceTrackingController.AdvancedSearch())
@@ -310,6 +366,25 @@ func main() {
 		{
 			notification.POST("", notificationController.Create())
 			notification.GET("/company/:id", notificationController.GetByCompany())
+		}
+		multibanda := v1.Group("/multibanda")
+		{
+			multibanda.POST("", multibandaController.Create())
+			multibanda.GET("", multibandaController.Get())
+			multibanda.PUT(":id/phase", multibandaController.PhaseChange())
+			multibanda.PATCH(":id/request-delete", multibandaController.PatchRequestDelete())
+			multibanda.PATCH(":id/reject-delete", multibandaController.RejectRequestDelete())
+			multibanda.DELETE(":id", multibandaController.Delete())
+		}
+		shipmentControl := v1.Group("/shipment-control")
+		{
+			shipmentControl.POST("", shipmentControlController.Create())
+			shipmentControl.GET("", shipmentControlController.Get())
+			shipmentControl.GET("/available-multibandas", shipmentControlController.GetAvailableMultibandas())
+			shipmentControl.PUT(":id/phase", shipmentControlController.PhaseChange())
+			shipmentControl.PATCH(":id/request-delete", shipmentControlController.PatchRequestDelete())
+			shipmentControl.PATCH(":id/reject-delete", shipmentControlController.RejectRequestDelete())
+			shipmentControl.DELETE(":id", shipmentControlController.Delete())
 		}
 	}
 

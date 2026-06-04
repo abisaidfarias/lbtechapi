@@ -59,4 +59,5 @@ type Device struct {
 	DualSim                string   `json:"dual_sim"`
 	SimType                string   `json:"sim_type"`
 	Esim                   bool     `json:"e_sim"`
+	SarValue               *float64 `json:"sar_value,omitempty" binding:"omitempty,sarValue"`
 }

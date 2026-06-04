@@ -14,7 +14,7 @@ import (
 
 type IDeviceRepository interface {
 	Create(*models.Device) (*responses.DeviceExpanded, error)
-	Get() ([]*responses.DeviceExpanded, error)
+	Get(brands []primitive.ObjectID) ([]*responses.DeviceExpanded, error)
 	GetById(string) (*responses.Device, error)
 	Update(string, *models.Device) error
 	Delete(primitive.ObjectID) error
@@ -43,9 +43,9 @@ func (r *deviceRepository) Create(device *models.Device) (*responses.DeviceExpan
 }
 
 // Get returns a list of all test cases
-func (r *deviceRepository) Get() ([]*responses.DeviceExpanded, error) {
+func (r *deviceRepository) Get(brands []primitive.ObjectID) ([]*responses.DeviceExpanded, error) {
 
-	cursor, err := deviceCollection.Aggregate(context.TODO(), queries.GetDevicesExpanded())
+	cursor, err := deviceCollection.Aggregate(context.TODO(), queries.GetDevicesExpanded(brands))
 
 	if err != nil {
 		return nil, err

@@ -16,12 +16,18 @@
 __debug_bin
 .env
 
+# Runbook local (no commitear; ver RUN_LOCAL.md)
+RUN_LOCAL.md
+
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
 
 ai-documents/
+
+# Local move-report mirrors (see moveReportDebugArtifactDir)
+move-report-debug/
 
 # Archivos con credenciales (NUNCA commitear)
 *_CONFIG.md

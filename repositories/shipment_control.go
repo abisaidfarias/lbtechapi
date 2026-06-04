@@ -1,0 +1,308 @@
+package repositories
+
+
+
+import (
+
+	"context"
+
+	"fmt"
+
+
+
+	"github.com/abisaidfarias/lbtechapi/database"
+
+	"github.com/abisaidfarias/lbtechapi/database/queries"
+
+	"github.com/abisaidfarias/lbtechapi/models"
+
+	"github.com/abisaidfarias/lbtechapi/utils/functions"
+	"github.com/abisaidfarias/lbtechapi/utils/mapping"
+	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"go.mongodb.org/mongo-driver/mongo"
+
+)
+
+
+
+type IShipmentControlRepository interface {
+
+	Create(*models.ShipmentControl) (string, error)
+
+	GetByInternal([]primitive.ObjectID, []primitive.ObjectID) ([]*responses.ShipmentControlExpanded, error)
+
+	GetByExternal(primitive.ObjectID, []primitive.ObjectID) ([]*responses.ShipmentControlExpanded, error)
+
+	GetAvailableMultibandas(primitive.ObjectID, []primitive.ObjectID) ([]*responses.MultibandaExpanded, error)
+
+	GetById(primitive.ObjectID) (*models.ShipmentControl, error)
+
+	PhaseChange(string, *models.ShipmentControl) error
+
+	Delete(primitive.ObjectID) error
+
+	SetRequestDelete(primitive.ObjectID, bool) error
+
+}
+
+
+
+type shipmentControlRepository struct {
+
+	multibandaRepository IMultibandaRepository
+
+}
+
+
+
+func NewShipmentControlRepository(multibandaRepository IMultibandaRepository) IShipmentControlRepository {
+
+	return &shipmentControlRepository{
+
+		multibandaRepository: multibandaRepository,
+
+	}
+
+}
+
+
+
+var shipmentControlCollection = database.GetInstance().Collection("shipment_controls")
+
+
+
+type shipmentControlListRow struct {
+
+	responses.ShipmentControlExpanded `bson:",inline"`
+
+	MultibandaID                      primitive.ObjectID `bson:"multibanda"`
+
+}
+
+
+
+func (r *shipmentControlRepository) Create(shipmentControl *models.ShipmentControl) (string, error) {
+
+	res, err := shipmentControlCollection.InsertOne(context.TODO(), shipmentControl)
+
+	if err != nil {
+
+		return "", err
+
+	}
+
+
+
+	oid, ok := res.InsertedID.(primitive.ObjectID)
+
+	if !ok {
+
+		return "", fmt.Errorf("unexpected inserted id type")
+
+	}
+
+
+
+	shipmentControl.ID = oid
+
+	return oid.Hex(), nil
+
+}
+
+
+
+func (r *shipmentControlRepository) GetByInternal(
+	companies []primitive.ObjectID,
+	brands []primitive.ObjectID,
+) ([]*responses.ShipmentControlExpanded, error) {
+	return r.list(queries.GetShipmentControls(companies, brands, true, primitive.NilObjectID))
+}
+
+func (r *shipmentControlRepository) GetByExternal(
+	companyID primitive.ObjectID,
+	brands []primitive.ObjectID,
+) ([]*responses.ShipmentControlExpanded, error) {
+	return r.list(queries.GetShipmentControls(nil, brands, false, companyID))
+}
+
+
+
+func (r *shipmentControlRepository) list(pipeline mongo.Pipeline) ([]*responses.ShipmentControlExpanded, error) {
+
+	cursor, err := shipmentControlCollection.Aggregate(context.TODO(), pipeline)
+
+	if err != nil {
+
+		return nil, err
+
+	}
+
+
+
+	items := []*responses.ShipmentControlExpanded{}
+
+	for cursor.Next(context.TODO()) {
+
+		var row shipmentControlListRow
+
+		if err := cursor.Decode(&row); err != nil {
+
+			return nil, err
+
+		}
+
+
+
+		item := row.ShipmentControlExpanded
+
+		if !row.MultibandaID.IsZero() {
+
+			multibanda, err := r.multibandaRepository.GetByIdExpanded(row.MultibandaID)
+
+			if err != nil {
+
+				return nil, err
+
+			}
+
+			if multibanda != nil {
+
+				item.Multibanda = mapping.ToShipmentControlMultibandaSummary(*multibanda)
+				item.Device = mapping.ToShipmentControlDeviceSummary(*multibanda)
+
+			}
+
+		}
+
+		mapping.SanitizeShipmentControlExpandedDates(&item)
+
+		items = append(items, &item)
+
+	}
+
+
+
+	return items, nil
+
+}
+
+
+
+func (r *shipmentControlRepository) GetAvailableMultibandas(
+
+	companyID primitive.ObjectID,
+
+	brands []primitive.ObjectID,
+
+) ([]*responses.MultibandaExpanded, error) {
+
+	cursor, err := database.GetInstance().
+
+		Collection("multibandas").
+
+		Aggregate(context.TODO(), queries.GetAvailableMultibandas(companyID, brands))
+
+	if err != nil {
+
+		return nil, err
+
+	}
+
+
+
+	multibandas := []*responses.MultibandaExpanded{}
+
+	for cursor.Next(context.TODO()) {
+
+		var multibanda responses.MultibandaExpanded
+
+		if err := cursor.Decode(&multibanda); err != nil {
+
+			return nil, err
+
+		}
+
+		functions.EnrichMultibandaExpanded(&multibanda)
+
+		multibandas = append(multibandas, &multibanda)
+
+	}
+
+
+
+	return multibandas, nil
+
+}
+
+
+
+func (r *shipmentControlRepository) GetById(id primitive.ObjectID) (*models.ShipmentControl, error) {
+
+	var shipmentControl models.ShipmentControl
+
+	err := shipmentControlCollection.FindOne(context.TODO(), queries.GetShipmentControlById(id)).Decode(&shipmentControl)
+
+	if err == mongo.ErrNoDocuments {
+
+		return nil, nil
+
+	}
+
+	if err != nil {
+
+		return nil, err
+
+	}
+
+	return &shipmentControl, nil
+
+}
+
+
+
+func (r *shipmentControlRepository) PhaseChange(id string, shipmentControl *models.ShipmentControl) error {
+
+	oid, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+
+		return err
+
+	}
+
+
+
+	filter, update := queries.UpdateShipmentControlPhaseChange(shipmentControl, oid)
+
+	_, err = shipmentControlCollection.UpdateOne(context.TODO(), filter, update)
+
+	return err
+
+}
+
+func (r *shipmentControlRepository) Delete(id primitive.ObjectID) error {
+	res, err := shipmentControlCollection.DeleteOne(context.TODO(), queries.GetShipmentControlById(id))
+	if err != nil {
+		return err
+	}
+	if res.DeletedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+	return nil
+}
+
+func (r *shipmentControlRepository) SetRequestDelete(id primitive.ObjectID, value bool) error {
+	filter, update := queries.SetShipmentControlRequestDelete(id, value)
+	res, err := shipmentControlCollection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return err
+	}
+	if res.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+	return nil
+}
+

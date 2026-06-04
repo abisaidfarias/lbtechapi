@@ -64,4 +64,5 @@ type Device struct {
 	DualSim                string             `bson:"dual_sim"`
 	SimType                string             `bson:"sim_type"`
 	Esim                   bool               `bson:"e_sim"`
+	SarValue               float64            `bson:"sar_value,omitempty"`
 }

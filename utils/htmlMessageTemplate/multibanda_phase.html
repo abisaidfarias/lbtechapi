@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multibanda Phase Notification</title>
+</head>
+<body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, Helvetica, sans-serif; color:#1f2937;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:24px 0;">
+    <tr>
+      <td align="center">
+        <table width="900" style="background:#ffffff; border:1px solid #e5e7eb;">
+
+          <tr>
+            <td style="background:#0b1736; padding:20px 32px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="left" valign="middle" width="50%">
+                    {{ if .LogoDataURI }}
+                    <img src="{{ .LogoDataURI }}" alt="LB Technology" width="200" height="40" style="height:40px; width:auto; max-width:240px; display:block;" />
+                    {{ end }}
+                  </td>
+                  <td align="right" valign="middle" style="color:#e5e7eb; font-size:13px; line-height:1.4;">
+                    Multibanda Phase Notification
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="height:4px; background:#8DB319;"></td>
+          </tr>
+
+          <tr>
+            <td style="padding:32px;">
+              <div style="font-size:16px; font-weight:600;">
+                Dear {{.ClientName}},
+              </div>
+              <div style="margin-top:12px; font-size:15px; color:#374151; line-height:1.7;">
+                This is an automated notification to inform you that the following Multibanda process has been updated in our platform.
+              </div>
+              {{ if .MainMessage }}
+              <div style="margin-top:16px; font-size:14px; color:#111827; line-height:1.6;">
+                {{ .MainMessage }} {{ .NotificationDate }}
+              </div>
+              {{ end }}
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:0 32px 24px 32px;">
+              <table width="100%" style="border:1px solid #e5e7eb; background:#f9fafb;">
+                <tr>
+                  <td colspan="4" style="padding:12px 16px; background:#ecfdf5; color:#065f46; font-weight:bold; border-bottom:1px solid #e5e7eb;">
+                    Process Summary
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding:10px;"><strong>Current Phase</strong></td>
+                  <td style="padding:10px;">{{ .CurrentPhase }}</td>
+                  <td style="padding:10px;"><strong>Project Type</strong></td>
+                  <td style="padding:10px;">{{ .ProjectType }}</td>
+                </tr>
+
+                <tr>
+                  <td style="padding:10px;"><strong>Process Type</strong></td>
+                  <td style="padding:10px;">{{ .ProcessType }}</td>
+                  <td style="padding:10px;"><strong>Evaluation Type</strong></td>
+                  <td style="padding:10px;">{{ .EvaluationTypes }}</td>
+                </tr>
+
+                <tr>
+                  <td style="padding:10px;"><strong>Brand</strong></td>
+                  <td style="padding:10px;">{{ .Brand }}</td>
+                  <td style="padding:10px;"><strong>Technical Model</strong></td>
+                  <td style="padding:10px;">{{ .TechnicalModel }}</td>
+                </tr>
+
+                <tr>
+                  <td style="padding:10px;"><strong>Commercial Model</strong></td>
+                  <td style="padding:10px;">{{ .CommercialModel }}</td>
+                  <td style="padding:10px;"><strong>Updated By</strong></td>
+                  <td style="padding:10px;">{{ .UpdatedBy }}</td>
+                </tr>
+
+                <tr>
+                  <td style="padding:10px;"><strong>Software Version</strong></td>
+                  <td style="padding:10px;">{{ .SoftwareVersion }}</td>
+                  <td style="padding:10px;"><strong>Hardware Version</strong></td>
+                  <td style="padding:10px;">{{ .HardwareVersion }}</td>
+                </tr>
+
+                <tr>
+                  <td style="padding:10px;"><strong>OS Version</strong></td>
+                  <td style="padding:10px;">{{ .OsVersion }}</td>
+                  <td style="padding:10px;"><strong>SAR value</strong></td>
+                  <td style="padding:10px;">{{ .SARValue }}</td>
+                </tr>
+
+                {{ if .Finished }}
+                <tr>
+                  <td style="padding:10px;"><strong>Decision</strong></td>
+                  <td colspan="3" style="padding:10px; font-weight:600;">{{ .Decision }}</td>
+                </tr>
+                {{ end }}
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:0 32px 24px 32px;">
+              <table width="100%" style="border:1px solid #e5e7eb;">
+                <tr>
+                  <td colspan="4" style="padding:12px 16px; background:#0b1736; color:#ffffff; font-weight:bold;">
+                    Milestone Dates
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding:10px;"><strong>Planning Date</strong></td>
+                  <td colspan="3" style="padding:10px;">{{ .PlanningDate }}</td>
+                </tr>
+
+                <tr>
+                  <td style="padding:10px;"><strong>Sample Start</strong></td>
+                  <td style="padding:10px;">{{ .SampleStartDate }}</td>
+                  <td style="padding:10px;"><strong>Sample End</strong></td>
+                  <td style="padding:10px;">{{ .SampleEndDate }}</td>
+                </tr>
+
+                <tr>
+                  <td style="padding:10px;"><strong>Test Start</strong></td>
+                  <td style="padding:10px;">{{ .TestStartDate }}</td>
+                  <td style="padding:10px;"><strong>Test End</strong></td>
+                  <td style="padding:10px;">{{ .TestEndDate }}</td>
+                </tr>
+
+                <tr>
+                  <td style="padding:10px;"><strong>Under Eval. Start</strong></td>
+                  <td style="padding:10px;">{{ .UnderStartDate }}</td>
+                  <td style="padding:10px;"><strong>Under Eval. End</strong></td>
+                  <td style="padding:10px;">{{ .UnderEndDate }}</td>
+                </tr>
+
+                <tr>
+                  <td style="padding:10px;"><strong>Result Date</strong></td>
+                  <td colspan="3" style="padding:10px;">{{ .ResultDate }}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:0 32px 32px 32px;">
+              <a href="https://lbonetrack.com/"
+                 style="display:inline-block; background:#8DB319; color:#ffffff; text-decoration:none; padding:12px 22px; font-weight:bold; border-radius:6px;">
+                 View in Platform
+              </a>
+              {{ if .TestReportURL }}
+              <a href="{{ .TestReportURL }}" target="_blank" rel="noopener"
+                 style="display:inline-block; margin-left:12px; background:#0b1736; color:#ffffff; text-decoration:none; padding:12px 22px; font-weight:bold; border-radius:6px;">
+                 Download Test Report
+              </a>
+              {{ end }}
+              {{ if .MultibandCertificateURL }}
+              <a href="{{ .MultibandCertificateURL }}" target="_blank" rel="noopener"
+                 style="display:inline-block; margin-left:12px; background:#0b1736; color:#ffffff; text-decoration:none; padding:12px 22px; font-weight:bold; border-radius:6px;">
+                 Download Multiband Certificate
+              </a>
+              {{ end }}
+              {{ if .ReflashURL }}
+              <a href="{{ .ReflashURL }}" target="_blank" rel="noopener"
+                 style="display:inline-block; margin-left:12px; background:#0b1736; color:#ffffff; text-decoration:none; padding:12px 22px; font-weight:bold; border-radius:6px;">
+                 Reflash
+              </a>
+              {{ end }}
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:0 32px 24px 32px;">
+              <div style="background:#fff7ed; border:1px solid #fed7aa; padding:12px; font-size:12px;">
+                <strong>Automated Message:</strong> This email was generated automatically by the LB Technology platform. Please do not reply to this message.
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="text-align:center; font-size:12px; color:#6b7280; padding:16px;">
+              © {{ .Year }} LB Technology
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Device Movement Notification</title>
+  <style type="text/css">
+    /* PDF / print: keep delivery block on its own page (Chrome PrintToPDF honors @media print). */
+    @media print {
+      tr.in-store-delivery-section {
+        break-before: page;
+        page-break-before: always;
+      }
+      tr.in-store-delivery-section > td > table {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, Helvetica, sans-serif; color:#1f2937;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:24px 0;">
+    <tr>
+      <td align="center">
+        <table width="900" style="background:#ffffff; border:1px solid #e5e7eb;">
+
+          <tr>
+            <td style="background:#0b1736; padding:20px 32px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="left" valign="middle" width="50%">
+                    {{ if .LogoDataURI }}
+                    <img src="{{ .LogoDataURI }}" alt="LB Technology" width="200" height="40" style="height:40px; width:auto; max-width:240px; display:block;" />
+                    {{ end }}
+                  </td>
+                  <td align="right" valign="middle" style="color:#e5e7eb; font-size:13px; line-height:1.4;">
+                    Device Tracking Notification
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="height:4px; background:#8DB319;"></td>
+          </tr>
+
+          <tr>
+            <td style="padding:32px;">
+              <div style="font-size:16px; font-weight:600;">
+                Dear {{.ClientName}},
+              </div>
+              <div style="margin-top:12px; font-size:15px; color:#374151; line-height:1.7;">
+                {{ if .IsMovement }}
+                This is an automated notification to inform you that the following sample(s) have been moved to a new location within our tracking platform.
+                {{ else }}
+                This is an automated notification to inform you that the following sample(s) have been registered in our tracking platform.
+                {{ end }}
+              </div>
+              {{ if .MainMessage }}
+              <div style="margin-top:16px; font-size:14px; color:#111827; line-height:1.6;">
+                {{ .MainMessage }}
+              </div>
+              {{ end }}
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:0 32px 24px 32px;">
+              <table width="100%" style="border:1px solid #e5e7eb; background:#f9fafb;">
+                <tr>
+                  <td colspan="4" style="padding:12px 16px; background:#ecfdf5; color:#065f46; font-weight:bold; border-bottom:1px solid #e5e7eb;">
+                    {{ if .IsMovement }}Movement Summary{{ else }}Registration Summary{{ end }}
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding:10px;"><strong>Track Id</strong></td>
+                  <td style="padding:10px;">{{ if .TrackingID }}{{ .TrackingID }}{{ else }}—{{ end }}</td>
+                  <td style="padding:10px;"><strong>Total Samples</strong></td>
+                  <td style="padding:10px;">{{ .TotalSamples }}</td>
+                </tr>
+
+                <tr>
+                  <td style="padding:10px;"><strong>Client</strong></td>
+                  <td style="padding:10px;">{{ .ClientName }}</td>
+                  <td style="padding:10px;"><strong>Country</strong></td>
+                  <td style="padding:10px;">{{ .Country }}</td>
+                </tr>
+
+                <tr>
+                  <td style="padding:10px;"><strong>Previous Location</strong></td>
+                  <td style="padding:10px;">{{ .PreviousLocation }}</td>
+                  <td style="padding:10px;"><strong>New Location</strong></td>
+                  <td style="padding:10px;">{{ .NewLocation }}</td>
+                </tr>
+
+                <tr>
+                  <td style="padding:10px;"><strong>Registration Date</strong></td>
+                  <td style="padding:10px;">{{ .RegistrationDate }}</td>
+                  <td style="padding:10px;"><strong>LB Responsible</strong></td>
+                  <td style="padding:10px;">{{ .LBResponsible }}</td>
+                </tr>
+
+                <tr>
+                  <td style="padding:10px;"><strong>External Responsible</strong></td>
+                  <td style="padding:10px;">{{ .ExternalResponsible }}</td>
+                  <td style="padding:10px;"><strong>Registered By</strong></td>
+                  <td style="padding:10px;">{{ .RegisteredBy }}</td>
+                </tr>
+
+                <tr>
+                  <td style="padding:10px; vertical-align:top;"><strong>Comments</strong></td>
+                  <td colspan="3" style="padding:10px; line-height:1.6; white-space:pre-line;">{{ .Comments }}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:0 32px 24px 32px;">
+              <table width="100%" style="border:1px solid #e5e7eb;">
+                <tr>
+                  <td colspan="4" style="padding:12px 16px; background:#0b1736; color:#ffffff; font-weight:bold;">
+                    Sample Details
+                  </td>
+                </tr>
+
+                <tr style="background:#f3f4f6;">
+                  <td style="padding:10px;"><strong>Brand</strong></td>
+                  <td style="padding:10px;"><strong>Technical Model</strong></td>
+                  <td style="padding:10px;"><strong>Commercial Model</strong></td>
+                  <td style="padding:10px;"><strong>IMEI</strong></td>
+                </tr>
+
+                {{ range .Rows }}
+                <tr>
+                  <td style="padding:10px;">{{ .Brand }}</td>
+                  <td style="padding:10px;">{{ .TechnicalModel }}</td>
+                  <td style="padding:10px;">{{ .CommercialModel }}</td>
+                  <td style="padding:10px;">{{ .Imei }}</td>
+                </tr>
+                {{ end }}
+
+              </table>
+            </td>
+          </tr>
+
+          {{ if .HasDeliveryConfirmation }}
+          <tr class="in-store-delivery-section" style="break-before:page; page-break-before:always;">
+            <td style="padding:0 32px 24px 32px; break-inside:avoid; page-break-inside:avoid;">
+              <table width="100%" style="border:1px solid #e5e7eb; background:#fafafa; break-inside:avoid; page-break-inside:avoid;">
+                <tr>
+                  <td colspan="2" style="padding:12px 16px; background:#0b1736; color:#ffffff; font-weight:bold;">
+                    In-store delivery confirmation
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:10px; width:35%;"><strong>Receiver name</strong></td>
+                  <td style="padding:10px;">{{ .ReceiverFullName }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>ID / RUT</strong></td>
+                  <td style="padding:10px;">{{ .ReceiverRUT }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>Delivered at</strong></td>
+                  <td style="padding:10px;">{{ .ReceiverDeliveredAt }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px; vertical-align:top;"><strong>Signature</strong></td>
+                  <td style="padding:10px;">
+                    {{ if .ReceiverSignatureDataURI }}
+                    <img src="{{ .ReceiverSignatureDataURI }}" alt="Receiver signature" style="max-width:420px; max-height:180px; border:1px solid #e5e7eb; background:#fff;" />
+                    {{ else }}
+                    —
+                    {{ end }}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          {{ end }}
+
+          <tr>
+            <td style="padding:0 32px 32px 32px;">
+              <a href="https://lbonetrack.com/"
+                 style="display:inline-block; background:#8DB319; color:#ffffff; text-decoration:none; padding:12px 22px; font-weight:bold; border-radius:6px;">
+                 View in Platform
+              </a>
+              {{ if .DocumentURL }}
+              <a href="{{ .DocumentURL }}" target="_blank" rel="noopener"
+                 style="display:inline-block; margin-left:12px; background:#0b1736; color:#ffffff; text-decoration:none; padding:12px 22px; font-weight:bold; border-radius:6px;">
+                 Download report (PDF)
+              </a>
+              {{ else if .DocumentPendingNote }}
+              <div style="margin-top:14px; font-size:13px; color:#6b7280; line-height:1.5;">
+                <em>{{ .DocumentPendingNote }}</em>
+              </div>
+              {{ end }}
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:0 32px 24px 32px;">
+              <div style="background:#fff7ed; border:1px solid #fed7aa; padding:12px; font-size:12px;">
+                <strong>Automated Message:</strong> This email was generated automatically by the LB Technology tracking platform. Please do not reply to this message.
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="text-align:center; font-size:12px; color:#6b7280; padding:16px;">
+              © {{ .Year }} LB Technology
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

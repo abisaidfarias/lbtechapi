@@ -3,8 +3,9 @@ package repositories
 import (
 	"context"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/database/queries"
@@ -50,7 +51,8 @@ func (r *companyRepository) Create(company *models.Company) error {
 // Get returns a list of all test cases
 func (r *companyRepository) Get() ([]*responses.Company, error) {
 
-	cursor, err := companyCollection.Find(context.TODO(), bson.M{})
+	cursor, err := companyCollection.Find(context.TODO(), bson.M{},
+		options.Find().SetSort(bson.D{{Key: "name", Value: 1}}))
 	if err != nil {
 		panic(err)
 	}

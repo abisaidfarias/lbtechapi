@@ -18,6 +18,7 @@ type ICountryRepository interface {
 	Update(primitive.ObjectID, *models.Country) error
 	Delete(primitive.ObjectID) error
 	GetById(string) (*responses.Country, error)
+	GetByName(string) (*responses.Country, error)
 	GetCountriesById([]primitive.ObjectID) ([]string, error)
 }
 
@@ -94,6 +95,19 @@ func (r *countryRepository) GetById(id string) (*responses.Country, error) {
 
 	return &result, nil
 }
+
+func (r *countryRepository) GetByName(name string) (*responses.Country, error) {
+	var result responses.Country
+
+	err := countryCollection.FindOne(context.TODO(),
+		queries.GetCountryByName(name)).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
 func (r *countryRepository) GetCountriesById(ids []primitive.ObjectID) ([]string, error) {
 
 	cursor, err := countryCollection.Find(context.TODO(), bson.M{"_id": bson.M{"$in": ids}})

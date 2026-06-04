@@ -1283,6 +1283,78 @@ const docTemplate = `{
                 }
             }
         },
+        "/device-tracking/confirm-move-delivery": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Para cada tracking_id + IMEIs, valida el mismo tracking log en todos los device_tracking y dispara el correo + PDF como un movimiento con with_delivery false.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Device Tracking"
+                ],
+                "summary": "Confirmar entrega en local y generar informe de movimiento",
+                "parameters": [
+                    {
+                        "description": "Receiver + listas tracking_id + imeis",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.DeliveryConfirmMoveReportRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Proceso iniciado"
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No encontrado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Datos inconsistentes",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/device-tracking/search-options": {
             "get": {
                 "security": [
@@ -3004,6 +3076,228 @@ const docTemplate = `{
                 }
             }
         },
+        "/multibanda": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Obtiene la lista de registros Multibanda según el alcance del usuario",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Multibanda"
+                ],
+                "summary": "Listar registros Multibanda",
+                "responses": {
+                    "200": {
+                        "description": "Lista de registros Multibanda",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.MultibandaExpanded"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso para leer Multibanda",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Crea un registro Multibanda en fase Planning (current_phase = 0)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Multibanda"
+                ],
+                "summary": "Crear nuevo registro Multibanda",
+                "parameters": [
+                    {
+                        "description": "Datos del registro Multibanda",
+                        "name": "multibanda",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.Multibanda"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Registro creado exitosamente",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso para crear Multibanda",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/multibanda/{id}/phase": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Cambia la fase/estado de un registro Multibanda",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Multibanda"
+                ],
+                "summary": "Cambiar fase de Multibanda",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del registro Multibanda",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Datos de la fase",
+                        "name": "multibanda",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.MultibandaResume"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Fase actualizada exitosamente"
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso para escribir Multibanda",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Registro Multibanda no encontrado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/notification": {
             "post": {
                 "security": [
@@ -3833,6 +4127,291 @@ const docTemplate = `{
                     },
                     "409": {
                         "description": "No se puede eliminar, existen dependencias"
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/shipment-control": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Obtiene controles de embarque. Usuario interno: todas las companies en user.clients (si clients está vacío, todas). Usuario externo: solo su company.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ShipmentControl"
+                ],
+                "summary": "Listar controles de embarque",
+                "responses": {
+                    "200": {
+                        "description": "Lista de controles de embarque",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.ShipmentControlExpanded"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Crea un control de embarque en fase Planning. Solo requiere multibanda_id e imei_quantity; planning_date se asigna en UTC en el servidor.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ShipmentControl"
+                ],
+                "summary": "Crear Shipment Control",
+                "parameters": [
+                    {
+                        "description": "Datos del control de embarque",
+                        "name": "shipmentControl",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.ShipmentControl"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Control creado exitosamente",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/shipment-control/available-multibandas": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Obtiene multibandas del cliente agrupadas por device y software_version para crear controles de embarque",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ShipmentControl"
+                ],
+                "summary": "Multibandas disponibles para Shipment Control",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Company ID (requerido para usuarios internos)",
+                        "name": "company",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Opciones disponibles",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ShipmentControlAvailableResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/shipment-control/{id}/phase": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Actualiza la fase y los hitos de un control de embarque",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ShipmentControl"
+                ],
+                "summary": "Cambiar fase de Shipment Control",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del Shipment Control",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Datos de la fase",
+                        "name": "shipmentControl",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.ShipmentControlResume"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Fase actualizada exitosamente"
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     },
                     "500": {
                         "description": "Error interno del servidor",
@@ -5136,7 +5715,6 @@ const docTemplate = `{
         "request.Claim": {
             "type": "object",
             "required": [
-                "allow",
                 "name"
             ],
             "properties": {
@@ -5276,6 +5854,44 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "request.DeliveryConfirmMoveReportItem": {
+            "type": "object",
+            "required": [
+                "imeis",
+                "tracking_id"
+            ],
+            "properties": {
+                "imeis": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tracking_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.DeliveryConfirmMoveReportRequest": {
+            "type": "object",
+            "required": [
+                "items",
+                "receiver"
+            ],
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/request.DeliveryConfirmMoveReportItem"
+                    }
+                },
+                "receiver": {
+                    "$ref": "#/definitions/request.MoveDeliveryReceiver"
                 }
             }
         },
@@ -5440,6 +6056,9 @@ const docTemplate = `{
                 },
                 "platform_version": {
                     "type": "string"
+                },
+                "sar_value": {
+                    "type": "number"
                 },
                 "sensor_accelerometer": {
                     "type": "boolean"
@@ -5752,6 +6371,160 @@ const docTemplate = `{
                 }
             }
         },
+        "request.MoveDeliveryReceiver": {
+            "type": "object",
+            "required": [
+                "delivered_at",
+                "full_name",
+                "rut",
+                "signature_png_data_url"
+            ],
+            "properties": {
+                "delivered_at": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "rut": {
+                    "type": "string"
+                },
+                "signature_png_data_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.Multibanda": {
+            "type": "object",
+            "required": [
+                "brand",
+                "company",
+                "device",
+                "evaluation_type",
+                "os_version",
+                "planning_date",
+                "software_version",
+                "type"
+            ],
+            "properties": {
+                "brand": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "company": {
+                    "type": "string"
+                },
+                "current_phase": {
+                    "type": "integer"
+                },
+                "device": {
+                    "type": "string"
+                },
+                "evaluation_type": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "hardware_version": {
+                    "type": "string"
+                },
+                "is_internal_project": {
+                    "type": "boolean"
+                },
+                "multiband_certificate_url": {
+                    "type": "string"
+                },
+                "os_version": {
+                    "type": "string"
+                },
+                "os_version_view": {
+                    "type": "string"
+                },
+                "planning_date": {
+                    "type": "string"
+                },
+                "sample_end_date": {
+                    "type": "string"
+                },
+                "sample_start_date": {
+                    "type": "string"
+                },
+                "software_version": {
+                    "type": "string"
+                },
+                "test_report_url": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.MultibandaResume": {
+            "type": "object",
+            "properties": {
+                "certificate_number": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "completed_date": {
+                    "type": "string"
+                },
+                "current_phase": {
+                    "type": "integer"
+                },
+                "hardware_version": {
+                    "type": "string"
+                },
+                "is_internal_project": {
+                    "type": "boolean"
+                },
+                "multiband_certificate_url": {
+                    "type": "string"
+                },
+                "os_version": {
+                    "type": "string"
+                },
+                "os_version_view": {
+                    "type": "string"
+                },
+                "planning_date": {
+                    "type": "string"
+                },
+                "sample_end_date": {
+                    "type": "string"
+                },
+                "sample_start_date": {
+                    "type": "string"
+                },
+                "software_version": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "test_end_date": {
+                    "type": "string"
+                },
+                "test_report_url": {
+                    "type": "string"
+                },
+                "test_start_date": {
+                    "type": "string"
+                },
+                "under_end_date": {
+                    "type": "string"
+                },
+                "under_start_date": {
+                    "type": "string"
+                }
+            }
+        },
         "request.Notification": {
             "type": "object",
             "required": [
@@ -5882,6 +6655,90 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "request.ShipmentControl": {
+            "type": "object",
+            "required": [
+                "country",
+                "imei_quantity",
+                "multibanda_id"
+            ],
+            "properties": {
+                "client": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "imei_quantity": {
+                    "type": "integer"
+                },
+                "multibanda_id": {
+                    "type": "string"
+                },
+                "oabi_certificate": {
+                    "type": "string"
+                },
+                "rework_number": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.ShipmentControlResume": {
+            "type": "object",
+            "properties": {
+                "client": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "completed_date": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "current_phase": {
+                    "type": "integer"
+                },
+                "imei_quantity": {
+                    "type": "integer"
+                },
+                "oabi_certificate": {
+                    "type": "string"
+                },
+                "oabi_certificate_number": {
+                    "type": "string"
+                },
+                "oabi_certificate_url": {
+                    "type": "string"
+                },
+                "registered_imei_count": {
+                    "type": "integer"
+                },
+                "rework_number": {
+                    "type": "string"
+                },
+                "subtel_certificate_number": {
+                    "type": "string"
+                },
+                "subtel_certificate_url": {
+                    "type": "string"
+                },
+                "under_revision_end_date": {
+                    "type": "string"
+                },
+                "under_revision_start_date": {
+                    "type": "string"
+                },
+                "validation_end_date": {
+                    "type": "string"
+                },
+                "validation_start_date": {
+                    "type": "string"
                 }
             }
         },
@@ -6109,6 +6966,9 @@ const docTemplate = `{
                 "document_url": {
                     "type": "string"
                 },
+                "external_delivery": {
+                    "type": "boolean"
+                },
                 "internal_responsible": {
                     "$ref": "#/definitions/request.UserResume"
                 },
@@ -6118,7 +6978,16 @@ const docTemplate = `{
                 "person": {
                     "$ref": "#/definitions/request.Person"
                 },
+                "process_types": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "tracking_date": {
+                    "type": "string"
+                },
+                "tracking_id": {
                     "type": "string"
                 }
             }
@@ -6138,6 +7007,10 @@ const docTemplate = `{
                 },
                 "tracking_log": {
                     "$ref": "#/definitions/request.TrackingLog"
+                },
+                "with_delivery": {
+                    "description": "WithDelivery when true: perform move but do not send notification email.",
+                    "type": "boolean"
                 }
             }
         },
@@ -6687,6 +7560,9 @@ const docTemplate = `{
                 "platform_version": {
                     "type": "string"
                 },
+                "sar_value": {
+                    "type": "number"
+                },
                 "sensor_accelerometer": {
                     "type": "boolean"
                 },
@@ -6876,6 +7752,95 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.MultibandaExpanded": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "brand": {
+                    "$ref": "#/definitions/responses.Brand"
+                },
+                "certificate_number": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "company": {
+                    "$ref": "#/definitions/responses.Company"
+                },
+                "completed_date": {
+                    "type": "string"
+                },
+                "created_date": {
+                    "type": "string"
+                },
+                "current_phase": {
+                    "type": "integer"
+                },
+                "dashboard_phase": {
+                    "type": "integer"
+                },
+                "device": {
+                    "$ref": "#/definitions/responses.Device"
+                },
+                "evaluation_type": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "hardware_version": {
+                    "type": "string"
+                },
+                "is_internal_project": {
+                    "type": "boolean"
+                },
+                "multiband_certificate_url": {
+                    "type": "string"
+                },
+                "os_version": {
+                    "type": "string"
+                },
+                "os_version_view": {
+                    "type": "string"
+                },
+                "planning_date": {
+                    "type": "string"
+                },
+                "sample_end_date": {
+                    "type": "string"
+                },
+                "sample_start_date": {
+                    "type": "string"
+                },
+                "software_version": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "test_end_date": {
+                    "type": "string"
+                },
+                "test_report_url": {
+                    "type": "string"
+                },
+                "test_start_date": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "under_end_date": {
+                    "type": "string"
+                },
+                "under_start_date": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.Notification": {
             "type": "object",
             "properties": {
@@ -7017,6 +7982,320 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "relations": {
+                    "$ref": "#/definitions/responses.SearchOptionRelations"
+                }
+            }
+        },
+        "responses.SearchOptionRelationByBrand": {
+            "type": "object",
+            "properties": {
+                "commercial_models": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "countries": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "locations": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "responses.SearchOptionRelationByCountry": {
+            "type": "object",
+            "properties": {
+                "brands": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "commercial_models": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "locations": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "responses.SearchOptionRelationByLocation": {
+            "type": "object",
+            "properties": {
+                "brands": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "commercial_models": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "countries": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "responses.SearchOptionRelationByModel": {
+            "type": "object",
+            "properties": {
+                "brands": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "countries": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "locations": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "responses.SearchOptionRelations": {
+            "type": "object",
+            "properties": {
+                "byBrand": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/responses.SearchOptionRelationByBrand"
+                    }
+                },
+                "byCountry": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/responses.SearchOptionRelationByCountry"
+                    }
+                },
+                "byLocation": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/responses.SearchOptionRelationByLocation"
+                    }
+                },
+                "byModel": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/responses.SearchOptionRelationByModel"
+                    }
+                }
+            }
+        },
+        "responses.ShipmentControlAvailableDevice": {
+            "type": "object",
+            "properties": {
+                "brand": {
+                    "$ref": "#/definitions/responses.Brand"
+                },
+                "device": {
+                    "$ref": "#/definitions/responses.Device"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.ShipmentControlAvailableOption"
+                    }
+                }
+            }
+        },
+        "responses.ShipmentControlAvailableOption": {
+            "type": "object",
+            "properties": {
+                "certificate_number": {
+                    "type": "string"
+                },
+                "hardware_version": {
+                    "type": "string"
+                },
+                "multibanda_id": {
+                    "type": "string"
+                },
+                "os_version": {
+                    "type": "string"
+                },
+                "os_version_view": {
+                    "type": "string"
+                },
+                "software_version": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ShipmentControlAvailableResponse": {
+            "type": "object",
+            "properties": {
+                "company": {
+                    "$ref": "#/definitions/responses.Company"
+                },
+                "devices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.ShipmentControlAvailableDevice"
+                    }
+                }
+            }
+        },
+        "responses.ShipmentControlCompanySummary": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ShipmentControlCountrySummary": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ShipmentControlDeviceSummary": {
+            "type": "object",
+            "properties": {
+                "brand": {
+                    "type": "string"
+                },
+                "commercial_model": {
+                    "type": "string"
+                },
+                "technical_model": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ShipmentControlExpanded": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "client": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "company": {
+                    "$ref": "#/definitions/responses.ShipmentControlCompanySummary"
+                },
+                "completed_date": {
+                    "type": "string"
+                },
+                "country": {
+                    "$ref": "#/definitions/responses.ShipmentControlCountrySummary"
+                },
+                "created_date": {
+                    "type": "string"
+                },
+                "current_phase": {
+                    "type": "integer"
+                },
+                "device": {
+                    "$ref": "#/definitions/responses.ShipmentControlDeviceSummary"
+                },
+                "imei_quantity": {
+                    "type": "integer"
+                },
+                "multibanda": {
+                    "$ref": "#/definitions/responses.ShipmentControlMultibandaSummary"
+                },
+                "oabi_certificate": {
+                    "type": "string"
+                },
+                "oabi_certificate_number": {
+                    "type": "string"
+                },
+                "oabi_certificate_url": {
+                    "type": "string"
+                },
+                "planning_date": {
+                    "type": "string"
+                },
+                "registered_imei_count": {
+                    "type": "integer"
+                },
+                "rework_number": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "subtel_certificate_number": {
+                    "type": "string"
+                },
+                "subtel_certificate_url": {
+                    "type": "string"
+                },
+                "under_revision_end_date": {
+                    "type": "string"
+                },
+                "under_revision_start_date": {
+                    "type": "string"
+                },
+                "validation_end_date": {
+                    "type": "string"
+                },
+                "validation_start_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ShipmentControlMultibandaSummary": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "certificate_number": {
+                    "type": "string"
+                },
+                "hardware_version": {
+                    "type": "string"
+                },
+                "os_version": {
+                    "type": "string"
+                },
+                "os_version_view": {
+                    "type": "string"
+                },
+                "software_version": {
+                    "type": "string"
                 }
             }
         },
@@ -7283,6 +8562,9 @@ const docTemplate = `{
                 "document_url": {
                     "type": "string"
                 },
+                "external_delivery": {
+                    "type": "boolean"
+                },
                 "external_responsible": {
                     "type": "string"
                 },
@@ -7295,7 +8577,16 @@ const docTemplate = `{
                 "person": {
                     "$ref": "#/definitions/responses.Person"
                 },
+                "process_types": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "tracking_date": {
+                    "type": "string"
+                },
+                "tracking_id": {
                     "type": "string"
                 }
             }

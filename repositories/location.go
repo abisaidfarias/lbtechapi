@@ -3,8 +3,9 @@ package repositories
 import (
 	"context"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/models"
@@ -41,7 +42,8 @@ func (r *locationRepository) Create(location *models.Location) (*primitive.Objec
 // Get returns a list of all test cases
 func (r *locationRepository) Get() ([]*responses.Location, error) {
 
-	cursor, err := locationCollection.Find(context.TODO(), bson.M{})
+	cursor, err := locationCollection.Find(context.TODO(), bson.M{},
+		options.Find().SetSort(bson.D{{Key: "name", Value: 1}}))
 	if err != nil {
 		panic(err)
 	}

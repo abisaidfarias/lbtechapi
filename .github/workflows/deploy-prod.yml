@@ -87,6 +87,27 @@ jobs:
           }
           EOF
 
+      - name: Wait until Beanstalk environment is Ready
+        run: |
+          set -e
+          for i in $(seq 1 40); do
+            STATUS=$(aws elasticbeanstalk describe-environments \
+              --environment-names lbtechapi-prod \
+              --query 'Environments[0].Status' \
+              --output text)
+            HEALTH=$(aws elasticbeanstalk describe-environments \
+              --environment-names lbtechapi-prod \
+              --query 'Environments[0].Health' \
+              --output text)
+            echo "[$i/40] lbtechapi-prod Status=$STATUS Health=$HEALTH"
+            if [ "$STATUS" = "Ready" ]; then
+              exit 0
+            fi
+            sleep 30
+          done
+          echo "::error::Timed out waiting for Ready (20m). Check Elastic Beanstalk: abort stuck update or fix the environment."
+          exit 1
+
       - name: Deploy to Elastic Beanstalk PROD
         uses: einaregilsson/beanstalk-deploy@v22
         with:
@@ -97,6 +118,7 @@ jobs:
           region: us-east-1
           version_label: prod-${{ github.sha }}
           deployment_package: Dockerrun.aws.json
+          use_existing_version_if_available: true
 
       - name: Verify deployment
         run: |

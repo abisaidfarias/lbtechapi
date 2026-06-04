@@ -1,10 +1,12 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/services"
 	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
@@ -16,6 +18,7 @@ type IDeviceTrackingController interface {
 	Create() gin.HandlerFunc
 	Get() gin.HandlerFunc
 	AddTrakingLog() gin.HandlerFunc
+	ConfirmMoveDeliveryReport() gin.HandlerFunc
 	Delete() gin.HandlerFunc
 	Update() gin.HandlerFunc
 	AdvancedSearch() gin.HandlerFunc
@@ -133,11 +136,15 @@ func (c *deviceTrackingController) AddTrakingLog() gin.HandlerFunc {
 			return
 		}
 
-		err = c.deviceTrackingService.AddTrakingLog(trackingLog, userID)
+		trackingID, err := c.deviceTrackingService.AddTrakingLog(trackingLog, userID)
 
 		if err != nil {
 			if utils.ErrorDuplicatedData(err) {
 				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicated.Error()})
+				return
+			}
+			if errors.Is(err, repositories.ErrMoveTrackingIDDailyLimit) || errors.Is(err, repositories.ErrMoveTrackingIDAlreadyExists) {
+				ctx.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 				return
 			}
 			ctx.Status(http.StatusInternalServerError)
@@ -145,6 +152,49 @@ func (c *deviceTrackingController) AddTrakingLog() gin.HandlerFunc {
 			return
 		}
 
+		ctx.JSON(http.StatusOK, gin.H{"tracking_id": trackingID})
+	}
+}
+
+// ConfirmMoveDeliveryReport godoc
+// @Summary Confirmar entrega en local y generar informe de movimiento
+// @Description Para cada tracking_id + IMEIs, valida el mismo tracking log en todos los device_tracking y dispara el correo + PDF como un movimiento con with_delivery false.
+// @Tags Device Tracking
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param body body request.DeliveryConfirmMoveReportRequest true "Receiver + listas tracking_id + imeis"
+// @Success 200 "Proceso iniciado"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 404 {object} map[string]string "No encontrado"
+// @Failure 409 {object} map[string]string "Datos inconsistentes"
+// @Failure 500 {object} map[string]string "Error interno"
+// @Router /device-tracking/confirm-move-delivery [post]
+func (c *deviceTrackingController) ConfirmMoveDeliveryReport() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var body request.DeliveryConfirmMoveReportRequest
+		userID := ctx.MustGet("userID").(string)
+		if err := ctx.ShouldBindJSON(&body); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		if err := c.deviceTrackingService.ConfirmMoveDeliveryReport(&body, userID); err != nil {
+			switch {
+			case errors.Is(err, services.ErrDeliveryConfirmInvalidSignature):
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			case errors.Is(err, services.ErrDeliveryConfirmNotFound):
+				ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+				return
+			case errors.Is(err, services.ErrDeliveryConfirmInconsistent):
+				ctx.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+				return
+			default:
+				ctx.Status(http.StatusInternalServerError)
+				handleErrorResponse(ctx, err)
+				return
+			}
+		}
 		ctx.Status(http.StatusOK)
 	}
 }

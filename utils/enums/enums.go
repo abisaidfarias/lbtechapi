@@ -105,6 +105,7 @@ var ExcelDeviceTrackinHeaders = map[string]string{
 	"G1": "Responsible",
 	"H1": "External Responsible",
 	"I1": "Tracking Date",
+	"J1": "Process types",
 }
 var ExcelFailsHeaders = map[string]string{
 	"A6": "Code",

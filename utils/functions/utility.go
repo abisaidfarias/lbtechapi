@@ -4,13 +4,19 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"html/template"
+	"io"
 	"math/rand"
+	"mime/multipart"
 	"net"
 	"net/smtp"
+	"net/textproto"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/abisaidfarias/lbtechapi/config"
@@ -215,6 +221,271 @@ func SendNotifications(toList []string, body bytes.Buffer) {
 	}
 }
 
+const trackingMoveLogoCID = "lbonetrack-logo"
+
+// buildMoveEmailMultipartRelated builds multipart/related (HTML + inline PNG) using mime/multipart.
+func buildMoveEmailMultipartRelated(html []byte, logoPNG []byte) ([]byte, error) {
+	var mpBody bytes.Buffer
+	w := multipart.NewWriter(&mpBody)
+	boundary := w.Boundary()
+
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Type", "text/html; charset=UTF-8")
+	h.Set("Content-Transfer-Encoding", "8bit")
+	htmlPart, err := w.CreatePart(h)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := htmlPart.Write(html); err != nil {
+		return nil, err
+	}
+
+	h2 := make(textproto.MIMEHeader)
+	h2.Set("Content-Type", "image/png")
+	h2.Set("Content-Transfer-Encoding", "base64")
+	h2.Set("Content-Disposition", `inline; filename="lbonetrack_logo.png"`)
+	h2.Set("Content-Id", "<"+trackingMoveLogoCID+">")
+	imgPart, err := w.CreatePart(h2)
+	if err != nil {
+		return nil, err
+	}
+	enc := base64.NewEncoder(base64.StdEncoding, imgPart)
+	if _, err := enc.Write(logoPNG); err != nil {
+		return nil, err
+	}
+	if err := enc.Close(); err != nil {
+		return nil, err
+	}
+	if err := w.Close(); err != nil {
+		return nil, err
+	}
+
+	var msg bytes.Buffer
+	msg.WriteString("MIME-Version: 1.0\r\n")
+	msg.WriteString("Content-Type: multipart/related; type=\"text/html\"; boundary=\"" + boundary + "\"\r\n\r\n")
+	msg.Write(mpBody.Bytes())
+	return msg.Bytes(), nil
+}
+
+// resolveBrandedEmailLogo picks a logo source for branded HTML emails.
+func resolveBrandedEmailLogo(logoPNG []byte) template.URL {
+	publicLogoURL := strings.TrimSpace(os.Getenv("TRACKING_LOGO_URL"))
+	switch {
+	case publicLogoURL != "":
+		return template.URL(publicLogoURL)
+	case len(logoPNG) > 0:
+		return template.URL("cid:" + trackingMoveLogoCID)
+	default:
+		return ""
+	}
+}
+
+func sendBrandedHTMLEmail(toList []string, subject string, html []byte, logoPNG []byte, documentURL string) error {
+	from := config.GetValue("EMAIL_FROM")
+	password := config.GetValue("EMAIL_PASSWORD")
+	smtpHost := config.GetValue("SMTP_CLIENTE")
+	smtpPort := config.GetValue("EMAIL_PORT")
+
+	publicLogoURL := strings.TrimSpace(os.Getenv("TRACKING_LOGO_URL"))
+
+	subjectValue := strings.TrimSpace(strings.TrimPrefix(subject, "Subject:"))
+	subjectValue = strings.TrimSpace(subjectValue)
+
+	var msg bytes.Buffer
+	msg.WriteString("From: " + from + "\r\n")
+	msg.WriteString("To: " + strings.Join(toList, ", ") + "\r\n")
+	msg.WriteString("Subject: " + subjectValue + "\r\n")
+	if u := strings.TrimSpace(documentURL); u != "" {
+		msg.WriteString("X-LB-Document-URL: " + u + "\r\n")
+	}
+
+	var mimeBody bytes.Buffer
+	if publicLogoURL != "" || len(logoPNG) == 0 {
+		mimeBody.WriteString("MIME-Version: 1.0\r\n")
+		mimeBody.WriteString("Content-Type: text/html; charset=UTF-8\r\n")
+		mimeBody.WriteString("Content-Transfer-Encoding: 8bit\r\n\r\n")
+		mimeBody.Write(html)
+	} else {
+		part, err := buildMoveEmailMultipartRelated(html, logoPNG)
+		if err != nil {
+			return err
+		}
+		if _, err := mimeBody.Write(part); err != nil {
+			return err
+		}
+	}
+	if _, err := io.Copy(&msg, &mimeBody); err != nil {
+		return err
+	}
+
+	auth := LoginAuth(from, password)
+	return smtp.SendMail(smtpHost+":"+smtpPort, auth, from, toList, msg.Bytes())
+}
+
+// RenderTrackingMoveEmailHTML renders the movement email template to HTML bytes (caller sets LogoDataURI).
+func RenderTrackingMoveEmailHTML(data TrackingMoveEmailData, templatePath string) ([]byte, error) {
+	t, err := template.ParseFiles(templatePath)
+	if err != nil {
+		return nil, err
+	}
+	var htmlBuf bytes.Buffer
+	if err := t.Execute(&htmlBuf, data); err != nil {
+		return nil, err
+	}
+	html := htmlBuf.Bytes()
+	html = bytes.ReplaceAll(html, []byte("\r\n"), []byte("\n"))
+	html = bytes.ReplaceAll(html, []byte("\n"), []byte("\r\n"))
+	return html, nil
+}
+
+// SendNotificationsMoveEmail sends the movement / registration HTML email.
+// The PDF is no longer attached; instead the template renders either a download
+// link (when data.DocumentURL is set) or a fallback note (data.DocumentPendingNote).
+// documentURL is only used to decide whether to set the link header
+// (X-LB-Document-URL) for downstream debugging.
+//
+// Logo resolution order:
+//  1. TRACKING_LOGO_URL (https URL to a public PNG) — most reliable in Gmail.
+//  2. Else embedded PNG from logoPNG as multipart/related + cid: (built with mime/multipart).
+//  3. Else HTML only (no logo).
+func SendNotificationsMoveEmail(toList []string, subject string, data TrackingMoveEmailData, templatePath string, logoPNG []byte, documentURL string) error {
+	d := data
+	d.LogoDataURI = resolveBrandedEmailLogo(logoPNG)
+
+	html, err := RenderTrackingMoveEmailHTML(d, templatePath)
+	if err != nil {
+		return err
+	}
+
+	return sendBrandedHTMLEmail(toList, subject, html, logoPNG, documentURL)
+}
+
+// MultibandaPhaseEmailData is passed to the Multibanda phase notification HTML template.
+type MultibandaPhaseEmailData struct {
+	LogoDataURI             template.URL
+	ClientName              string
+	MainMessage             string
+	NotificationDate        string
+	CurrentPhase            string
+	ProjectType             string
+	ProcessType             string
+	EvaluationTypes         string
+	Brand                   string
+	TechnicalModel          string
+	CommercialModel         string
+	SoftwareVersion         string
+	HardwareVersion         string
+	OsVersion               string
+	SARValue                string
+	UpdatedBy               string
+	PlanningDate            string
+	SampleStartDate         string
+	SampleEndDate           string
+	TestStartDate           string
+	TestEndDate             string
+	UnderStartDate          string
+	UnderEndDate            string
+	ResultDate              string
+	Finished                bool
+	Decision                string
+	TestReportURL           string
+	MultibandCertificateURL string
+	ReflashURL              string
+	Year                    int
+}
+
+func RenderMultibandaPhaseEmailHTML(data MultibandaPhaseEmailData, templatePath string) ([]byte, error) {
+	t, err := template.ParseFiles(templatePath)
+	if err != nil {
+		return nil, err
+	}
+	var htmlBuf bytes.Buffer
+	if err := t.Execute(&htmlBuf, data); err != nil {
+		return nil, err
+	}
+	html := htmlBuf.Bytes()
+	html = bytes.ReplaceAll(html, []byte("\r\n"), []byte("\n"))
+	html = bytes.ReplaceAll(html, []byte("\n"), []byte("\r\n"))
+	return html, nil
+}
+
+// SendMultibandaPhaseEmail sends the styled Multibanda phase-change HTML email.
+func SendMultibandaPhaseEmail(toList []string, subject string, data MultibandaPhaseEmailData, templatePath string, logoPNG []byte) error {
+	d := data
+	d.LogoDataURI = resolveBrandedEmailLogo(logoPNG)
+
+	html, err := RenderMultibandaPhaseEmailHTML(d, templatePath)
+	if err != nil {
+		return err
+	}
+
+	return sendBrandedHTMLEmail(toList, subject, html, logoPNG, "")
+}
+
+// ShipmentControlPhaseEmailData is passed to the Shipment Control notification HTML template.
+type ShipmentControlPhaseEmailData struct {
+	LogoDataURI                 template.URL
+	ClientName                  string
+	MainMessage                 string
+	NotificationDate            string
+	CurrentPhase                string
+	Country                     string
+	Client                      string
+	ImeiQuantity                string
+	ReworkNumber                string
+	MultibandaCertificateNumber string
+	Brand                       string
+	TechnicalModel              string
+	CommercialModel             string
+	SoftwareVersion             string
+	HardwareVersion             string
+	OsVersion                   string
+	UpdatedBy                   string
+	PlanningDate                string
+	ValidationStartDate         string
+	ValidationEndDate           string
+	UnderRevisionStartDate      string
+	UnderRevisionEndDate        string
+	ResultDate                  string
+	ShowImeiSubmitted           bool
+	ImeiSubmitted               string
+	ShowCompletedFields         bool
+	OabiCertificate             string
+	Comments                    string
+	ExcelFileURL                string
+	ImeiFileURL                 string
+	MultibandCertificateURL     string
+	OabiCertificateURL          string
+	Year                        int
+}
+
+func RenderShipmentControlPhaseEmailHTML(data ShipmentControlPhaseEmailData, templatePath string) ([]byte, error) {
+	t, err := template.ParseFiles(templatePath)
+	if err != nil {
+		return nil, err
+	}
+	var htmlBuf bytes.Buffer
+	if err := t.Execute(&htmlBuf, data); err != nil {
+		return nil, err
+	}
+	html := htmlBuf.Bytes()
+	html = bytes.ReplaceAll(html, []byte("\r\n"), []byte("\n"))
+	html = bytes.ReplaceAll(html, []byte("\n"), []byte("\r\n"))
+	return html, nil
+}
+
+func SendShipmentControlPhaseEmail(toList []string, subject string, data ShipmentControlPhaseEmailData, templatePath string, logoPNG []byte) error {
+	d := data
+	d.LogoDataURI = resolveBrandedEmailLogo(logoPNG)
+
+	html, err := RenderShipmentControlPhaseEmailHTML(d, templatePath)
+	if err != nil {
+		return err
+	}
+
+	return sendBrandedHTMLEmail(toList, subject, html, logoPNG, "")
+}
+
 func GetEmails(isInternal bool, companyId primitive.ObjectID) ([]string, bool) {
 
 	var toList []string
@@ -319,57 +590,57 @@ func GetHomologationBodyMessage(subject string, mainMessge string, projectType s
 
 	return body, nil
 }
-func GetTrackingBodyMessage(subject string, mainMessge string, client string,
-	brand string, technicalModel string, commercialModel string,
-	responsible string, externalResponsible string, country string,
-	location string, imeis []string, comment string, date time.Time,
-	templatePath string, userName string) (bytes.Buffer, error) {
 
-	xxx := []string{"India", "Canada", "Japan", "Germany", "Italy"}
+// TrackingEmailDeviceRow is one horizontal row in the tracking email table (one IMEI per row).
+type TrackingEmailDeviceRow struct {
+	Client              string
+	Country             string
+	Brand               string
+	TechnicalModel      string
+	CommercialModel     string
+	Imei                string
+	PreviousLocation    string
+	NewLocation         string
+	LBResponsible       string
+	ExternalResponsible string
+	Comments            string
+	RegistrationDate    string
+	RegisteredBy        string
+}
 
-	var body bytes.Buffer
-	body.Write([]byte(fmt.Sprintf("%s \n%s\n\n", subject, utils.MIME_HEADERS)))
-
-	t, err := template.ParseFiles(templatePath)
-	if err != nil {
-		return body, err
-	}
-	if err != nil {
-		return body, err
-	}
-	t.Execute(&body, struct {
-		MainMessage         string
-		Date                string
-		Client              string
-		Brand               string
-		TechnicalModel      string
-		CommercialModel     string
-		Responsible         string
-		ExternalResponsible string
-		Country             string
-		Location            string
-		IMEIs               []string
-		Comments            string
-		UserName            string
-		Hyperlink           []string
-	}{
-		MainMessage:         mainMessge,
-		Date:                fmt.Sprintf("%02d/%02d/%d", date.Day(), date.Month(), date.Year()),
-		Client:              client,
-		Brand:               brand,
-		TechnicalModel:      technicalModel,
-		CommercialModel:     commercialModel,
-		Responsible:         responsible,
-		ExternalResponsible: externalResponsible,
-		Country:             country,
-		Location:            location,
-		IMEIs:               imeis,
-		Comments:            comment,
-		UserName:            userName,
-		Hyperlink:           xxx,
-	})
-
-	return body, nil
+// TrackingMoveEmailData is passed to the movement / registration notification HTML template.
+type TrackingMoveEmailData struct {
+	// IsMovement distinguishes move notifications from new-sample (CREATE) registration emails (copy + summary title).
+	IsMovement bool
+	// LogoDataURI is set at send time to cid:lbonetrack-logo (inline PNG) or empty when no logo.
+	LogoDataURI         template.URL
+	ClientName          string
+	Country             string
+	TrackingID          string
+	TotalSamples        int
+	PreviousLocation    string
+	NewLocation         string
+	RegistrationDate    string
+	LBResponsible       string
+	ExternalResponsible string
+	RegisteredBy        string
+	Comments            string
+	Year                int
+	MainMessage         string
+	Rows                []TrackingEmailDeviceRow
+	// In-store delivery confirmation (confirm-move-delivery); when true, template shows receiver + signature.
+	HasDeliveryConfirmation bool
+	ReceiverFullName        string
+	ReceiverRUT             string
+	ReceiverDeliveredAt     string
+	ReceiverSignatureDataURI template.URL
+	// DocumentURL is the public S3 URL of the PDF report when it is already
+	// uploaded; the email template renders a Download button when set.
+	DocumentURL string
+	// DocumentPendingNote is shown instead of the link when the PDF is still
+	// being generated (slow-phase retries pending). Configurable via
+	// MOVE_REPORT_PENDING_NOTE.
+	DocumentPendingNote string
 }
 
 type loginAuth struct {
@@ -449,6 +720,54 @@ func GetNotificationMessageAndSubject(homologation *request.Homologation,
 	}
 	return mainMessage, subject
 }
+
+func GetMultibandaNotificationMessageAndSubject(
+	multibanda *request.MultibandaResume,
+	brand string,
+	commercialModel string,
+) (string, string) {
+	var mainMessage string
+	var subject string
+
+	switch multibanda.CurrentPhase {
+	case 0:
+		subject = fmt.Sprintf("Subject: Planning Multibanda %s %s", brand, commercialModel)
+		return utils.MULTIBANDA_PLANNING_MAIN_MESSAGE, subject
+	case 1:
+		if multibanda.SampleEndDate.IsZero() {
+			subject = fmt.Sprintf("Subject: Sample Reception Start Date Multibanda %s %s", brand, commercialModel)
+			return utils.MULTIBANDA_SAMPLE_START_MAIN_MESSAGE, subject
+		}
+		subject = fmt.Sprintf("Subject: Sample Reception End Date Multibanda %s %s", brand, commercialModel)
+		return utils.MULTIBANDA_SAMPLE_END_MAIN_MESSAGE, subject
+	case 2:
+		if multibanda.TestStartDate.IsZero() {
+			subject = fmt.Sprintf("Subject: Sample Reception End Date Multibanda %s %s", brand, commercialModel)
+			return utils.MULTIBANDA_SAMPLE_END_MAIN_MESSAGE, subject
+		}
+		subject = fmt.Sprintf("Subject: Test Start Date Multibanda %s %s", brand, commercialModel)
+		return utils.MULTIBANDA_TEST_MAIN_MESSAGE, subject
+	case 3:
+		subject = fmt.Sprintf("Subject: Test End Date Multibanda %s %s", brand, commercialModel)
+		return utils.MULTIBANDA_UNDER_MAIN_MESSAGE, subject
+	case 4:
+		if enums.HomologationStatus_type[multibanda.Status] == "Approved" {
+			subject = fmt.Sprintf("Subject: Laboratory Decision Approved Multibanda %s %s", brand, commercialModel)
+			return utils.MULTIBANDA_APPROVED_MAIN_MESSAGE, subject
+		}
+		if enums.HomologationStatus_type[multibanda.Status] == "Rejected" {
+			subject = fmt.Sprintf("Subject: Laboratory Decision Rejected Multibanda %s %s", brand, commercialModel)
+			return utils.MULTIBANDA_REJECTED_MAIN_MESSAGE, subject
+		}
+		if enums.HomologationStatus_type[multibanda.Status] == "Finished" {
+			subject = fmt.Sprintf("Subject: Multibanda Process Finished %s %s", brand, commercialModel)
+			return utils.MULTIBANDA_FINISHED_MAIN_MESSAGE, subject
+		}
+	}
+
+	return mainMessage, subject
+}
+
 func GetFailBodyMessage(subject string, mainMessge string, client string, country string,
 	brand string, technicalModel string, commercialModel string,
 	softwareVersion string, osVersion string, homologationType string,

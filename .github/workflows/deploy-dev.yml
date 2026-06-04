@@ -8,7 +8,9 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
+    env:
+      IMAGE_REPOSITORY: abisaid/lbtechapi
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,15 +24,73 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Get short SHA
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           platforms: linux/amd64
           push: true
-          tags: abisaid/lbtechapi:latest
+          tags: |
+            ${{ env.IMAGE_REPOSITORY }}:dev-${{ steps.vars.outputs.sha_short }}
+            ${{ env.IMAGE_REPOSITORY }}:dev-latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Generate Dockerrun.aws.json for DEV
+        run: |
+          cat > Dockerrun.dev.aws.json << EOF
+          {
+              "AWSEBDockerrunVersion":"1",
+              "Image":{
+                  "Name":"${{ env.IMAGE_REPOSITORY }}:dev-${{ steps.vars.outputs.sha_short }}",
+                  "Update":"true"
+              },
+              "Ports":[
+                  {
+                      "ContainerPort":"8080"
+                  }
+              ]
+          }
+          EOF
+
+      - name: Package Beanstalk bundle (Dockerrun + ebextensions for disk size)
+        run: |
+          mkdir -p bundle/.ebextensions
+          mkdir -p bundle/.platform/nginx/conf.d
+          cp Dockerrun.dev.aws.json bundle/Dockerrun.aws.json
+          cp .ebextensions/02-root-volume.config bundle/.ebextensions/
+          cp .ebextensions/03-nginx.config bundle/.ebextensions/
+          cp .platform/nginx/conf.d/proxy.conf bundle/.platform/nginx/conf.d/
+          (cd bundle && zip -r ../beanstalk-app.zip .)
+
+      - name: Wait until Beanstalk environment is Ready
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          set -e
+          for i in $(seq 1 40); do
+            STATUS=$(aws elasticbeanstalk describe-environments \
+              --environment-names lbtechapi \
+              --query 'Environments[0].Status' \
+              --output text)
+            HEALTH=$(aws elasticbeanstalk describe-environments \
+              --environment-names lbtechapi \
+              --query 'Environments[0].Health' \
+              --output text)
+            echo "[$i/40] lbtechapi Status=$STATUS Health=$HEALTH"
+            if [ "$STATUS" = "Ready" ]; then
+              exit 0
+            fi
+            sleep 30
+          done
+          echo "::error::Timed out waiting for Ready (20m). Check Elastic Beanstalk: abort stuck update or fix the environment."
+          exit 1
 
       - name: Deploy to Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v22
@@ -40,8 +100,9 @@ jobs:
           application_name: lbtechapi
           environment_name: lbtechapi
           region: us-east-1
-          version_label: ${{ github.sha }}
-          deployment_package: Dockerrun.aws.json
+          version_label: dev-${{ github.sha }}
+          deployment_package: beanstalk-app.zip
+          use_existing_version_if_available: true
 
       - name: Verify deployment
         run: |
@@ -49,5 +110,7 @@ jobs:
           sleep 60
           echo "🔍 Checking health endpoint..."
           curl -f http://api.testkoi.com/health || exit 1
+          echo ""
+          echo "✅ Deployed image tag: dev-${{ steps.vars.outputs.sha_short }}"
           echo "✅ Deployment successful!"
 
