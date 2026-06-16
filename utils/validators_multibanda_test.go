@@ -9,6 +9,24 @@ import (
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 )
 
+func TestValidateMultibandaUpdateRequestSuccess(t *testing.T) {
+	req := validMultibandaRequest()
+	req.CurrentPhase = 2
+
+	if err := utils.ValidateMultibandaUpdateRequest(req); err != nil {
+		t.Fatalf("expected valid request, got %v", err)
+	}
+}
+
+func TestValidateMultibandaUpdateRequestRejectsInvalidPhase(t *testing.T) {
+	req := validMultibandaRequest()
+	req.CurrentPhase = 99
+
+	if err := utils.ValidateMultibandaUpdateRequest(req); !utils.IsValidationError(err) {
+		t.Fatalf("expected validation error, got %v", err)
+	}
+}
+
 func TestValidateMultibandaCreateRequestSuccess(t *testing.T) {
 	req := validMultibandaRequest()
 

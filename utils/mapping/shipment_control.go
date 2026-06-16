@@ -73,6 +73,44 @@ func ShipmentControlRequestToShipmentControl(
 
 
 
+func ShipmentControlRequestToShipmentControlUpdate(
+
+	req *request.ShipmentControl,
+
+	multibandaID primitive.ObjectID,
+
+	companyID primitive.ObjectID,
+
+	countryID primitive.ObjectID,
+
+) *models.ShipmentControl {
+
+	return &models.ShipmentControl{
+
+		Multibanda:      multibandaID,
+
+		Company:         companyID,
+
+		Country:         countryID,
+
+		CurrentPhase:    req.CurrentPhase,
+
+		ImeiQuantity:    req.ImeiQuantity,
+
+		ImeiFileUrl:     req.ImeiFileUrl,
+
+		ReworkNumber:    req.ReworkNumber,
+
+		OabiCertificate: req.OabiCertificate,
+
+		Client:          req.Client,
+
+	}
+
+}
+
+
+
 func ShipmentControlRequestToShipmentControlResume(
 
 	req *request.ShipmentControlResume,

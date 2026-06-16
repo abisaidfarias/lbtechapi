@@ -22,6 +22,18 @@ func GetMultibandaByCompanyDeviceSoftwareOsVersion(
 	}
 }
 
+func GetMultibandaByCompanyDeviceSoftwareOsVersionExcludingID(
+	excludeID primitive.ObjectID,
+	companyID primitive.ObjectID,
+	deviceID primitive.ObjectID,
+	softwareVersion string,
+	osVersion string,
+) primitive.M {
+	filter := GetMultibandaByCompanyDeviceSoftwareOsVersion(companyID, deviceID, softwareVersion, osVersion)
+	filter["_id"] = primitive.M{"$ne": excludeID}
+	return filter
+}
+
 func GetMultibandaById(oid primitive.ObjectID) primitive.M {
 	return primitive.M{"_id": oid}
 }
@@ -178,6 +190,29 @@ func GetMultibandaExpandedById(oid primitive.ObjectID) mongo.Pipeline {
 		lookupStageCompany, unwindStageCompany,
 		lookupStageBrand, unwindStageBrand,
 	}
+}
+
+func UpdateMultibanda(multibanda *models.Multibanda, oid primitive.ObjectID) (primitive.M, primitive.D) {
+	filter := primitive.M{"_id": oid}
+	update := primitive.D{
+		{Key: "$set", Value: primitive.D{
+			{Key: "company", Value: multibanda.Company},
+			{Key: "device", Value: multibanda.Device},
+			{Key: "brand", Value: multibanda.Brand},
+			{Key: "software_version", Value: multibanda.SoftwareVersion},
+			{Key: "hardware_version", Value: multibanda.HardwareVersion},
+			{Key: "os_version", Value: multibanda.OsVersion},
+			{Key: "os_version_view", Value: multibanda.OsVersionView},
+			{Key: "type", Value: multibanda.Type},
+			{Key: "evaluation_type", Value: multibanda.EvaluationType},
+			{Key: "current_phase", Value: multibanda.CurrentPhase},
+			{Key: "dashboard_phase", Value: multibanda.DashBoardPhase},
+			{Key: "planning_date", Value: multibanda.PlanningDate},
+			{Key: "need_reflash", Value: multibanda.NeedReflash},
+			{Key: "comments_reflash", Value: multibanda.CommentsReflash},
+		}},
+	}
+	return filter, update
 }
 
 func UpdateMultibandaPhaseChange(multibanda *models.Multibanda, oid primitive.ObjectID) (primitive.M, primitive.D) {

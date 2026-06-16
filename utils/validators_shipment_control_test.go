@@ -112,6 +112,56 @@ func TestValidateShipmentControlCreateRequestRejectsMissingImeiFileUrl(t *testin
 
 
 
+func TestValidateShipmentControlUpdateRequestSuccess(t *testing.T) {
+
+	req := &request.ShipmentControl{
+
+		MultibandaID: "507f1f77bcf86cd799439011",
+
+		CurrentPhase: 0,
+
+		ImeiQuantity: 10,
+
+		ImeiFileUrl:  "https://example.com/imei.xlsx",
+
+		Country:      "507f1f77bcf86cd799439012",
+
+	}
+
+	if err := utils.ValidateShipmentControlUpdateRequest(req); err != nil {
+
+		t.Fatalf("expected valid request, got %v", err)
+
+	}
+
+}
+
+
+
+func TestValidateShipmentControlUpdateRequestRequiresCountry(t *testing.T) {
+
+	req := &request.ShipmentControl{
+
+		MultibandaID: "507f1f77bcf86cd799439011",
+
+		CurrentPhase: 0,
+
+		ImeiQuantity: 10,
+
+		ImeiFileUrl:  "https://example.com/imei.xlsx",
+
+	}
+
+	if err := utils.ValidateShipmentControlUpdateRequest(req); !utils.IsValidationError(err) {
+
+		t.Fatalf("expected validation error, got %v", err)
+
+	}
+
+}
+
+
+
 func TestValidateMultibandaCreateRequestRequiresSoftwareVersion(t *testing.T) {
 
 	req := validMultibandaRequest()

@@ -40,6 +40,10 @@ type IShipmentControlRepository interface {
 
 	GetById(primitive.ObjectID) (*models.ShipmentControl, error)
 
+	Update(string, *models.ShipmentControl) error
+
+	ExistsByMultibandaExcludingID(primitive.ObjectID, primitive.ObjectID) (bool, error)
+
 	PhaseChange(string, *models.ShipmentControl) error
 
 	Delete(primitive.ObjectID) error
@@ -258,6 +262,72 @@ func (r *shipmentControlRepository) GetById(id primitive.ObjectID) (*models.Ship
 	}
 
 	return &shipmentControl, nil
+
+}
+
+
+
+func (r *shipmentControlRepository) Update(id string, shipmentControl *models.ShipmentControl) error {
+
+	oid, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+
+		return err
+
+	}
+
+	filter, update := queries.UpdateShipmentControl(shipmentControl, oid)
+
+	res, err := shipmentControlCollection.UpdateOne(context.TODO(), filter, update)
+
+	if err != nil {
+
+		return err
+
+	}
+
+	if res.MatchedCount == 0 {
+
+		return mongo.ErrNoDocuments
+
+	}
+
+	return nil
+
+}
+
+
+
+func (r *shipmentControlRepository) ExistsByMultibandaExcludingID(
+
+	excludeID primitive.ObjectID,
+
+	multibandaID primitive.ObjectID,
+
+) (bool, error) {
+
+	err := shipmentControlCollection.FindOne(
+
+		context.TODO(),
+
+		queries.GetShipmentControlByMultibandaExcludingID(excludeID, multibandaID),
+
+	).Err()
+
+	if err == nil {
+
+		return true, nil
+
+	}
+
+	if err == mongo.ErrNoDocuments {
+
+		return false, nil
+
+	}
+
+	return false, err
 
 }
 

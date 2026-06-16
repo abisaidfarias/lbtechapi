@@ -193,6 +193,34 @@ func GetShipmentControls(
 	return pipeline
 }
 
+func GetShipmentControlByMultibandaExcludingID(
+	excludeID primitive.ObjectID,
+	multibandaID primitive.ObjectID,
+) primitive.M {
+	return primitive.M{
+		"_id":        primitive.M{"$ne": excludeID},
+		"multibanda": multibandaID,
+	}
+}
+
+func UpdateShipmentControl(shipmentControl *models.ShipmentControl, oid primitive.ObjectID) (primitive.M, primitive.D) {
+	filter := primitive.M{"_id": oid}
+	update := primitive.D{
+		{Key: "$set", Value: primitive.D{
+			{Key: "multibanda", Value: shipmentControl.Multibanda},
+			{Key: "company", Value: shipmentControl.Company},
+			{Key: "country", Value: shipmentControl.Country},
+			{Key: "current_phase", Value: shipmentControl.CurrentPhase},
+			{Key: "imei_quantity", Value: shipmentControl.ImeiQuantity},
+			{Key: "imei_file_url", Value: shipmentControl.ImeiFileUrl},
+			{Key: "rework_number", Value: shipmentControl.ReworkNumber},
+			{Key: "oabi_certificate", Value: shipmentControl.OabiCertificate},
+			{Key: "client", Value: shipmentControl.Client},
+		}},
+	}
+	return filter, update
+}
+
 func UpdateShipmentControlPhaseChange(shipmentControl *models.ShipmentControl, oid primitive.ObjectID) (primitive.M, primitive.D) {
 	filter := primitive.M{"_id": oid}
 	setFields := primitive.D{

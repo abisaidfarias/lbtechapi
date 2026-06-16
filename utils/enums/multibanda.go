@@ -75,6 +75,13 @@ func ValidateMultibandaType(value string) error {
 	return nil
 }
 
+func ValidateMultibandaPhase(phase int) error {
+	if _, ok := MultibandaPhaseLabels[phase]; !ok {
+		return fmt.Errorf("invalid current_phase %d", phase)
+	}
+	return nil
+}
+
 func ValidateMultibandaEvaluationTypes(values []string) error {
 	if len(values) == 0 {
 		return fmt.Errorf("evaluation_type must include at least one value")

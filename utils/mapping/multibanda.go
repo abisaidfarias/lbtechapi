@@ -44,6 +44,37 @@ func MultibandaRequestToMultibanda(
 	}
 }
 
+func MultibandaRequestToMultibandaUpdate(
+	multibanda *request.Multibanda,
+	companyID primitive.ObjectID,
+	deviceID primitive.ObjectID,
+	brandID primitive.ObjectID,
+	existing *responses.MultibandaExpanded,
+) *models.Multibanda {
+	commentsReflash := ""
+	if multibanda.NeedReflash {
+		commentsReflash = strings.TrimSpace(multibanda.CommentsReflash)
+	}
+
+	return &models.Multibanda{
+		Company:           companyID,
+		Device:            deviceID,
+		Brand:             brandID,
+		SoftwareVersion:   strings.TrimSpace(multibanda.SoftwareVersion),
+		HardwareVersion:   multibanda.HardwareVersion,
+		OsVersion:         strings.TrimSpace(multibanda.OsVersion),
+		OsVersionView:     multibanda.OsVersionView,
+		Type:              multibanda.Type,
+		EvaluationType:    append([]string(nil), multibanda.EvaluationType...),
+		CurrentPhase:      multibanda.CurrentPhase,
+		PlanningDate:      multibanda.PlanningDate,
+		SampleStartDate:   existing.SampleStartDate,
+		SampleEndDate:     existing.SampleEndDate,
+		NeedReflash:       multibanda.NeedReflash,
+		CommentsReflash:   commentsReflash,
+	}
+}
+
 func MultibandaRequestToMultibandaResume(multibanda *request.MultibandaResume) *models.Multibanda {
 	return &models.Multibanda{
 		SoftwareVersion:   multibanda.SoftwareVersion,
