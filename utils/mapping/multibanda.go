@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/abisaidfarias/lbtechapi/models"
+	"github.com/abisaidfarias/lbtechapi/utils"
 	"github.com/abisaidfarias/lbtechapi/utils/enums"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
@@ -49,7 +50,6 @@ func MultibandaRequestToMultibandaUpdate(
 	companyID primitive.ObjectID,
 	deviceID primitive.ObjectID,
 	brandID primitive.ObjectID,
-	existing *responses.MultibandaExpanded,
 ) *models.Multibanda {
 	commentsReflash := ""
 	if multibanda.NeedReflash {
@@ -57,21 +57,32 @@ func MultibandaRequestToMultibandaUpdate(
 	}
 
 	return &models.Multibanda{
-		Company:           companyID,
-		Device:            deviceID,
-		Brand:             brandID,
-		SoftwareVersion:   strings.TrimSpace(multibanda.SoftwareVersion),
-		HardwareVersion:   multibanda.HardwareVersion,
-		OsVersion:         strings.TrimSpace(multibanda.OsVersion),
-		OsVersionView:     multibanda.OsVersionView,
-		Type:              multibanda.Type,
-		EvaluationType:    append([]string(nil), multibanda.EvaluationType...),
-		CurrentPhase:      multibanda.CurrentPhase,
-		PlanningDate:      multibanda.PlanningDate,
-		SampleStartDate:   existing.SampleStartDate,
-		SampleEndDate:     existing.SampleEndDate,
-		NeedReflash:       multibanda.NeedReflash,
-		CommentsReflash:   commentsReflash,
+		Company:                 companyID,
+		Device:                  deviceID,
+		Brand:                   brandID,
+		SoftwareVersion:         strings.TrimSpace(multibanda.SoftwareVersion),
+		HardwareVersion:           multibanda.HardwareVersion,
+		OsVersion:                 strings.TrimSpace(multibanda.OsVersion),
+		OsVersionView:             multibanda.OsVersionView,
+		Type:                      multibanda.Type,
+		EvaluationType:            append([]string(nil), multibanda.EvaluationType...),
+		CurrentPhase:              multibanda.CurrentPhase,
+		Status:                    multibanda.Status,
+		PlanningDate:              utils.NormalizeCalendarDateUTC(multibanda.PlanningDate),
+		SampleStartDate:           utils.NormalizeOptionalCalendarDateUTC(multibanda.SampleStartDate),
+		SampleEndDate:             utils.NormalizeOptionalCalendarDateUTC(multibanda.SampleEndDate),
+		TestStartDate:             utils.NormalizeCalendarDateUTC(multibanda.TestStartDate),
+		TestEndDate:               utils.NormalizeCalendarDateUTC(multibanda.TestEndDate),
+		UnderStartDate:            utils.NormalizeCalendarDateUTC(multibanda.UnderStartDate),
+		UnderEndDate:              utils.NormalizeCalendarDateUTC(multibanda.UnderEndDate),
+		CompletedDate:             utils.NormalizeCalendarDateUTC(multibanda.CompletedDate),
+		TestReportUrl:             multibanda.TestReportUrl,
+		MultibandCertificateUrl:   multibanda.MultibandCertificateUrl,
+		SubtelCertificateNumber:   multibanda.SubtelCertificateNumber,
+		Comment:                   multibanda.Comment,
+		NeedReflash:               multibanda.NeedReflash,
+		CommentsReflash:           commentsReflash,
+		IsInternalProject:         multibanda.IsInternalProject,
 	}
 }
 

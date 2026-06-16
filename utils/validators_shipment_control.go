@@ -102,6 +102,18 @@ func ValidateShipmentControlUpdateRequest(req *request.ShipmentControl) error {
 
 	}
 
+	if req.RegisteredImeiCount < 0 {
+
+		return NewValidationError("registered_imei_count must be greater than or equal to 0")
+
+	}
+
+	if _, ok := enums.ShipmentControlStatusLabels[req.Status]; !ok {
+
+		return NewValidationError("invalid status")
+
+	}
+
 	return nil
 
 }

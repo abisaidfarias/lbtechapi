@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/abisaidfarias/lbtechapi/models"
+	"github.com/abisaidfarias/lbtechapi/utils"
 	"github.com/abisaidfarias/lbtechapi/utils/enums"
 )
 
@@ -211,11 +212,24 @@ func UpdateShipmentControl(shipmentControl *models.ShipmentControl, oid primitiv
 			{Key: "company", Value: shipmentControl.Company},
 			{Key: "country", Value: shipmentControl.Country},
 			{Key: "current_phase", Value: shipmentControl.CurrentPhase},
+			{Key: "status", Value: shipmentControl.Status},
+			{Key: "planning_date", Value: utils.NormalizeCalendarDateUTC(shipmentControl.PlanningDate)},
+			{Key: "validation_start_date", Value: utils.NormalizeCalendarDateUTC(shipmentControl.ValidationStartDate)},
+			{Key: "validation_end_date", Value: utils.NormalizeCalendarDateUTC(shipmentControl.ValidationEndDate)},
+			{Key: "under_revision_start_date", Value: utils.NormalizeCalendarDateUTC(shipmentControl.UnderRevisionStartDate)},
+			{Key: "under_revision_end_date", Value: utils.NormalizeCalendarDateUTC(shipmentControl.UnderRevisionEndDate)},
+			{Key: "completed_date", Value: utils.NormalizeCalendarDateUTC(shipmentControl.CompletedDate)},
 			{Key: "imei_quantity", Value: shipmentControl.ImeiQuantity},
 			{Key: "imei_file_url", Value: shipmentControl.ImeiFileUrl},
+			{Key: "registered_imei_count", Value: shipmentControl.RegisteredImeiCount},
 			{Key: "rework_number", Value: shipmentControl.ReworkNumber},
 			{Key: "oabi_certificate", Value: shipmentControl.OabiCertificate},
 			{Key: "client", Value: shipmentControl.Client},
+			{Key: "subtel_certificate_url", Value: shipmentControl.SubtelCertificateUrl},
+			{Key: "subtel_certificate_number", Value: shipmentControl.SubtelCertificateNumber},
+			{Key: "oabi_certificate_url", Value: shipmentControl.OabiCertificateUrl},
+			{Key: "oabi_certificate_number", Value: shipmentControl.OabiCertificateNumber},
+			{Key: "comment", Value: shipmentControl.Comment},
 		}},
 	}
 	return filter, update

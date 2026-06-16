@@ -222,7 +222,6 @@ func (s *multibandaService) Update(id string, multibandaRequest *request.Multiba
 		companyID,
 		deviceID,
 		brandID,
-		existing,
 	)
 	setMultibandaDashboardPhase(multibanda)
 

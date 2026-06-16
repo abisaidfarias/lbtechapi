@@ -106,7 +106,7 @@ func (c *multibandaController) Get() gin.HandlerFunc {
 
 // Update godoc
 // @Summary Actualizar registro Multibanda
-// @Description Actualiza los datos generales del registro (cliente, dispositivo, fase, versiones, tipo, evaluación, reflash). Solo usuarios internos.
+// @Description Actualiza todos los campos editables del registro Multibanda. Solo usuarios internos.
 // @Tags Multibanda
 // @Accept json
 // @Produce json

@@ -123,7 +123,18 @@ func ValidateMultibandaUpdateRequest(multibanda *request.Multibanda) error {
 		return NewValidationError(err.Error())
 	}
 
+	if err := validateHomologationStatus(multibanda.Status); err != nil {
+		return err
+	}
+
 	return validateMultibandaReflashFields(multibanda.NeedReflash, multibanda.CommentsReflash)
+}
+
+func validateHomologationStatus(status int) error {
+	if _, ok := enums.HomologationStatus_type[status]; !ok {
+		return NewValidationError("invalid status")
+	}
+	return nil
 }
 
 func validateMultibandaReflashFields(needReflash bool, commentsReflash string) error {

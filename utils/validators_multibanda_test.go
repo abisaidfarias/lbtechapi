@@ -116,6 +116,7 @@ func validMultibandaRequest() *request.Multibanda {
 		SoftwareVersion: "SW 1.0",
 		OsVersion:       "17",
 		CurrentPhase:    enums.MultibandaPhasePlanning,
+		Status:          enums.HomologationStatus_value["IN_PROGRESS"],
 		PlanningDate:    time.Date(2026, 5, 25, 0, 0, 0, 0, time.UTC),
 	}
 }

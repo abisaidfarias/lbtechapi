@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/abisaidfarias/lbtechapi/models"
+	"github.com/abisaidfarias/lbtechapi/utils"
 )
 
 func GetMultibandaByCompanyDeviceSoftwareOsVersion(
@@ -206,10 +207,23 @@ func UpdateMultibanda(multibanda *models.Multibanda, oid primitive.ObjectID) (pr
 			{Key: "type", Value: multibanda.Type},
 			{Key: "evaluation_type", Value: multibanda.EvaluationType},
 			{Key: "current_phase", Value: multibanda.CurrentPhase},
+			{Key: "status", Value: multibanda.Status},
 			{Key: "dashboard_phase", Value: multibanda.DashBoardPhase},
-			{Key: "planning_date", Value: multibanda.PlanningDate},
+			{Key: "planning_date", Value: utils.NormalizeCalendarDateUTC(multibanda.PlanningDate)},
+			{Key: "sample_start_date", Value: utils.OptionalDateForBSON(multibanda.SampleStartDate)},
+			{Key: "sample_end_date", Value: utils.OptionalDateForBSON(multibanda.SampleEndDate)},
+			{Key: "test_start_date", Value: utils.NormalizeCalendarDateUTC(multibanda.TestStartDate)},
+			{Key: "test_end_date", Value: utils.NormalizeCalendarDateUTC(multibanda.TestEndDate)},
+			{Key: "under_start_date", Value: utils.NormalizeCalendarDateUTC(multibanda.UnderStartDate)},
+			{Key: "under_end_date", Value: utils.NormalizeCalendarDateUTC(multibanda.UnderEndDate)},
+			{Key: "completed_date", Value: utils.NormalizeCalendarDateUTC(multibanda.CompletedDate)},
+			{Key: "test_report_url", Value: multibanda.TestReportUrl},
+			{Key: "multiband_certificate_url", Value: multibanda.MultibandCertificateUrl},
+			{Key: "subtel_certificate_number", Value: multibanda.SubtelCertificateNumber},
+			{Key: "comment", Value: multibanda.Comment},
 			{Key: "need_reflash", Value: multibanda.NeedReflash},
 			{Key: "comments_reflash", Value: multibanda.CommentsReflash},
+			{Key: "is_internal_project", Value: multibanda.IsInternalProject},
 		}},
 	}
 	return filter, update

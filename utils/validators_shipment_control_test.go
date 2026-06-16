@@ -120,6 +120,8 @@ func TestValidateShipmentControlUpdateRequestSuccess(t *testing.T) {
 
 		CurrentPhase: 0,
 
+		Status: 0,
+
 		ImeiQuantity: 10,
 
 		ImeiFileUrl:  "https://example.com/imei.xlsx",
@@ -145,6 +147,8 @@ func TestValidateShipmentControlUpdateRequestRequiresCountry(t *testing.T) {
 		MultibandaID: "507f1f77bcf86cd799439011",
 
 		CurrentPhase: 0,
+
+		Status: 0,
 
 		ImeiQuantity: 10,
 

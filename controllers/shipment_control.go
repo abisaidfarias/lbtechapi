@@ -112,7 +112,7 @@ func (c *shipmentControlController) Get() gin.HandlerFunc {
 
 // Update godoc
 // @Summary Actualizar Shipment Control
-// @Description Actualiza los datos generales del control de embarque. Solo usuarios internos.
+// @Description Actualiza todos los campos editables del control de embarque. Solo usuarios internos.
 // @Tags ShipmentControl
 // @Accept json
 // @Produce json
