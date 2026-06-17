@@ -179,12 +179,7 @@ func GetShipmentControls(
 			{Key: "preserveNullAndEmptyArrays", Value: true},
 		}},
 	}
-	sort := bson.D{
-		{Key: "$sort", Value: bson.D{
-			{Key: "created_date", Value: -1},
-			{Key: "planning_date", Value: -1},
-		}},
-	}
+	sort := SortByOngoingStatusThenPlanningDateDesc()
 
 	pipeline = append(pipeline,
 		lookupStageCompany, unwindStageCompany,

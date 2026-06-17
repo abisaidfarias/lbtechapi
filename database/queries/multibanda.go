@@ -122,11 +122,7 @@ func GetMultibandas(
 			primitive.E{Key: "path", Value: "$brand"},
 			primitive.E{Key: "preserveNullAndEmptyArrays", Value: true},
 		}}}
-	sort := bson.D{
-		primitive.E{Key: "$sort", Value: bson.D{
-			primitive.E{Key: "planning_date", Value: -1},
-			primitive.E{Key: "created_date", Value: -1},
-		}}}
+	sort := SortByOngoingStatusThenPlanningDateDesc()
 
 	pipeline := mongo.Pipeline{}
 	if hasPreMatch {
