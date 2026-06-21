@@ -9,6 +9,24 @@ import (
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 )
 
+func TestValidateMultibandaUpdateRequestSuccess(t *testing.T) {
+	req := validMultibandaRequest()
+	req.CurrentPhase = 2
+
+	if err := utils.ValidateMultibandaUpdateRequest(req); err != nil {
+		t.Fatalf("expected valid request, got %v", err)
+	}
+}
+
+func TestValidateMultibandaUpdateRequestRejectsInvalidPhase(t *testing.T) {
+	req := validMultibandaRequest()
+	req.CurrentPhase = 99
+
+	if err := utils.ValidateMultibandaUpdateRequest(req); !utils.IsValidationError(err) {
+		t.Fatalf("expected validation error, got %v", err)
+	}
+}
+
 func TestValidateMultibandaCreateRequestSuccess(t *testing.T) {
 	req := validMultibandaRequest()
 
@@ -98,6 +116,7 @@ func validMultibandaRequest() *request.Multibanda {
 		SoftwareVersion: "SW 1.0",
 		OsVersion:       "17",
 		CurrentPhase:    enums.MultibandaPhasePlanning,
+		Status:          enums.HomologationStatus_value["IN_PROGRESS"],
 		PlanningDate:    time.Date(2026, 5, 25, 0, 0, 0, 0, time.UTC),
 	}
 }

@@ -13,6 +13,7 @@ import (
 type IMultibandaController interface {
 	Create() gin.HandlerFunc
 	Get() gin.HandlerFunc
+	Update() gin.HandlerFunc
 	PhaseChange() gin.HandlerFunc
 	Delete() gin.HandlerFunc
 	PatchRequestDelete() gin.HandlerFunc
@@ -100,6 +101,51 @@ func (c *multibandaController) Get() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, multibandas)
+	}
+}
+
+// Update godoc
+// @Summary Actualizar registro Multibanda
+// @Description Actualiza todos los campos editables del registro Multibanda. Solo usuarios internos.
+// @Tags Multibanda
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID del registro Multibanda"
+// @Param multibanda body request.Multibanda true "Datos actualizados del registro Multibanda"
+// @Success 200 "Registro actualizado exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 403 {object} map[string]string "Solo usuarios internos"
+// @Failure 404 {object} map[string]string "Registro Multibanda no encontrado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /multibanda/{id} [put]
+func (c *multibandaController) Update() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		userID := ctx.MustGet("userID").(string)
+		var multibanda request.Multibanda
+
+		if err := ctx.ShouldBindJSON(&multibanda); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if err := c.multibandaService.Update(id, &multibanda, userID); err != nil {
+			switch {
+			case utils.IsValidationError(err):
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			case errors.Is(err, utils.ErrorForbidden):
+				ctx.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+				return
+			default:
+				handleErrorResponse(ctx, err)
+				return
+			}
+		}
+
+		ctx.Status(http.StatusOK)
 	}
 }
 

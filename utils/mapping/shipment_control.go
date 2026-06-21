@@ -10,6 +10,8 @@ import (
 
 	"github.com/abisaidfarias/lbtechapi/models"
 
+	"github.com/abisaidfarias/lbtechapi/utils"
+
 	"github.com/abisaidfarias/lbtechapi/utils/enums"
 
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
@@ -66,6 +68,70 @@ func ShipmentControlRequestToShipmentControl(
 		RequestDelete:       false,
 
 		CreatedDate:         now,
+
+	}
+
+}
+
+
+
+func ShipmentControlRequestToShipmentControlUpdate(
+
+	req *request.ShipmentControl,
+
+	multibandaID primitive.ObjectID,
+
+	companyID primitive.ObjectID,
+
+	countryID primitive.ObjectID,
+
+) *models.ShipmentControl {
+
+	return &models.ShipmentControl{
+
+		Multibanda:              multibandaID,
+
+		Company:                 companyID,
+
+		Country:                 countryID,
+
+		CurrentPhase:            req.CurrentPhase,
+
+		Status:                  req.Status,
+
+		PlanningDate:            utils.NormalizeCalendarDateUTC(req.PlanningDate),
+
+		ValidationStartDate:     utils.NormalizeCalendarDateUTC(req.ValidationStartDate),
+
+		ValidationEndDate:       utils.NormalizeCalendarDateUTC(req.ValidationEndDate),
+
+		UnderRevisionStartDate:  utils.NormalizeCalendarDateUTC(req.UnderRevisionStartDate),
+
+		UnderRevisionEndDate:    utils.NormalizeCalendarDateUTC(req.UnderRevisionEndDate),
+
+		CompletedDate:           utils.NormalizeCalendarDateUTC(req.CompletedDate),
+
+		ImeiQuantity:            req.ImeiQuantity,
+
+		ImeiFileUrl:             req.ImeiFileUrl,
+
+		RegisteredImeiCount:     req.RegisteredImeiCount,
+
+		ReworkNumber:            req.ReworkNumber,
+
+		OabiCertificate:         req.OabiCertificate,
+
+		Client:                  req.Client,
+
+		SubtelCertificateUrl:    req.SubtelCertificateUrl,
+
+		SubtelCertificateNumber: req.SubtelCertificateNumber,
+
+		OabiCertificateUrl:      req.OabiCertificateUrl,
+
+		OabiCertificateNumber:   req.OabiCertificateNumber,
+
+		Comment:                 req.Comment,
 
 	}
 

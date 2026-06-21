@@ -19,6 +19,7 @@ import (
 type IMultibandaService interface {
 	Create(*request.Multibanda, string) (string, error)
 	Get(string) ([]*responses.MultibandaExpanded, error)
+	Update(string, *request.Multibanda, string) error
 	PhaseChange(string, *request.MultibandaResume, string) error
 	Delete(string, string) (*responses.DeleteProcessResult, error)
 	PatchRequestDelete(string, *request.RequestDeletePatch, string) (*responses.DeleteProcessResult, error)
@@ -135,6 +136,96 @@ func (s *multibandaService) Get(userID string) ([]*responses.MultibandaExpanded,
 	}
 
 	return s.multibandaRepository.GetByExternal(user.Company, user.Brands)
+}
+
+func (s *multibandaService) Update(id string, multibandaRequest *request.Multibanda, userID string) error {
+	if err := s.requireProfileClaim(userID, enums.CanWriteMultibanda); err != nil {
+		return err
+	}
+
+	if err := utils.ValidateMultibandaUpdateRequest(multibandaRequest); err != nil {
+		return err
+	}
+
+	multibandaID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return utils.NewValidationError("invalid multibanda id")
+	}
+
+	user, err := s.userRepository.GetByID(userID)
+	if err != nil {
+		return err
+	}
+
+	if !user.IsInternal {
+		return fmt.Errorf("%w", utils.ErrorForbidden)
+	}
+
+	existing, err := s.multibandaRepository.GetByIdExpanded(multibandaID)
+	if err != nil {
+		return err
+	}
+	if existing == nil {
+		return utils.NewValidationError("multibanda not found")
+	}
+	if existing.RequestDelete {
+		return utils.NewValidationError("multibanda has a pending delete request")
+	}
+
+	companyID, err := parseReferenceID("company", multibandaRequest.Company)
+	if err != nil {
+		return err
+	}
+
+	deviceID, err := parseReferenceID("device", multibandaRequest.Device)
+	if err != nil {
+		return err
+	}
+
+	brandID, err := parseReferenceID("brand", multibandaRequest.Brand)
+	if err != nil {
+		return err
+	}
+
+	if _, err := s.companyRepository.GetById(multibandaRequest.Company); err != nil {
+		return utils.NewValidationError("company not found")
+	}
+
+	if _, err := s.deviceRepository.GetById(multibandaRequest.Device); err != nil {
+		return utils.NewValidationError("device not found")
+	}
+
+	if _, err := s.brandRepository.GetById(multibandaRequest.Brand); err != nil {
+		return utils.NewValidationError("brand not found")
+	}
+
+	if err := authorizeMultibandaRecordAccess(user, companyID, brandID); err != nil {
+		return err
+	}
+
+	exists, err := s.multibandaRepository.ExistsByCompanyDeviceSoftwareOsVersionExcludingID(
+		multibandaID,
+		companyID,
+		deviceID,
+		strings.TrimSpace(multibandaRequest.SoftwareVersion),
+		strings.TrimSpace(multibandaRequest.OsVersion),
+	)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return utils.NewValidationError("a multibanda record already exists for this company, device, software_version and os_version")
+	}
+
+	multibanda := mapping.MultibandaRequestToMultibandaUpdate(
+		multibandaRequest,
+		companyID,
+		deviceID,
+		brandID,
+	)
+	setMultibandaDashboardPhase(multibanda)
+
+	return s.multibandaRepository.Update(id, multibanda)
 }
 
 func (s *multibandaService) PhaseChange(id string, multibandaRequest *request.MultibandaResume, userID string) error {

@@ -36,6 +36,8 @@ type IShipmentControlService interface {
 
 	Get(string) ([]*responses.ShipmentControlExpanded, error)
 
+	Update(string, *request.ShipmentControl, string) error
+
 	GetAvailableMultibandas(string, string) (*responses.ShipmentControlAvailableResponse, error)
 
 	PhaseChange(string, *request.ShipmentControlResume, string) error
@@ -223,6 +225,156 @@ func (s *shipmentControlService) Get(userID string) ([]*responses.ShipmentContro
 	}
 
 	return s.shipmentControlRepository.GetByExternal(user.Company, user.Brands)
+}
+
+
+
+func (s *shipmentControlService) Update(id string, req *request.ShipmentControl, userID string) error {
+
+	if err := s.requireProfileClaim(userID, enums.CanWriteShipmentControl); err != nil {
+
+		return err
+
+	}
+
+	if err := utils.ValidateShipmentControlUpdateRequest(req); err != nil {
+
+		return err
+
+	}
+
+	shipmentControlID, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+
+		return utils.NewValidationError("invalid shipment control id")
+
+	}
+
+	user, err := s.userRepository.GetByID(userID)
+
+	if err != nil {
+
+		return err
+
+	}
+
+	if !user.IsInternal {
+
+		return fmt.Errorf("%w", utils.ErrorForbidden)
+
+	}
+
+	existing, err := s.shipmentControlRepository.GetById(shipmentControlID)
+
+	if err != nil {
+
+		return err
+
+	}
+
+	if existing == nil {
+
+		return utils.NewValidationError("shipment control not found")
+
+	}
+
+	if existing.RequestDelete {
+
+		return utils.NewValidationError("shipment control has a pending delete request")
+
+	}
+
+	multibandaID, err := primitive.ObjectIDFromHex(req.MultibandaID)
+
+	if err != nil {
+
+		return utils.NewValidationError("invalid multibanda_id")
+
+	}
+
+	countryID, err := parseReferenceID("country", req.Country)
+
+	if err != nil {
+
+		return err
+
+	}
+
+	country, err := s.countryRepository.GetById(countryID.Hex())
+
+	if err != nil || country == nil {
+
+		return utils.NewValidationError("country not found")
+
+	}
+
+	multibanda, err := s.multibandaRepository.GetByIdExpanded(multibandaID)
+
+	if err != nil {
+
+		return err
+
+	}
+
+	if multibanda == nil {
+
+		return utils.NewValidationError("multibanda not found")
+
+	}
+
+	if multibanda.Status != enums.HomologationStatus_value["APPROVED"] {
+
+		return utils.NewValidationError("multibanda must be approved")
+
+	}
+
+	if multibanda.RequestDelete {
+
+		return utils.NewValidationError("multibanda has a pending delete request")
+
+	}
+
+	if !functions.UserHasClientAccess(user, multibanda.Company.ID) {
+
+		return fmt.Errorf("%w", utils.ErrorForbidden)
+
+	}
+
+	if !userHasBrandAccess(user, multibanda.Brand.ID) {
+
+		return fmt.Errorf("%w", utils.ErrorForbidden)
+
+	}
+
+	exists, err := s.shipmentControlRepository.ExistsByMultibandaExcludingID(shipmentControlID, multibandaID)
+
+	if err != nil {
+
+		return err
+
+	}
+
+	if exists {
+
+		return utils.NewValidationError("a shipment control record already exists for this multibanda")
+
+	}
+
+	shipmentControl := mapping.ShipmentControlRequestToShipmentControlUpdate(
+
+		req,
+
+		multibandaID,
+
+		multibanda.Company.ID,
+
+		countryID,
+
+	)
+
+	return s.shipmentControlRepository.Update(id, shipmentControl)
+
 }
 
 

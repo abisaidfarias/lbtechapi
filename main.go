@@ -371,6 +371,7 @@ func main() {
 		{
 			multibanda.POST("", multibandaController.Create())
 			multibanda.GET("", multibandaController.Get())
+			multibanda.PUT(":id", multibandaController.Update())
 			multibanda.PUT(":id/phase", multibandaController.PhaseChange())
 			multibanda.PATCH(":id/request-delete", multibandaController.PatchRequestDelete())
 			multibanda.PATCH(":id/reject-delete", multibandaController.RejectRequestDelete())
@@ -381,6 +382,7 @@ func main() {
 			shipmentControl.POST("", shipmentControlController.Create())
 			shipmentControl.GET("", shipmentControlController.Get())
 			shipmentControl.GET("/available-multibandas", shipmentControlController.GetAvailableMultibandas())
+			shipmentControl.PUT(":id", shipmentControlController.Update())
 			shipmentControl.PUT(":id/phase", shipmentControlController.PhaseChange())
 			shipmentControl.PATCH(":id/request-delete", shipmentControlController.PatchRequestDelete())
 			shipmentControl.PATCH(":id/reject-delete", shipmentControlController.RejectRequestDelete())

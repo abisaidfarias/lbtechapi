@@ -21,6 +21,8 @@ type IMultibandaRepository interface {
 	PhaseChange(string, *models.Multibanda) error
 	GetByIdExpanded(primitive.ObjectID) (*responses.MultibandaExpanded, error)
 	ExistsByCompanyDeviceSoftwareOsVersion(primitive.ObjectID, primitive.ObjectID, string, string) (bool, error)
+	ExistsByCompanyDeviceSoftwareOsVersionExcludingID(primitive.ObjectID, primitive.ObjectID, primitive.ObjectID, string, string) (bool, error)
+	Update(string, *models.Multibanda) error
 	Delete(primitive.ObjectID) error
 	SetRequestDelete(primitive.ObjectID, bool) error
 }
@@ -122,10 +124,31 @@ func (r *multibandaRepository) ExistsByCompanyDeviceSoftwareOsVersion(
 	softwareVersion string,
 	osVersion string,
 ) (bool, error) {
-	err := multibandaCollection.FindOne(
-		context.TODO(),
+	return r.existsByCompanyDeviceSoftwareOsVersion(
 		queries.GetMultibandaByCompanyDeviceSoftwareOsVersion(companyID, deviceID, softwareVersion, osVersion),
-	).Err()
+	)
+}
+
+func (r *multibandaRepository) ExistsByCompanyDeviceSoftwareOsVersionExcludingID(
+	excludeID primitive.ObjectID,
+	companyID primitive.ObjectID,
+	deviceID primitive.ObjectID,
+	softwareVersion string,
+	osVersion string,
+) (bool, error) {
+	return r.existsByCompanyDeviceSoftwareOsVersion(
+		queries.GetMultibandaByCompanyDeviceSoftwareOsVersionExcludingID(
+			excludeID,
+			companyID,
+			deviceID,
+			softwareVersion,
+			osVersion,
+		),
+	)
+}
+
+func (r *multibandaRepository) existsByCompanyDeviceSoftwareOsVersion(filter primitive.M) (bool, error) {
+	err := multibandaCollection.FindOne(context.TODO(), filter).Err()
 	if err == nil {
 		return true, nil
 	}
@@ -133,6 +156,23 @@ func (r *multibandaRepository) ExistsByCompanyDeviceSoftwareOsVersion(
 		return false, nil
 	}
 	return false, err
+}
+
+func (r *multibandaRepository) Update(id string, multibanda *models.Multibanda) error {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	filter, update := queries.UpdateMultibanda(multibanda, oid)
+	res, err := multibandaCollection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return err
+	}
+	if res.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+	return nil
 }
 
 func (r *multibandaRepository) Delete(id primitive.ObjectID) error {

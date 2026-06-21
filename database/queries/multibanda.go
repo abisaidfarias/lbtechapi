@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/abisaidfarias/lbtechapi/models"
+	"github.com/abisaidfarias/lbtechapi/utils"
 )
 
 func GetMultibandaByCompanyDeviceSoftwareOsVersion(
@@ -20,6 +21,18 @@ func GetMultibandaByCompanyDeviceSoftwareOsVersion(
 		"software_version": softwareVersion,
 		"os_version":       osVersion,
 	}
+}
+
+func GetMultibandaByCompanyDeviceSoftwareOsVersionExcludingID(
+	excludeID primitive.ObjectID,
+	companyID primitive.ObjectID,
+	deviceID primitive.ObjectID,
+	softwareVersion string,
+	osVersion string,
+) primitive.M {
+	filter := GetMultibandaByCompanyDeviceSoftwareOsVersion(companyID, deviceID, softwareVersion, osVersion)
+	filter["_id"] = primitive.M{"$ne": excludeID}
+	return filter
 }
 
 func GetMultibandaById(oid primitive.ObjectID) primitive.M {
@@ -109,11 +122,7 @@ func GetMultibandas(
 			primitive.E{Key: "path", Value: "$brand"},
 			primitive.E{Key: "preserveNullAndEmptyArrays", Value: true},
 		}}}
-	sort := bson.D{
-		primitive.E{Key: "$sort", Value: bson.D{
-			primitive.E{Key: "planning_date", Value: -1},
-			primitive.E{Key: "created_date", Value: -1},
-		}}}
+	sort := SortByOngoingStatusThenPlanningDateDesc()
 
 	pipeline := mongo.Pipeline{}
 	if hasPreMatch {
@@ -178,6 +187,42 @@ func GetMultibandaExpandedById(oid primitive.ObjectID) mongo.Pipeline {
 		lookupStageCompany, unwindStageCompany,
 		lookupStageBrand, unwindStageBrand,
 	}
+}
+
+func UpdateMultibanda(multibanda *models.Multibanda, oid primitive.ObjectID) (primitive.M, primitive.D) {
+	filter := primitive.M{"_id": oid}
+	update := primitive.D{
+		{Key: "$set", Value: primitive.D{
+			{Key: "company", Value: multibanda.Company},
+			{Key: "device", Value: multibanda.Device},
+			{Key: "brand", Value: multibanda.Brand},
+			{Key: "software_version", Value: multibanda.SoftwareVersion},
+			{Key: "hardware_version", Value: multibanda.HardwareVersion},
+			{Key: "os_version", Value: multibanda.OsVersion},
+			{Key: "os_version_view", Value: multibanda.OsVersionView},
+			{Key: "type", Value: multibanda.Type},
+			{Key: "evaluation_type", Value: multibanda.EvaluationType},
+			{Key: "current_phase", Value: multibanda.CurrentPhase},
+			{Key: "status", Value: multibanda.Status},
+			{Key: "dashboard_phase", Value: multibanda.DashBoardPhase},
+			{Key: "planning_date", Value: utils.NormalizeCalendarDateUTC(multibanda.PlanningDate)},
+			{Key: "sample_start_date", Value: utils.OptionalDateForBSON(multibanda.SampleStartDate)},
+			{Key: "sample_end_date", Value: utils.OptionalDateForBSON(multibanda.SampleEndDate)},
+			{Key: "test_start_date", Value: utils.NormalizeCalendarDateUTC(multibanda.TestStartDate)},
+			{Key: "test_end_date", Value: utils.NormalizeCalendarDateUTC(multibanda.TestEndDate)},
+			{Key: "under_start_date", Value: utils.NormalizeCalendarDateUTC(multibanda.UnderStartDate)},
+			{Key: "under_end_date", Value: utils.NormalizeCalendarDateUTC(multibanda.UnderEndDate)},
+			{Key: "completed_date", Value: utils.NormalizeCalendarDateUTC(multibanda.CompletedDate)},
+			{Key: "test_report_url", Value: multibanda.TestReportUrl},
+			{Key: "multiband_certificate_url", Value: multibanda.MultibandCertificateUrl},
+			{Key: "subtel_certificate_number", Value: multibanda.SubtelCertificateNumber},
+			{Key: "comment", Value: multibanda.Comment},
+			{Key: "need_reflash", Value: multibanda.NeedReflash},
+			{Key: "comments_reflash", Value: multibanda.CommentsReflash},
+			{Key: "is_internal_project", Value: multibanda.IsInternalProject},
+		}},
+	}
+	return filter, update
 }
 
 func UpdateMultibandaPhaseChange(multibanda *models.Multibanda, oid primitive.ObjectID) (primitive.M, primitive.D) {

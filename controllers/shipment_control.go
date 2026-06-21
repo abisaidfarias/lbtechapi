@@ -13,6 +13,7 @@ import (
 type IShipmentControlController interface {
 	Create() gin.HandlerFunc
 	Get() gin.HandlerFunc
+	Update() gin.HandlerFunc
 	GetAvailableMultibandas() gin.HandlerFunc
 	PhaseChange() gin.HandlerFunc
 	Delete() gin.HandlerFunc
@@ -106,6 +107,51 @@ func (c *shipmentControlController) Get() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, items)
+	}
+}
+
+// Update godoc
+// @Summary Actualizar Shipment Control
+// @Description Actualiza todos los campos editables del control de embarque. Solo usuarios internos.
+// @Tags ShipmentControl
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID del Shipment Control"
+// @Param shipmentControl body request.ShipmentControl true "Datos actualizados del control de embarque"
+// @Success 200 "Control actualizado exitosamente"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 403 {object} map[string]string "Solo usuarios internos"
+// @Failure 404 {object} map[string]string "Control no encontrado"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /shipment-control/{id} [put]
+func (c *shipmentControlController) Update() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		userID := ctx.MustGet("userID").(string)
+		var body request.ShipmentControl
+
+		if err := ctx.ShouldBindJSON(&body); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if err := c.shipmentControlService.Update(id, &body, userID); err != nil {
+			switch {
+			case utils.IsValidationError(err):
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			case errors.Is(err, utils.ErrorForbidden):
+				ctx.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+				return
+			default:
+				handleErrorResponse(ctx, err)
+				return
+			}
+		}
+
+		ctx.Status(http.StatusOK)
 	}
 }
 
