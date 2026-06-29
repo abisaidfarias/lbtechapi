@@ -13,23 +13,27 @@ func TestValidateMultibandaEvaluationTypesRejectsEmpty(t *testing.T) {
 	}
 }
 
-func TestValidateMultibandaEvaluationTypesRejectsMutuallyExclusiveValues(t *testing.T) {
-	err := enums.ValidateMultibandaEvaluationTypes([]string{
-		enums.MultibandaEvalSAEMultibandaCertificate,
-		enums.MultibandaEvalSAEOnlyCMASTest,
-	})
-	if err == nil {
-		t.Fatal("expected error for mutually exclusive evaluation types")
-	}
-}
-
-func TestValidateMultibandaEvaluationTypesAllowsSismateCombination(t *testing.T) {
+func TestValidateMultibandaEvaluationTypesRejectsMultipleValues(t *testing.T) {
 	err := enums.ValidateMultibandaEvaluationTypes([]string{
 		enums.MultibandaEvalSAEMultibandaCertificate,
 		enums.MultibandaEvalSismatePeru,
 	})
-	if err != nil {
-		t.Fatalf("expected valid combination, got %v", err)
+	if err == nil {
+		t.Fatal("expected error for multiple evaluation types")
+	}
+}
+
+func TestValidateMultibandaEvaluationTypesAllowsSingleValue(t *testing.T) {
+	cases := []string{
+		enums.MultibandaEvalSAEMultibandaCertificate,
+		enums.MultibandaEvalSAEOnlyCMASTest,
+		enums.MultibandaEvalSismatePeru,
+		enums.MultibandaEvalArcotelEcuador,
+	}
+	for _, code := range cases {
+		if err := enums.ValidateMultibandaEvaluationTypes([]string{code}); err != nil {
+			t.Fatalf("expected valid single value %q, got %v", code, err)
+		}
 	}
 }
 

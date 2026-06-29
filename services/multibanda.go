@@ -1,6 +1,7 @@
 package services
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"strings"
@@ -24,6 +25,7 @@ type IMultibandaService interface {
 	Delete(string, string) (*responses.DeleteProcessResult, error)
 	PatchRequestDelete(string, *request.RequestDeletePatch, string) (*responses.DeleteProcessResult, error)
 	RejectRequestDelete(string, string) (*responses.DeleteProcessResult, error)
+	ExportMultibanda(string) (bytes.Buffer, error)
 }
 
 type multibandaService struct {

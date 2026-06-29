@@ -32,13 +32,13 @@ func NewStorageController(storageService services.IStorageService) IStorageContr
 
 // UploadFile godoc
 // @Summary Cargar archivo
-// @Description Sube un archivo al storage (máximo 50 MB)
+// @Description Sube un archivo al storage (máximo 50 MB). La key en S3 es única; la respuesta incluye el nombre original del archivo.
 // @Tags Storage
 // @Accept multipart/form-data
 // @Produce json
 // @Security Bearer
 // @Param file formData file true "Archivo a subir (máx. 50 MB)"
-// @Success 201 {object} map[string]string "URL del archivo subido"
+// @Success 201 {object} responses.UploadFileResponse "Archivo subido"
 // @Failure 400 {object} map[string]string "Archivo inválido"
 // @Failure 401 {object} map[string]string "No autorizado"
 // @Failure 500 {object} map[string]string "Error interno del servidor"
@@ -76,11 +76,15 @@ func (c *storageController) UploadFile() gin.HandlerFunc {
 			return
 		}
 
-		url, err := c.storageService.UploadFile(byteContainer)
+		result, err := c.storageService.UploadUserFile(byteContainer, form.File.Filename)
 		if err != nil {
+			if utils.IsValidationError(err) {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
 			handleErrorResponse(ctx, err)
 			return
 		}
-		ctx.JSON(http.StatusCreated, gin.H{"url": url})
+		ctx.JSON(http.StatusCreated, result)
 	}
 }

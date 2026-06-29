@@ -9,6 +9,18 @@ import (
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 )
 
+func TestFormatShipmentControlEmailDateUsesDashForEmpty(t *testing.T) {
+	if got := FormatShipmentControlEmailDate(time.Time{}); got != "-" {
+		t.Fatalf("expected dash for zero date, got %q", got)
+	}
+}
+
+func TestFormatMultibandaEmailDateUsesDashForEmpty(t *testing.T) {
+	if got := FormatMultibandaEmailDate(time.Time{}); got != "-" {
+		t.Fatalf("expected dash for zero date, got %q", got)
+	}
+}
+
 func TestResolveShipmentControlPhaseEmailKindCreate(t *testing.T) {
 	kind := ResolveShipmentControlPhaseEmailKind(utils.CREATE, nil, &request.ShipmentControlNotify{})
 	if kind != shipmentControlEmailCreate {
@@ -46,6 +58,22 @@ func TestGetShipmentControlNotificationSubjectIncludesRework(t *testing.T) {
 	)
 	if subject == "" {
 		t.Fatal("expected subject")
+	}
+}
+
+func TestBuildShipmentControlPhaseEmailDataIncludesCertificateNumbers(t *testing.T) {
+	notify := &request.ShipmentControlNotify{
+		SubtelCertificateNumber: "SUB-100",
+		OabiCertificate:         "OABI-200",
+	}
+	data := BuildShipmentControlPhaseEmailData(
+		notify, "XIAOMI", "2510ERA8BG", "Redmi Note 15 Pro+ 5G", "Android", "Camilo Espinoza", "completed", shipmentControlEmailComplete,
+	)
+	if data.MultibandaCertificateNumber != "SUB-100" {
+		t.Fatalf("multibanda cert: got %q", data.MultibandaCertificateNumber)
+	}
+	if data.OabiCertificate != "OABI-200" {
+		t.Fatalf("oabi cert: got %q", data.OabiCertificate)
 	}
 }
 

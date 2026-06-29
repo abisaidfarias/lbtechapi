@@ -4,6 +4,7 @@ package mapping
 
 import (
 
+	"strings"
 	"time"
 
 
@@ -226,20 +227,34 @@ func ShipmentControlToNotify(
 		UnderRevisionStartDate:  shipment.UnderRevisionStartDate,
 		UnderRevisionEndDate:    shipment.UnderRevisionEndDate,
 		CompletedDate:           shipment.CompletedDate,
-		OabiCertificate:         shipment.OabiCertificate,
+		OabiCertificate:         firstNonEmpty(shipment.OabiCertificateNumber, shipment.OabiCertificate),
 		Comment:                 shipment.Comment,
 		SubtelCertificateUrl:    shipment.SubtelCertificateUrl,
 		OabiCertificateUrl:      shipment.OabiCertificateUrl,
 	}
 	if multibanda != nil {
-		notify.SubtelCertificateNumber = multibanda.SubtelCertificateNumber
+		notify.SubtelCertificateNumber = firstNonEmpty(
+			shipment.SubtelCertificateNumber,
+			multibanda.SubtelCertificateNumber,
+		)
 		notify.MultibandCertificateUrl = multibanda.MultibandCertificateUrl
 		notify.SoftwareVersion = multibanda.SoftwareVersion
 		notify.HardwareVersion = multibanda.HardwareVersion
 		notify.OsVersion = multibanda.OsVersion
 		notify.OsVersionView = multibanda.OsVersionView
+	} else {
+		notify.SubtelCertificateNumber = strings.TrimSpace(shipment.SubtelCertificateNumber)
 	}
 	return notify
+}
+
+func firstNonEmpty(values ...string) string {
+	for _, v := range values {
+		if s := strings.TrimSpace(v); s != "" {
+			return s
+		}
+	}
+	return ""
 }
 
 func ToShipmentControlDeviceSummary(multibanda responses.MultibandaExpanded) responses.ShipmentControlDeviceSummary {

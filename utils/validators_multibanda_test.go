@@ -27,6 +27,29 @@ func TestValidateMultibandaUpdateRequestRejectsInvalidPhase(t *testing.T) {
 	}
 }
 
+func TestValidateMultibandaUpdateRequestAllowsArcotelEcuador(t *testing.T) {
+	req := validMultibandaRequest()
+	req.CurrentPhase = 2
+	req.EvaluationType = []string{enums.MultibandaEvalArcotelEcuador}
+
+	if err := utils.ValidateMultibandaUpdateRequest(req); err != nil {
+		t.Fatalf("expected valid update request with arcotel_ecuador, got %v", err)
+	}
+}
+
+func TestValidateMultibandaUpdateRequestRejectsMultipleEvaluationTypes(t *testing.T) {
+	req := validMultibandaRequest()
+	req.CurrentPhase = 2
+	req.EvaluationType = []string{
+		enums.MultibandaEvalSAEMultibandaCertificate,
+		enums.MultibandaEvalArcotelEcuador,
+	}
+
+	if err := utils.ValidateMultibandaUpdateRequest(req); !utils.IsValidationError(err) {
+		t.Fatalf("expected validation error for multiple evaluation types on update, got %v", err)
+	}
+}
+
 func TestValidateMultibandaCreateRequestSuccess(t *testing.T) {
 	req := validMultibandaRequest()
 
@@ -63,23 +86,20 @@ func TestValidateMultibandaEvaluationTypesRejectsEmpty(t *testing.T) {
 	}
 }
 
-func TestValidateMultibandaEvaluationTypesRejectsMutuallyExclusiveValues(t *testing.T) {
+func TestValidateMultibandaEvaluationTypesRejectsMultipleValues(t *testing.T) {
 	err := enums.ValidateMultibandaEvaluationTypes([]string{
 		enums.MultibandaEvalSAEMultibandaCertificate,
 		enums.MultibandaEvalSAEOnlyCMASTest,
 	})
 	if err == nil {
-		t.Fatal("expected error for mutually exclusive evaluation types")
+		t.Fatal("expected error for multiple evaluation types")
 	}
 }
 
-func TestValidateMultibandaEvaluationTypesAllowsSismateCombination(t *testing.T) {
-	err := enums.ValidateMultibandaEvaluationTypes([]string{
-		enums.MultibandaEvalSAEMultibandaCertificate,
-		enums.MultibandaEvalSismatePeru,
-	})
+func TestValidateMultibandaEvaluationTypesAllowsArcotelEcuador(t *testing.T) {
+	err := enums.ValidateMultibandaEvaluationTypes([]string{enums.MultibandaEvalArcotelEcuador})
 	if err != nil {
-		t.Fatalf("expected valid combination, got %v", err)
+		t.Fatalf("expected valid arcotel evaluation type, got %v", err)
 	}
 }
 

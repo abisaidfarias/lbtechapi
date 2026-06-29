@@ -16,6 +16,7 @@ const (
 	MultibandaEvalSAEMultibandaCertificate = "sae_multibanda_certificate"
 	MultibandaEvalSAEOnlyCMASTest          = "sae_only_cmas_test"
 	MultibandaEvalSismatePeru              = "sismate_peru"
+	MultibandaEvalArcotelEcuador           = "arcotel_ecuador"
 )
 
 var allowedMultibandaTypes = map[string]struct{}{
@@ -30,6 +31,7 @@ var allowedMultibandaEvaluationTypes = map[string]struct{}{
 	MultibandaEvalSAEMultibandaCertificate: {},
 	MultibandaEvalSAEOnlyCMASTest:          {},
 	MultibandaEvalSismatePeru:              {},
+	MultibandaEvalArcotelEcuador:           {},
 }
 
 var AllowedMultibandaTypes = []string{
@@ -44,6 +46,7 @@ var AllowedMultibandaEvaluationTypes = []string{
 	MultibandaEvalSAEMultibandaCertificate,
 	MultibandaEvalSAEOnlyCMASTest,
 	MultibandaEvalSismatePeru,
+	MultibandaEvalArcotelEcuador,
 }
 
 var MultibandaTypeLabels = map[string]string{
@@ -58,6 +61,7 @@ var MultibandaEvaluationTypeLabels = map[string]string{
 	MultibandaEvalSAEMultibandaCertificate: "SAE Multibanda Certificate",
 	MultibandaEvalSAEOnlyCMASTest:          "SAE Only CMAS Test",
 	MultibandaEvalSismatePeru:              "Sismate Peru",
+	MultibandaEvalArcotelEcuador:           "ARCOTEL (Ecuador)",
 }
 
 var MultibandaPhaseLabels = map[int]string{
@@ -84,26 +88,15 @@ func ValidateMultibandaPhase(phase int) error {
 
 func ValidateMultibandaEvaluationTypes(values []string) error {
 	if len(values) == 0 {
-		return fmt.Errorf("evaluation_type must include at least one value")
+		return fmt.Errorf("evaluation_type must include exactly one value")
+	}
+	if len(values) > 1 {
+		return fmt.Errorf("evaluation_type must include exactly one value (single selection)")
 	}
 
-	hasSAEMultibanda := false
-	hasSAEOnlyCMAS := false
-
-	for _, value := range values {
-		if _, ok := allowedMultibandaEvaluationTypes[value]; !ok {
-			return fmt.Errorf("invalid evaluation_type value %q: must be one of %v", value, AllowedMultibandaEvaluationTypes)
-		}
-		switch value {
-		case MultibandaEvalSAEMultibandaCertificate:
-			hasSAEMultibanda = true
-		case MultibandaEvalSAEOnlyCMASTest:
-			hasSAEOnlyCMAS = true
-		}
-	}
-
-	if hasSAEMultibanda && hasSAEOnlyCMAS {
-		return fmt.Errorf("evaluation_type cannot include both %q and %q", MultibandaEvalSAEMultibandaCertificate, MultibandaEvalSAEOnlyCMASTest)
+	value := values[0]
+	if _, ok := allowedMultibandaEvaluationTypes[value]; !ok {
+		return fmt.Errorf("invalid evaluation_type value %q: must be one of %v", value, AllowedMultibandaEvaluationTypes)
 	}
 
 	return nil

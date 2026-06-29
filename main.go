@@ -321,6 +321,8 @@ func main() {
 		export := v1.Group("/export")
 		{
 			export.GET("/homologation", homologationController.ExportHomologation())
+			export.GET("/multibanda", multibandaController.ExportMultibanda())
+			export.GET("/shipment-control", shipmentControlController.ExportShipmentControl())
 			export.POST("/device-tracking", deviceTrackingController.ExportDeviceTracking())
 			export.GET("/fail-test/:id", homologationController.ExportFailTest())
 		}

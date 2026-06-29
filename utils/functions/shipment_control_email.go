@@ -27,7 +27,7 @@ func ShipmentControlPhaseLabel(phase int) string {
 
 func FormatShipmentControlEmailDate(date time.Time) string {
 	if date.IsZero() {
-		return "N/A"
+		return "-"
 	}
 	return fmt.Sprintf("%02d/%02d/%d", date.Day(), date.Month(), date.Year())
 }

@@ -2,7 +2,9 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/abisaidfarias/lbtechapi/services"
 	"github.com/abisaidfarias/lbtechapi/utils"
@@ -19,6 +21,7 @@ type IShipmentControlController interface {
 	Delete() gin.HandlerFunc
 	PatchRequestDelete() gin.HandlerFunc
 	RejectRequestDelete() gin.HandlerFunc
+	ExportShipmentControl() gin.HandlerFunc
 }
 
 type shipmentControlController struct {
@@ -353,5 +356,37 @@ func (c *shipmentControlController) RejectRequestDelete() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, result)
+	}
+}
+
+// ExportShipmentControl godoc
+// @Summary Exportar Shipment Control a Excel
+// @Description Exporta todos los controles de embarque visibles para el usuario a un archivo Excel
+// @Tags ShipmentControl
+// @Produce application/octet-stream
+// @Security Bearer
+// @Success 200 {file} binary "Archivo Excel"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 403 {object} map[string]string "Sin permiso"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /export/shipment-control [get]
+func (c *shipmentControlController) ExportShipmentControl() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userID := ctx.MustGet("userID").(string)
+		file, err := c.shipmentControlService.ExportShipmentControl(userID)
+		if err != nil {
+			if errors.Is(err, utils.ErrorForbidden) {
+				ctx.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+				return
+			}
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		downloadName := fmt.Sprintf("%s%s", time.Now().UTC().Format("01-02-2006 15:04:05"), ".xlsx")
+		ctx.Header("Content-Description", "File Transfer")
+		ctx.Header("Content-Disposition", "attachment; filename="+downloadName)
+		ctx.Header("Content-Type", "application/octet-stream")
+		ctx.Header("Content-Transfer-Encoding", "binary")
+		ctx.Data(http.StatusOK, "application/octet-stream", file.Bytes())
 	}
 }

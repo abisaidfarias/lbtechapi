@@ -23,3 +23,16 @@ func TestValidateUploadFileSizeRejectsEmpty(t *testing.T) {
 		t.Fatalf("expected validation error, got %v", err)
 	}
 }
+
+func TestValidateUploadContentTypeAllowsPDF(t *testing.T) {
+	pdf := []byte("%PDF-1.4 test")
+	if err := utils.ValidateUploadContentType(pdf); err != nil {
+		t.Fatalf("expected pdf allowed, got %v", err)
+	}
+}
+
+func TestValidateUploadContentTypeRejectsUnknown(t *testing.T) {
+	if err := utils.ValidateUploadContentType([]byte{0x00, 0x01, 0x02}); !utils.IsValidationError(err) {
+		t.Fatalf("expected validation error, got %v", err)
+	}
+}

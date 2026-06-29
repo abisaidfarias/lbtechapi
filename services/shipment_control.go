@@ -4,6 +4,8 @@ package services
 
 import (
 
+	"bytes"
+
 	"fmt"
 	"log"
 	"strings"
@@ -47,6 +49,8 @@ type IShipmentControlService interface {
 	PatchRequestDelete(string, *request.RequestDeletePatch, string) (*responses.DeleteProcessResult, error)
 
 	RejectRequestDelete(string, string) (*responses.DeleteProcessResult, error)
+
+	ExportShipmentControl(string) (bytes.Buffer, error)
 
 }
 
