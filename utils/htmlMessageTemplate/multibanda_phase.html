@@ -1,9 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Multibanda Phase Notification</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:AllowPNG/>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <style type="text/css">
+    v\:* { behavior: url(#default#VML); display: inline-block; }
+  </style>
+  <![endif]-->
 </head>
 <body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, Helvetica, sans-serif; color:#1f2937;">
   <table width="100%" cellpadding="0" cellspacing="0" style="padding:24px 0;">
@@ -156,35 +169,15 @@
             <td style="padding:0 32px 32px 32px;">
               <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                 <tr>
-                  <td style="padding:0 12px 12px 0; vertical-align:top;">
-                    <a href="https://lbonetrack.com/"
-                       style="display:inline-block; background:#8DB319; color:#ffffff; text-decoration:none; padding:12px 22px; font-weight:bold; border-radius:6px;">
-                       View in Platform
-                    </a>
-                  </td>
+                  {{emailButton "https://lbonetrack.com/" "View in Platform" "#8DB319"}}
                   {{ if .TestReportURL }}
-                  <td style="padding:0 12px 12px 0; vertical-align:top;">
-                    <a href="{{ .TestReportURL }}" target="_blank" rel="noopener"
-                       style="display:inline-block; background:#0b1736; color:#ffffff; text-decoration:none; padding:12px 22px; font-weight:bold; border-radius:6px;">
-                       Download Test Report
-                    </a>
-                  </td>
+                  {{emailButton .TestReportURL "Download Test Report" "#0b1736"}}
                   {{ end }}
                   {{ if .MultibandCertificateURL }}
-                  <td style="padding:0 12px 12px 0; vertical-align:top;">
-                    <a href="{{ .MultibandCertificateURL }}" target="_blank" rel="noopener"
-                       style="display:inline-block; background:#0b1736; color:#ffffff; text-decoration:none; padding:12px 22px; font-weight:bold; border-radius:6px;">
-                       Download Multiband Certificate
-                    </a>
-                  </td>
+                  {{emailButton .MultibandCertificateURL "Download Multiband Certificate" "#0b1736"}}
                   {{ end }}
                   {{ if .ReflashURL }}
-                  <td style="padding:0 12px 12px 0; vertical-align:top;">
-                    <a href="{{ .ReflashURL }}" target="_blank" rel="noopener"
-                       style="display:inline-block; background:#0b1736; color:#ffffff; text-decoration:none; padding:12px 22px; font-weight:bold; border-radius:6px;">
-                       Reflash
-                    </a>
-                  </td>
+                  {{emailButton .ReflashURL "Reflash" "#0b1736"}}
                   {{ end }}
                 </tr>
               </table>

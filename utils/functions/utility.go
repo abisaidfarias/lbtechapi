@@ -395,7 +395,7 @@ type MultibandaPhaseEmailData struct {
 }
 
 func RenderMultibandaPhaseEmailHTML(data MultibandaPhaseEmailData, templatePath string) ([]byte, error) {
-	t, err := template.ParseFiles(templatePath)
+	t, err := parseNotificationEmailTemplate(templatePath)
 	if err != nil {
 		return nil, err
 	}
@@ -460,7 +460,7 @@ type ShipmentControlPhaseEmailData struct {
 }
 
 func RenderShipmentControlPhaseEmailHTML(data ShipmentControlPhaseEmailData, templatePath string) ([]byte, error) {
-	t, err := template.ParseFiles(templatePath)
+	t, err := parseNotificationEmailTemplate(templatePath)
 	if err != nil {
 		return nil, err
 	}
