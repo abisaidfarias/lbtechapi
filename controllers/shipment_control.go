@@ -22,6 +22,8 @@ type IShipmentControlController interface {
 	PatchRequestDelete() gin.HandlerFunc
 	RejectRequestDelete() gin.HandlerFunc
 	ExportShipmentControl() gin.HandlerFunc
+	BulkValidate() gin.HandlerFunc
+	BulkConfirm() gin.HandlerFunc
 }
 
 type shipmentControlController struct {
@@ -388,5 +390,97 @@ func (c *shipmentControlController) ExportShipmentControl() gin.HandlerFunc {
 		ctx.Header("Content-Type", "application/octet-stream")
 		ctx.Header("Content-Transfer-Encoding", "binary")
 		ctx.Data(http.StatusOK, "application/octet-stream", file.Bytes())
+	}
+}
+
+// BulkValidate godoc
+// @Summary Validar carga masiva de Shipment Control
+// @Description Valida un CSV de precarga, resuelve multibanda y certificado Subtel por fila
+// @Tags ShipmentControl
+// @Accept multipart/form-data
+// @Produce json
+// @Security Bearer
+// @Param company query string false "Company ID (requerido para usuarios internos)"
+// @Param file formData file true "Archivo CSV"
+// @Success 200 {object} responses.ShipmentControlBulkValidateResponse "Resultado de validación por fila"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 403 {object} map[string]string "Sin permiso"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /shipment-control/bulk/validate [post]
+func (c *shipmentControlController) BulkValidate() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userID := ctx.MustGet("userID").(string)
+		company := ctx.Query("company")
+
+		fileHeader, err := ctx.FormFile("file")
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "file is required"})
+			return
+		}
+
+		response, err := c.shipmentControlService.BulkValidate(fileHeader, userID, company)
+		if err != nil {
+			switch {
+			case utils.IsValidationError(err):
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			case errors.Is(err, utils.ErrorForbidden):
+				ctx.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+				return
+			default:
+				handleErrorResponse(ctx, err)
+				return
+			}
+		}
+
+		ctx.JSON(http.StatusOK, response)
+	}
+}
+
+// BulkConfirm godoc
+// @Summary Confirmar carga masiva de Shipment Control
+// @Description Crea shipment controls a partir de filas validadas con imei_file_url
+// @Tags ShipmentControl
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param company query string false "Company ID (requerido para usuarios internos)"
+// @Param country query string false "Country ID (requerido para usuarios internos)"
+// @Param body body request.ShipmentControlBulkConfirm true "Filas a confirmar"
+// @Success 200 {object} responses.ShipmentControlBulkConfirmResponse "Resultado por fila"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 403 {object} map[string]string "Sin permiso"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /shipment-control/bulk/confirm [post]
+func (c *shipmentControlController) BulkConfirm() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userID := ctx.MustGet("userID").(string)
+		company := ctx.Query("company")
+		country := ctx.Query("country")
+
+		var body request.ShipmentControlBulkConfirm
+		if err := ctx.ShouldBindJSON(&body); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		response, err := c.shipmentControlService.BulkConfirm(&body, userID, company, country)
+		if err != nil {
+			switch {
+			case utils.IsValidationError(err):
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			case errors.Is(err, utils.ErrorForbidden):
+				ctx.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+				return
+			default:
+				handleErrorResponse(ctx, err)
+				return
+			}
+		}
+
+		ctx.JSON(http.StatusOK, response)
 	}
 }

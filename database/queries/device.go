@@ -10,6 +10,10 @@ import (
 func GetDeviceById(oid primitive.ObjectID) primitive.M {
 	return primitive.M{"_id": oid}
 }
+
+func GetDevicesByTechnicalModel(technicalModel string) primitive.M {
+	return primitive.M{"technical_model": technicalModel}
+}
 func GetDevicesExpanded(brands []primitive.ObjectID) []bson.D {
 	var pipeline mongo.Pipeline
 

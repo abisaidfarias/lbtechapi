@@ -16,6 +16,7 @@ type IDeviceRepository interface {
 	Create(*models.Device) (*responses.DeviceExpanded, error)
 	Get(brands []primitive.ObjectID) ([]*responses.DeviceExpanded, error)
 	GetById(string) (*responses.Device, error)
+	FindByTechnicalModel(string) ([]*responses.Device, error)
 	Update(string, *models.Device) error
 	Delete(primitive.ObjectID) error
 }
@@ -81,6 +82,26 @@ func (r *deviceRepository) GetById(id string) (*responses.Device, error) {
 
 	return &result, nil
 }
+
+func (r *deviceRepository) FindByTechnicalModel(technicalModel string) ([]*responses.Device, error) {
+	cursor, err := deviceCollection.Find(context.TODO(), queries.GetDevicesByTechnicalModel(technicalModel))
+	if err != nil {
+		return nil, err
+	}
+
+	devices := []*responses.Device{}
+	for cursor.Next(context.TODO()) {
+		var device responses.Device
+		if err := cursor.Decode(&device); err != nil {
+			return nil, err
+		}
+		devices = append(devices, &device)
+	}
+	cursor.Close(context.TODO())
+
+	return devices, nil
+}
+
 func (r *deviceRepository) Update(id string, device *models.Device) error {
 
 	oid, err := primitive.ObjectIDFromHex(id)

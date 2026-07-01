@@ -20,6 +20,7 @@ type IMultibandaRepository interface {
 	GetByExternal(primitive.ObjectID, []primitive.ObjectID) ([]*responses.MultibandaExpanded, error)
 	PhaseChange(string, *models.Multibanda) error
 	GetByIdExpanded(primitive.ObjectID) (*responses.MultibandaExpanded, error)
+	FindApprovedByCompanyDeviceSoftwareVersion(primitive.ObjectID, primitive.ObjectID, string, []primitive.ObjectID) ([]*responses.MultibandaExpanded, error)
 	ExistsByCompanyDeviceSoftwareOsVersion(primitive.ObjectID, primitive.ObjectID, string, string) (bool, error)
 	ExistsByCompanyDeviceSoftwareOsVersionExcludingID(primitive.ObjectID, primitive.ObjectID, primitive.ObjectID, string, string) (bool, error)
 	Update(string, *models.Multibanda) error
@@ -116,6 +117,20 @@ func (r *multibandaRepository) GetByIdExpanded(multibandaID primitive.ObjectID) 
 	}
 
 	return nil, nil
+}
+
+func (r *multibandaRepository) FindApprovedByCompanyDeviceSoftwareVersion(
+	companyID primitive.ObjectID,
+	deviceID primitive.ObjectID,
+	softwareVersion string,
+	brands []primitive.ObjectID,
+) ([]*responses.MultibandaExpanded, error) {
+	return r.list(queries.GetApprovedMultibandasByCompanyDeviceSoftwareVersion(
+		companyID,
+		deviceID,
+		softwareVersion,
+		brands,
+	))
 }
 
 func (r *multibandaRepository) ExistsByCompanyDeviceSoftwareOsVersion(

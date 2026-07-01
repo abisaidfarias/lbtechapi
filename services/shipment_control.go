@@ -8,6 +8,7 @@ import (
 
 	"fmt"
 	"log"
+	"mime/multipart"
 	"strings"
 
 	"github.com/abisaidfarias/lbtechapi/models"
@@ -52,6 +53,10 @@ type IShipmentControlService interface {
 
 	ExportShipmentControl(string) (bytes.Buffer, error)
 
+	BulkValidate(*multipart.FileHeader, string, string) (*responses.ShipmentControlBulkValidateResponse, error)
+
+	BulkConfirm(*request.ShipmentControlBulkConfirm, string, string, string) (*responses.ShipmentControlBulkConfirmResponse, error)
+
 }
 
 
@@ -61,6 +66,8 @@ type shipmentControlService struct {
 	shipmentControlRepository repositories.IShipmentControlRepository
 
 	multibandaRepository      repositories.IMultibandaRepository
+
+	deviceRepository          repositories.IDeviceRepository
 
 	userRepository            repositories.IUserRepository
 
@@ -78,6 +85,8 @@ func NewShipmentControlService(
 
 	multibandaRepository repositories.IMultibandaRepository,
 
+	deviceRepository repositories.IDeviceRepository,
+
 	userRepository repositories.IUserRepository,
 
 	companyRepository repositories.ICompanyRepository,
@@ -91,6 +100,8 @@ func NewShipmentControlService(
 		shipmentControlRepository: shipmentControlRepository,
 
 		multibandaRepository:      multibandaRepository,
+
+		deviceRepository:          deviceRepository,
 
 		userRepository:            userRepository,
 

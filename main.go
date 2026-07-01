@@ -148,7 +148,7 @@ var (
 	multibandaController controllers.IMultibandaController  = controllers.NewMultibandaController(multibandaService)
 
 	shipmentControlRepository repositories.IShipmentControlRepository = repositories.NewShipmentControlRepository(multibandaRepository)
-	shipmentControlService    services.IShipmentControlService        = services.NewShipmentControlService(shipmentControlRepository, multibandaRepository, userRepository, companyRepository, countryRepository)
+	shipmentControlService    services.IShipmentControlService        = services.NewShipmentControlService(shipmentControlRepository, multibandaRepository, deviceRepository, userRepository, companyRepository, countryRepository)
 	shipmentControlController controllers.IShipmentControlController  = controllers.NewShipmentControlController(shipmentControlService)
 )
 
@@ -382,6 +382,8 @@ func main() {
 		shipmentControl := v1.Group("/shipment-control")
 		{
 			shipmentControl.POST("", shipmentControlController.Create())
+			shipmentControl.POST("/bulk/validate", shipmentControlController.BulkValidate())
+			shipmentControl.POST("/bulk/confirm", shipmentControlController.BulkConfirm())
 			shipmentControl.GET("", shipmentControlController.Get())
 			shipmentControl.GET("/available-multibandas", shipmentControlController.GetAvailableMultibandas())
 			shipmentControl.PUT(":id", shipmentControlController.Update())
