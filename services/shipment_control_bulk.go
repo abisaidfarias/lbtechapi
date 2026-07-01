@@ -244,6 +244,9 @@ func (s *shipmentControlService) confirmBulkRow(
 		return result
 	}
 
+	result.TechnicalModel = multibanda.Device.TechnicalModel
+	result.SoftwareVersion = multibanda.SoftwareVersion
+
 	validationErrors := s.validateBulkMultibandaForConfirm(user, companyID, multibanda)
 	if len(validationErrors) > 0 {
 		result.Errors = validationErrors

@@ -38,6 +38,8 @@ type ShipmentControlBulkConfirmSummary struct {
 type ShipmentControlBulkConfirmResult struct {
 	RowNumber         int      `json:"row_number"`
 	Status            string   `json:"status"`
+	TechnicalModel    string   `json:"technical_model,omitempty"`
+	SoftwareVersion   string   `json:"software_version,omitempty"`
 	ShipmentControlID string   `json:"shipment_control_id,omitempty"`
 	Errors            []string `json:"errors,omitempty"`
 }
