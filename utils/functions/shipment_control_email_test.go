@@ -97,3 +97,16 @@ func TestBuildShipmentControlPhaseEmailDataIncludesImeiFileURLOnlyOnCreate(t *te
 		t.Fatalf("expected empty imei file url on phase email, got %q", phaseData.ImeiFileURL)
 	}
 }
+
+func TestRenderShipmentControlPhaseEmailHTML(t *testing.T) {
+	html, err := RenderShipmentControlPhaseEmailHTML(ShipmentControlPhaseEmailData{
+		MainMessage: "Test notification",
+		Year:        2026,
+	}, utils.TEMPLATE_SHIPMENT_CONTROL_PHASE_PATH)
+	if err != nil {
+		t.Fatalf("render shipment control email: %v", err)
+	}
+	if len(html) == 0 {
+		t.Fatal("expected non-empty html")
+	}
+}

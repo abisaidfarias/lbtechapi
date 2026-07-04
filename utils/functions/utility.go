@@ -186,6 +186,10 @@ func SendNotifications(toList []string, body bytes.Buffer) {
 
 	from := config.GetValue("EMAIL_FROM")
 	password := config.GetValue("EMAIL_PASSWORD")
+	smtpUser := config.GetValue("SMTP_USER")
+	if smtpUser == "" {
+		smtpUser = from
+	}
 
 	smtpHost := config.GetValue("SMTP_CLIENTE")
 	smtpPort := config.GetValue("EMAIL_PORT")
@@ -208,7 +212,7 @@ func SendNotifications(toList []string, body bytes.Buffer) {
 		println(err)
 	}
 
-	auth := LoginAuth(from, password)
+	auth := LoginAuth(smtpUser, password)
 
 	if err = c.Auth(auth); err != nil {
 		println(err)
@@ -283,6 +287,10 @@ func resolveBrandedEmailLogo(logoPNG []byte) template.URL {
 func sendBrandedHTMLEmail(toList []string, subject string, html []byte, logoPNG []byte, documentURL string) error {
 	from := config.GetValue("EMAIL_FROM")
 	password := config.GetValue("EMAIL_PASSWORD")
+	smtpUser := config.GetValue("SMTP_USER")
+	if smtpUser == "" {
+		smtpUser = from
+	}
 	smtpHost := config.GetValue("SMTP_CLIENTE")
 	smtpPort := config.GetValue("EMAIL_PORT")
 
@@ -318,7 +326,7 @@ func sendBrandedHTMLEmail(toList []string, subject string, html []byte, logoPNG 
 		return err
 	}
 
-	auth := LoginAuth(from, password)
+	auth := LoginAuth(smtpUser, password)
 	return smtp.SendMail(smtpHost+":"+smtpPort, auth, from, toList, msg.Bytes())
 }
 

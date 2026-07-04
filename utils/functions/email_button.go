@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html"
 	"html/template"
+	"path/filepath"
 )
 
 const (
@@ -52,7 +53,8 @@ func RenderOutlookEmailButton(href, label, bgColor string) template.HTML {
 }
 
 func parseNotificationEmailTemplate(templatePath string) (*template.Template, error) {
-	return template.New("notificationEmail").Funcs(template.FuncMap{
+	// ParseFiles names templates after the file basename; the root name must match.
+	return template.New(filepath.Base(templatePath)).Funcs(template.FuncMap{
 		"emailButton": RenderOutlookEmailButton,
 	}).ParseFiles(templatePath)
 }

@@ -20,6 +20,7 @@ type Secrets struct {
 	EmailPassword string
 	EmailPort     string
 	SMTPClient    string
+	SMTPUser      string
 	MonthInterval string
 }
 
@@ -64,6 +65,7 @@ func LoadSecrets() (*Secrets, error) {
 		"EMAIL_PASSWORD":  &secrets.EmailPassword,
 		"EMAIL_PORT":      &secrets.EmailPort,
 		"SMTP_CLIENTE":    &secrets.SMTPClient,
+		"SMTP_USER":       &secrets.SMTPUser,
 		"MONTH_INTERVAL":  &secrets.MonthInterval,
 	}
 
@@ -93,6 +95,7 @@ func loadFromEnv() *Secrets {
 		EmailPassword: getEnv("EMAIL_PASSWORD", ""),
 		EmailPort:     getEnv("EMAIL_PORT", "587"),
 		SMTPClient:    getEnv("SMTP_CLIENTE", ""),
+		SMTPUser:      getEnv("SMTP_USER", ""),
 		MonthInterval: getEnv("MONTH_INTERVAL", "1"),
 	}
 }
@@ -135,6 +138,8 @@ func GetValue(key string) string {
 		return secrets.EmailPort
 	case "SMTP_CLIENTE":
 		return secrets.SMTPClient
+	case "SMTP_USER":
+		return secrets.SMTPUser
 	case "MONTH_INTERVAL":
 		return secrets.MonthInterval
 	default:
