@@ -127,9 +127,11 @@
                 {{ if .ShowCompletedFields }}
                 <tr>
                   <td style="padding:10px;"><strong>OABI Certificate</strong></td>
-                  <td style="padding:10px;">{{ .OabiCertificate }}</td>
-                  <td style="padding:10px;"><strong>Comments</strong></td>
-                  <td style="padding:10px;">{{ .Comments }}</td>
+                  <td colspan="3" style="padding:10px;">{{ .OabiCertificate }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px; vertical-align:top;"><strong>Comments</strong></td>
+                  <td colspan="3" style="padding:10px; line-height:1.6; white-space:pre-line;">{{ .Comments }}</td>
                 </tr>
                 {{ end }}
               </table>

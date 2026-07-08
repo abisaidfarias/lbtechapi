@@ -1,6 +1,7 @@
 package functions
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -49,15 +50,18 @@ func TestResolveShipmentControlPhaseEmailKindCompleteOnUnderRevisionEnd(t *testi
 	}
 }
 
-func TestGetShipmentControlNotificationSubjectIncludesRework(t *testing.T) {
+func TestGetShipmentControlNotificationSubjectIncludesSoftwareVersion(t *testing.T) {
 	_, subject := GetShipmentControlNotificationMessageAndSubject(
 		shipmentControlEmailCreate,
 		"XIAOMI",
-		"Redmi Note",
-		"RW-001",
+		"Redmi Note 15 5G",
+		"OS2.0.210.0.VMRMIXM",
 	)
 	if subject == "" {
 		t.Fatal("expected subject")
+	}
+	if !strings.Contains(subject, "SW version OS2.0.210.0.VMRMIXM") {
+		t.Fatalf("expected SW version in subject, got %q", subject)
 	}
 }
 
@@ -95,6 +99,54 @@ func TestBuildShipmentControlPhaseEmailDataIncludesImeiFileURLOnlyOnCreate(t *te
 	)
 	if phaseData.ImeiFileURL != "" {
 		t.Fatalf("expected empty imei file url on phase email, got %q", phaseData.ImeiFileURL)
+	}
+}
+
+func TestGetShipmentControlDeleteNotificationSubjectRequestDeleteInternal(t *testing.T) {
+	_, subject := GetShipmentControlDeleteNotificationMessageAndSubject(
+		ShipmentControlEmailRequestDeleteInternal,
+		"XIAOMI",
+		"Redmi Note",
+		"OS2.0.210.0.VMRMIXM",
+		"Xiaomi Chile",
+	)
+	if subject == "" {
+		t.Fatal("expected subject")
+	}
+}
+
+func TestGetShipmentControlDeleteNotificationSubjectDeleted(t *testing.T) {
+	msg, subject := GetShipmentControlDeleteNotificationMessageAndSubject(
+		ShipmentControlEmailDeleted,
+		"XIAOMI",
+		"Redmi Note",
+		"OS2.0.210.0.VMRMIXM",
+		"Xiaomi Chile",
+	)
+	if msg == "" || subject == "" {
+		t.Fatalf("expected message and subject, got %q / %q", msg, subject)
+	}
+}
+
+func TestFormatEmailCommentMultilinePreservesExplicitNewlines(t *testing.T) {
+	got := formatEmailCommentMultiline("line one\nline two")
+	if got != "line one\nline two" {
+		t.Fatalf("expected preserved newlines, got %q", got)
+	}
+}
+
+func TestFormatEmailCommentMultilineSplitsSpaceSeparatedNumbers(t *testing.T) {
+	got := formatEmailCommentMultiline("10 IMEI no subidos 32442 23234 242342")
+	want := "10 IMEI no subidos\n32442\n23234\n242342"
+	if got != want {
+		t.Fatalf("got %q, want %q", got, want)
+	}
+}
+
+func TestFormatEmailCommentMultilineLeavesPlainTextUntouched(t *testing.T) {
+	got := formatEmailCommentMultiline("Waiting for client feedback")
+	if got != "Waiting for client feedback" {
+		t.Fatalf("got %q", got)
 	}
 }
 

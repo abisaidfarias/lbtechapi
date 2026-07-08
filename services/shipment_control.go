@@ -613,6 +613,21 @@ func (s *shipmentControlService) Delete(id string, userID string) (*responses.De
 	if err := s.shipmentControlRepository.Delete(shipmentControlID); err != nil {
 		return nil, err
 	}
+
+	company, err := s.companyRepository.GetById(existing.Company.Hex())
+	if err != nil || company == nil {
+		return &responses.DeleteProcessResult{Deleted: true}, nil
+	}
+
+	countryName := ""
+	country, err := s.countryRepository.GetById(existing.Country.Hex())
+	if err == nil && country != nil {
+		countryName = country.Name
+	}
+
+	notify := mapping.ShipmentControlToNotify(existing, multibanda, company.Name, countryName)
+	go s.shipmentControlDeletedNotification(&notify, multibanda, existing.Company, userID)
+
 	return &responses.DeleteProcessResult{Deleted: true}, nil
 }
 
@@ -666,6 +681,9 @@ func (s *shipmentControlService) PatchRequestDelete(id string, body *request.Req
 	if err := s.shipmentControlRepository.SetRequestDelete(shipmentControlID, true); err != nil {
 		return nil, err
 	}
+
+	go s.shipmentControlRequestDeleteNotification(shipmentControlID, userID)
+
 	return &responses.DeleteProcessResult{RequestDelete: true}, nil
 }
 
@@ -773,7 +791,7 @@ func (s *shipmentControlService) ShipmentControlNotification(
 		emailKind,
 		multibanda.Brand.Name,
 		multibanda.Device.CommercialModel,
-		shipment.ReworkNumber,
+		notify.SoftwareVersion,
 	)
 	if subject == "" {
 		return
@@ -798,6 +816,157 @@ func (s *shipmentControlService) ShipmentControlNotification(
 		utils.LBOneTrackLogoPNG,
 	); err != nil {
 		log.Printf("shipment control notification email (%s): %v", notifyKey, err)
+	}
+}
+
+func (s *shipmentControlService) shipmentControlRequestDeleteNotification(
+	shipmentControlID primitive.ObjectID,
+	userID string,
+) {
+	user, err := s.userRepository.GetByID(userID)
+	if err != nil {
+		return
+	}
+
+	shipment, multibanda, companyName, countryName, ok := s.loadShipmentControlEmailContext(shipmentControlID)
+	if !ok {
+		return
+	}
+
+	notify := mapping.ShipmentControlToNotify(shipment, multibanda, companyName, countryName)
+	userName := fmt.Sprintf("%s %s", user.Name, user.LastName)
+
+	internalList, internalEmpty := functions.GetEmails(true, shipment.Company)
+	if !internalEmpty {
+		s.sendShipmentControlDeleteEmail(
+			&notify,
+			multibanda,
+			internalList,
+			functions.ShipmentControlEmailRequestDeleteInternal,
+			"LB Technology Team",
+			userName,
+			"request delete internal",
+		)
+	}
+
+	clientList, clientEmpty := functions.GetEmails(false, shipment.Company)
+	if !clientEmpty {
+		dearName := strings.TrimSpace(companyName)
+		if dearName == "" {
+			dearName = "Client"
+		}
+		s.sendShipmentControlDeleteEmail(
+			&notify,
+			multibanda,
+			clientList,
+			functions.ShipmentControlEmailRequestDeleteClient,
+			dearName,
+			userName,
+			"request delete client",
+		)
+	}
+}
+
+func (s *shipmentControlService) shipmentControlDeletedNotification(
+	notify *request.ShipmentControlNotify,
+	multibanda *responses.MultibandaExpanded,
+	companyID primitive.ObjectID,
+	userID string,
+) {
+	user, err := s.userRepository.GetByID(userID)
+	if err != nil {
+		return
+	}
+
+	clientList, clientEmpty := functions.GetEmails(false, companyID)
+	if clientEmpty {
+		return
+	}
+
+	userName := fmt.Sprintf("%s %s", user.Name, user.LastName)
+	dearName := strings.TrimSpace(notify.CompanyName)
+	if dearName == "" {
+		dearName = "Client"
+	}
+
+	s.sendShipmentControlDeleteEmail(
+		notify,
+		multibanda,
+		clientList,
+		functions.ShipmentControlEmailDeleted,
+		dearName,
+		userName,
+		"deleted",
+	)
+}
+
+func (s *shipmentControlService) loadShipmentControlEmailContext(
+	shipmentControlID primitive.ObjectID,
+) (*models.ShipmentControl, *responses.MultibandaExpanded, string, string, bool) {
+	shipment, err := s.shipmentControlRepository.GetById(shipmentControlID)
+	if err != nil || shipment == nil {
+		return nil, nil, "", "", false
+	}
+
+	multibanda, err := s.multibandaRepository.GetByIdExpanded(shipment.Multibanda)
+	if err != nil || multibanda == nil {
+		return nil, nil, "", "", false
+	}
+
+	company, err := s.companyRepository.GetById(shipment.Company.Hex())
+	if err != nil || company == nil {
+		return nil, nil, "", "", false
+	}
+
+	countryName := ""
+	country, err := s.countryRepository.GetById(shipment.Country.Hex())
+	if err == nil && country != nil {
+		countryName = country.Name
+	}
+
+	return shipment, multibanda, company.Name, countryName, true
+}
+
+func (s *shipmentControlService) sendShipmentControlDeleteEmail(
+	notify *request.ShipmentControlNotify,
+	multibanda *responses.MultibandaExpanded,
+	toList []string,
+	emailKind string,
+	dearName string,
+	userName string,
+	logKey string,
+) {
+	mainMessage, subject := functions.GetShipmentControlDeleteNotificationMessageAndSubject(
+		emailKind,
+		multibanda.Brand.Name,
+		multibanda.Device.CommercialModel,
+		notify.SoftwareVersion,
+		notify.CompanyName,
+	)
+	if subject == "" {
+		return
+	}
+
+	emailData := functions.BuildShipmentControlPhaseEmailData(
+		notify,
+		multibanda.Brand.Name,
+		multibanda.Device.TechnicalModel,
+		multibanda.Device.CommercialModel,
+		multibanda.Device.PlatformOs,
+		userName,
+		mainMessage,
+		emailKind,
+	)
+	emailData.ClientName = dearName
+
+	if err := functions.SendShipmentControlPhaseEmail(
+		toList,
+		subject,
+		emailData,
+		utils.TEMPLATE_SHIPMENT_CONTROL_PHASE_PATH,
+		utils.LBOneTrackLogoPNG,
+	); err != nil {
+		log.Printf("shipment control notification email (%s): %v", logKey, err)
 	}
 }
 
