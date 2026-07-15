@@ -3,15 +3,14 @@ package functions
 import (
 	"bytes"
 	"context"
-	"crypto/tls"
 	"encoding/base64"
 	"errors"
 	"fmt"
 	"html/template"
 	"io"
+	"log"
 	"math/rand"
 	"mime/multipart"
-	"net"
 	"net/smtp"
 	"net/textproto"
 	"os"
@@ -186,37 +185,14 @@ func SendNotifications(toList []string, body bytes.Buffer) {
 
 	from := config.GetValue("EMAIL_FROM")
 	password := config.GetValue("EMAIL_PASSWORD")
+	smtpUser := config.SMTPAuthUsername()
 
 	smtpHost := config.GetValue("SMTP_CLIENTE")
 	smtpPort := config.GetValue("EMAIL_PORT")
 
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%s", smtpHost, smtpPort))
-	if err != nil {
-		return
-	}
-
-	c, err := smtp.NewClient(conn, smtpHost)
-	if err != nil {
-		println(err)
-	}
-
-	tlsconfig := &tls.Config{
-		ServerName: smtpHost,
-	}
-
-	if err = c.StartTLS(tlsconfig); err != nil {
-		println(err)
-	}
-
-	auth := LoginAuth(from, password)
-
-	if err = c.Auth(auth); err != nil {
-		println(err)
-	}
-	// Sending email.
-	err = smtp.SendMail(smtpHost+":"+smtpPort, auth, from, toList, body.Bytes())
-	if err != nil {
-		fmt.Println(err)
+	auth := LoginAuth(smtpUser, password)
+	if err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, toList, body.Bytes()); err != nil {
+		log.Printf("SendNotifications: smtp send to %v via %s:%s failed: %v", toList, smtpHost, smtpPort, err)
 		return
 	}
 }
@@ -283,6 +259,7 @@ func resolveBrandedEmailLogo(logoPNG []byte) template.URL {
 func sendBrandedHTMLEmail(toList []string, subject string, html []byte, logoPNG []byte, documentURL string) error {
 	from := config.GetValue("EMAIL_FROM")
 	password := config.GetValue("EMAIL_PASSWORD")
+	smtpUser := config.SMTPAuthUsername()
 	smtpHost := config.GetValue("SMTP_CLIENTE")
 	smtpPort := config.GetValue("EMAIL_PORT")
 
@@ -318,7 +295,7 @@ func sendBrandedHTMLEmail(toList []string, subject string, html []byte, logoPNG 
 		return err
 	}
 
-	auth := LoginAuth(from, password)
+	auth := LoginAuth(smtpUser, password)
 	return smtp.SendMail(smtpHost+":"+smtpPort, auth, from, toList, msg.Bytes())
 }
 
@@ -395,7 +372,7 @@ type MultibandaPhaseEmailData struct {
 }
 
 func RenderMultibandaPhaseEmailHTML(data MultibandaPhaseEmailData, templatePath string) ([]byte, error) {
-	t, err := template.ParseFiles(templatePath)
+	t, err := parseNotificationEmailTemplate(templatePath)
 	if err != nil {
 		return nil, err
 	}
@@ -460,7 +437,7 @@ type ShipmentControlPhaseEmailData struct {
 }
 
 func RenderShipmentControlPhaseEmailHTML(data ShipmentControlPhaseEmailData, templatePath string) ([]byte, error) {
-	t, err := template.ParseFiles(templatePath)
+	t, err := parseNotificationEmailTemplate(templatePath)
 	if err != nil {
 		return nil, err
 	}

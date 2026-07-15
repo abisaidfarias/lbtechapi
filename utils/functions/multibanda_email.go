@@ -42,7 +42,7 @@ func MultibandaPhaseLabel(phase int) string {
 
 func FormatMultibandaEmailDate(date time.Time) string {
 	if date.IsZero() {
-		return "N/A"
+		return "-"
 	}
 	return fmt.Sprintf("%02d/%02d/%d", date.Day(), date.Month(), date.Year())
 }

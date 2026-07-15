@@ -570,50 +570,50 @@ func (s *homologationService) HomologationNotification(homologation *request.Hom
 	if homologation.IsInternalProject {
 		projectType = "Internal"
 	}
-	planningDate := "N/A"
+	planningDate := "-"
 	if !homologation.PlanningDate.IsZero() {
 
 		planningDate = fmt.Sprintf("%02d/%02d/%d",
 			homologation.PlanningDate.Day(), homologation.PlanningDate.Month(),
 			homologation.PlanningDate.Year())
 	}
-	sampleStartDate := "N/A"
+	sampleStartDate := "-"
 	if !homologation.SampleStartDate.IsZero() {
 		sampleStartDate = fmt.Sprintf("%02d/%02d/%d",
 			homologation.SampleStartDate.Day(), homologation.SampleStartDate.Month(),
 			homologation.SampleStartDate.Year())
 	}
-	sampleEndDate := "N/A"
+	sampleEndDate := "-"
 	if !homologation.SampleEndDate.IsZero() {
 		sampleEndDate = fmt.Sprintf("%02d/%02d/%d",
 			homologation.SampleEndDate.Day(), homologation.SampleEndDate.Month(),
 			homologation.SampleEndDate.Year())
 	}
-	testStartDate := "N/A"
+	testStartDate := "-"
 	if !homologation.TestStartDate.IsZero() {
 		testStartDate = fmt.Sprintf("%02d/%02d/%d",
 			homologation.TestStartDate.Day(), homologation.TestStartDate.Month(),
 			homologation.TestStartDate.Year())
 	}
-	testEndDate := "N/A"
+	testEndDate := "-"
 	if !homologation.TestEndDate.IsZero() {
 		testEndDate = fmt.Sprintf("%02d/%02d/%d",
 			homologation.TestEndDate.Day(), homologation.TestEndDate.Month(),
 			homologation.TestEndDate.Year())
 	}
-	underStartDate := "N/A"
+	underStartDate := "-"
 	if !homologation.UnderStartDate.IsZero() {
 		underStartDate = fmt.Sprintf("%02d/%02d/%d",
 			homologation.UnderStartDate.Day(), homologation.UnderStartDate.Month(),
 			homologation.UnderStartDate.Year())
 	}
-	underEndDate := "N/A"
+	underEndDate := "-"
 	if !homologation.UnderEndDate.IsZero() {
 		underEndDate = fmt.Sprintf("%02d/%02d/%d",
 			homologation.UnderEndDate.Day(), homologation.UnderEndDate.Month(),
 			homologation.UnderEndDate.Year())
 	}
-	resultDate := "N/A"
+	resultDate := "-"
 	if !homologation.CompletedDate.IsZero() {
 		resultDate = fmt.Sprintf("%02d/%02d/%d",
 			homologation.CompletedDate.Day(), homologation.CompletedDate.Month(),

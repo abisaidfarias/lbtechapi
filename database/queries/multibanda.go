@@ -7,6 +7,7 @@ import (
 
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/utils"
+	"github.com/abisaidfarias/lbtechapi/utils/enums"
 )
 
 func GetMultibandaByCompanyDeviceSoftwareOsVersion(
@@ -255,4 +256,75 @@ func UpdateMultibandaPhaseChange(multibanda *models.Multibanda, oid primitive.Ob
 		},
 	}
 	return filter, update
+}
+
+func GetApprovedMultibandasByCompanyDeviceSoftwareVersion(
+	companyID primitive.ObjectID,
+	deviceID primitive.ObjectID,
+	softwareVersion string,
+	brands []primitive.ObjectID,
+) mongo.Pipeline {
+	preMatch := bson.D{
+		{Key: "company", Value: companyID},
+		{Key: "device", Value: deviceID},
+		{Key: "software_version", Value: softwareVersion},
+		{Key: "status", Value: enums.HomologationStatus_value["APPROVED"]},
+		{Key: "request_delete", Value: bson.M{"$ne": true}},
+	}
+	if len(brands) > 0 {
+		preMatch = append(preMatch, primitive.E{
+			Key:   "brand",
+			Value: bson.D{primitive.E{Key: "$in", Value: brands}},
+		})
+	}
+
+	lookupStageDevice := bson.D{
+		{Key: "$lookup", Value: bson.D{
+			{Key: "from", Value: "devices"},
+			{Key: "localField", Value: "device"},
+			{Key: "foreignField", Value: "_id"},
+			{Key: "as", Value: "device"},
+		}},
+	}
+	unwindStageDevice := bson.D{
+		{Key: "$unwind", Value: bson.D{
+			{Key: "path", Value: "$device"},
+			{Key: "preserveNullAndEmptyArrays", Value: true},
+		}},
+	}
+	lookupStageCompany := bson.D{
+		{Key: "$lookup", Value: bson.D{
+			{Key: "from", Value: "companies"},
+			{Key: "localField", Value: "company"},
+			{Key: "foreignField", Value: "_id"},
+			{Key: "as", Value: "company"},
+		}},
+	}
+	unwindStageCompany := bson.D{
+		{Key: "$unwind", Value: bson.D{
+			{Key: "path", Value: "$company"},
+			{Key: "preserveNullAndEmptyArrays", Value: true},
+		}},
+	}
+	lookupStageBrand := bson.D{
+		{Key: "$lookup", Value: bson.D{
+			{Key: "from", Value: "brands"},
+			{Key: "localField", Value: "brand"},
+			{Key: "foreignField", Value: "_id"},
+			{Key: "as", Value: "brand"},
+		}},
+	}
+	unwindStageBrand := bson.D{
+		{Key: "$unwind", Value: bson.D{
+			{Key: "path", Value: "$brand"},
+			{Key: "preserveNullAndEmptyArrays", Value: true},
+		}},
+	}
+
+	return mongo.Pipeline{
+		bson.D{{Key: "$match", Value: preMatch}},
+		lookupStageDevice, unwindStageDevice,
+		lookupStageCompany, unwindStageCompany,
+		lookupStageBrand, unwindStageBrand,
+	}
 }
