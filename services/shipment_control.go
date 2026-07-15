@@ -362,18 +362,16 @@ func (s *shipmentControlService) Update(id string, req *request.ShipmentControl,
 
 	}
 
-	exists, err := s.shipmentControlRepository.ExistsByMultibandaExcludingID(shipmentControlID, multibandaID)
-
-	if err != nil {
-
-		return err
-
-	}
-
-	if exists {
-
-		return utils.NewValidationError("a shipment control record already exists for this multibanda")
-
+	// Solo validar unicidad si se cambia la multibanda. Editar fechas/campos
+	// del mismo registro no debe bloquearse por otros controls asociados a esa multibanda.
+	if multibandaID != existing.Multibanda {
+		exists, err := s.shipmentControlRepository.ExistsByMultibandaExcludingID(shipmentControlID, multibandaID)
+		if err != nil {
+			return err
+		}
+		if exists {
+			return utils.NewValidationError("a shipment control record already exists for this multibanda")
+		}
 	}
 
 	shipmentControl := mapping.ShipmentControlRequestToShipmentControlUpdate(
