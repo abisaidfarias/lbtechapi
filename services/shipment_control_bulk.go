@@ -267,6 +267,8 @@ func (s *shipmentControlService) confirmBulkRow(
 		multibandaID,
 		multibanda.Company.ID,
 		countryID,
+		multibanda.SubtelCertificateNumber,
+		multibanda.MultibandCertificateUrl,
 	)
 
 	id, err := s.shipmentControlRepository.Create(shipmentControl)

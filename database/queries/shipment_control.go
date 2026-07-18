@@ -16,6 +16,23 @@ func GetShipmentControlById(oid primitive.ObjectID) primitive.M {
 	return primitive.M{"_id": oid}
 }
 
+func CountShipmentControlCertificatesByPrefix(prefix string) primitive.M {
+	return primitive.M{
+		"oabi_certificate_url": primitive.M{
+			"$regex": "/" + prefix + `[0-9]{3}\.pdf`,
+		},
+	}
+}
+
+func UpdateShipmentControlCertificate(oid primitive.ObjectID, certificateURL, registroOABI string) (primitive.M, primitive.M) {
+	return primitive.M{"_id": oid}, primitive.M{
+		"$set": primitive.M{
+			"oabi_certificate_url":    certificateURL,
+			"oabi_certificate_number": registroOABI,
+		},
+	}
+}
+
 func SetShipmentControlRequestDelete(oid primitive.ObjectID, value bool) (primitive.M, primitive.D) {
 	filter := primitive.M{"_id": oid}
 	if !value {

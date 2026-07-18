@@ -57,6 +57,8 @@ type IShipmentControlService interface {
 
 	BulkConfirm(*request.ShipmentControlBulkConfirm, string, string, string) (*responses.ShipmentControlBulkConfirmResponse, error)
 
+	GenerateCertificate(string, *request.ShipmentControlCertificate, string) (*responses.ShipmentControlCertificate, error)
+
 }
 
 
@@ -74,6 +76,8 @@ type shipmentControlService struct {
 	companyRepository         repositories.ICompanyRepository
 
 	countryRepository         repositories.ICountryRepository
+
+	storageService            IStorageService
 
 }
 
@@ -93,6 +97,8 @@ func NewShipmentControlService(
 
 	countryRepository repositories.ICountryRepository,
 
+	storageService IStorageService,
+
 ) IShipmentControlService {
 
 	return &shipmentControlService{
@@ -108,6 +114,8 @@ func NewShipmentControlService(
 		companyRepository:         companyRepository,
 
 		countryRepository:         countryRepository,
+
+		storageService:            storageService,
 
 	}
 
@@ -209,7 +217,14 @@ func (s *shipmentControlService) Create(req *request.ShipmentControl, userID str
 
 
 
-	shipmentControl := mapping.ShipmentControlRequestToShipmentControl(req, multibandaID, multibanda.Company.ID, countryID)
+	shipmentControl := mapping.ShipmentControlRequestToShipmentControl(
+		req,
+		multibandaID,
+		multibanda.Company.ID,
+		countryID,
+		multibanda.SubtelCertificateNumber,
+		multibanda.MultibandCertificateUrl,
+	)
 
 	id, err := s.shipmentControlRepository.Create(shipmentControl)
 	if err != nil {
@@ -385,6 +400,7 @@ func (s *shipmentControlService) Update(id string, req *request.ShipmentControl,
 		countryID,
 
 	)
+	mapping.PreserveShipmentControlSubtelCertificate(shipmentControl, existing, multibanda)
 
 	return s.shipmentControlRepository.Update(id, shipmentControl)
 
@@ -444,15 +460,21 @@ func (s *shipmentControlService) GetAvailableMultibandas(userID, companyParam st
 
 	responseCompany := responses.Company{
 
-		ID:      company.ID,
+		ID:          company.ID,
 
-		Email:   company.Email,
+		Email:       company.Email,
 
-		Name:    company.Name,
+		Name:        company.Name,
 
-		Address: company.Address,
+		Address:     company.Address,
 
-		LogoUrl: company.LogoUrl,
+		LogoUrl:     company.LogoUrl,
+
+		ClientID:    company.ClientID,
+
+		Rut:         company.Rut,
+
+		RazonSocial: company.RazonSocial,
 
 	}
 
@@ -555,6 +577,12 @@ func (s *shipmentControlService) PhaseChange(id string, req *request.ShipmentCon
 
 
 	shipmentControl := mapping.ShipmentControlRequestToShipmentControlResume(req, countryID)
+
+	multibanda, err := s.multibandaRepository.GetByIdExpanded(existing.Multibanda)
+	if err != nil {
+		return err
+	}
+	mapping.PreserveShipmentControlSubtelCertificate(shipmentControl, existing, multibanda)
 
 	functions.ApplyShipmentControlStatusRules(shipmentControl, existing)
 	functions.ApplyShipmentControlPhaseDateRules(shipmentControl, existing)
@@ -750,11 +778,6 @@ func (s *shipmentControlService) ShipmentControlNotification(
 		return
 	}
 
-	toList, isEmpty := functions.GetEmails(false, shipment.Company)
-	if isEmpty {
-		return
-	}
-
 	multibanda, err := s.multibandaRepository.GetByIdExpanded(shipment.Multibanda)
 	if err != nil || multibanda == nil {
 		return
@@ -781,6 +804,14 @@ func (s *shipmentControlService) ShipmentControlNotification(
 
 	emailKind := functions.ResolveShipmentControlPhaseEmailKind(notifyKey, existingNotify, &notify)
 	if emailKind == "" {
+		return
+	}
+
+	toList, isEmpty := functions.GetNotificationEmails(
+		shipment.Company,
+		functions.ShipmentControlNotifiesExternalRecipients(notifyKey, emailKind),
+	)
+	if isEmpty {
 		return
 	}
 

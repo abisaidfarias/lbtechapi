@@ -14,6 +14,24 @@ func GetDeviceById(oid primitive.ObjectID) primitive.M {
 func GetDevicesByTechnicalModel(technicalModel string) primitive.M {
 	return primitive.M{"technical_model": technicalModel}
 }
+
+func GetDevicesByCommercialModel(commercialModel string) primitive.M {
+	return primitive.M{"commercial_model": commercialModel}
+}
+
+func GetDeviceByTechnicalModelExcludingID(excludeID primitive.ObjectID, technicalModel string) primitive.M {
+	return primitive.M{
+		"_id":             primitive.M{"$ne": excludeID},
+		"technical_model": technicalModel,
+	}
+}
+
+func GetDeviceByCommercialModelExcludingID(excludeID primitive.ObjectID, commercialModel string) primitive.M {
+	return primitive.M{
+		"_id":              primitive.M{"$ne": excludeID},
+		"commercial_model": commercialModel,
+	}
+}
 func GetDevicesExpanded(brands []primitive.ObjectID) []bson.D {
 	var pipeline mongo.Pipeline
 

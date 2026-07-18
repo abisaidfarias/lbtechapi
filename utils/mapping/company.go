@@ -8,9 +8,12 @@ import (
 func CompanyRequestToCompany(company *request.Company) (*models.Company, error) {
 
 	return &models.Company{
-		Name:    company.Name,
-		Email:   company.Email,
-		Address: company.Address,
-		LogoUrl: company.LogoUrl,
+		Name:        company.Name,
+		Email:       company.Email,
+		Address:     company.Address,
+		LogoUrl:     company.LogoUrl,
+		ClientID:    company.ClientID,
+		Rut:         company.Rut,
+		RazonSocial: company.RazonSocial,
 	}, nil
 }

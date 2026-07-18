@@ -162,3 +162,27 @@ func TestRenderShipmentControlPhaseEmailHTML(t *testing.T) {
 		t.Fatal("expected non-empty html")
 	}
 }
+
+func TestShipmentControlNotifiesExternalRecipients(t *testing.T) {
+	if !ShipmentControlNotifiesExternalRecipients(utils.CREATE, "") {
+		t.Fatal("expected external recipients on create")
+	}
+	if !ShipmentControlNotifiesExternalRecipients(utils.PHASE, shipmentControlEmailComplete) {
+		t.Fatal("expected external recipients on complete")
+	}
+	if ShipmentControlNotifiesExternalRecipients(utils.PHASE, shipmentControlEmailValidationStart) {
+		t.Fatal("did not expect external recipients on validation start")
+	}
+}
+
+func TestMultibandaNotifiesExternalRecipients(t *testing.T) {
+	if !MultibandaNotifiesExternalRecipients(utils.CREATE, 0) {
+		t.Fatal("expected external recipients on create")
+	}
+	if !MultibandaNotifiesExternalRecipients(utils.PHASE, enums.HomologationPhase_value["COMPLETE"]) {
+		t.Fatal("expected external recipients on complete phase")
+	}
+	if MultibandaNotifiesExternalRecipients(utils.PHASE, enums.HomologationPhase_value["TEST"]) {
+		t.Fatal("did not expect external recipients on intermediate phase")
+	}
+}

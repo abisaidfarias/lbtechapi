@@ -50,6 +50,10 @@ type IShipmentControlRepository interface {
 
 	SetRequestDelete(primitive.ObjectID, bool) error
 
+	CountCertificatesByControlPrefix(string) (int64, error)
+
+	UpdateCertificate(primitive.ObjectID, string, string) error
+
 }
 
 
@@ -176,6 +180,7 @@ func (r *shipmentControlRepository) list(pipeline mongo.Pipeline) ([]*responses.
 
 				item.Multibanda = mapping.ToShipmentControlMultibandaSummary(*multibanda)
 				item.Device = mapping.ToShipmentControlDeviceSummary(*multibanda)
+				mapping.EnrichShipmentControlSubtelCertificate(&item, multibanda)
 
 			}
 
@@ -374,5 +379,15 @@ func (r *shipmentControlRepository) SetRequestDelete(id primitive.ObjectID, valu
 		return mongo.ErrNoDocuments
 	}
 	return nil
+}
+
+func (r *shipmentControlRepository) CountCertificatesByControlPrefix(prefix string) (int64, error) {
+	return shipmentControlCollection.CountDocuments(context.TODO(), queries.CountShipmentControlCertificatesByPrefix(prefix))
+}
+
+func (r *shipmentControlRepository) UpdateCertificate(id primitive.ObjectID, certificateURL, registroOABI string) error {
+	filter, update := queries.UpdateShipmentControlCertificate(id, certificateURL, registroOABI)
+	_, err := shipmentControlCollection.UpdateOne(context.TODO(), filter, update)
+	return err
 }
 

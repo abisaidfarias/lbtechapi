@@ -34,6 +34,10 @@ func ShipmentControlRequestToShipmentControl(
 
 	countryID primitive.ObjectID,
 
+	subtelCertificateNumber string,
+
+	subtelCertificateUrl string,
+
 ) *models.ShipmentControl {
 
 	now := time.Now().UTC()
@@ -42,33 +46,37 @@ func ShipmentControlRequestToShipmentControl(
 
 	return &models.ShipmentControl{
 
-		Multibanda:          multibandaID,
+		Multibanda:              multibandaID,
 
-		Company:             companyID,
+		Company:                 companyID,
 
-		Country:             countryID,
+		Country:                 countryID,
 
-		CurrentPhase:        enums.ShipmentControlPhasePlanning,
+		CurrentPhase:            enums.ShipmentControlPhasePlanning,
 
-		Status:              enums.ShipmentControlStatusInProgress,
+		Status:                  enums.ShipmentControlStatusInProgress,
 
-		PlanningDate:        now,
+		PlanningDate:            now,
 
-		ImeiQuantity:        req.ImeiQuantity,
+		ImeiQuantity:            req.ImeiQuantity,
 
-		ImeiFileUrl:         req.ImeiFileUrl,
+		ImeiFileUrl:             req.ImeiFileUrl,
 
-		RegisteredImeiCount: 0,
+		RegisteredImeiCount:     0,
 
-		ReworkNumber:        req.ReworkNumber,
+		ReworkNumber:            req.ReworkNumber,
 
-		OabiCertificate:     req.OabiCertificate,
+		OabiCertificate:         req.OabiCertificate,
 
-		Client:              req.Client,
+		Client:                  req.Client,
 
-		RequestDelete:       false,
+		SubtelCertificateNumber: strings.TrimSpace(subtelCertificateNumber),
 
-		CreatedDate:         now,
+		SubtelCertificateUrl:    strings.TrimSpace(subtelCertificateUrl),
+
+		RequestDelete:           false,
+
+		CreatedDate:             now,
 
 	}
 
@@ -197,13 +205,53 @@ func ShipmentControlRequestToShipmentControlResume(
 
 func ToShipmentControlMultibandaSummary(multibanda responses.MultibandaExpanded) responses.ShipmentControlMultibandaSummary {
 	return responses.ShipmentControlMultibandaSummary{
-		ID:                multibanda.ID,
+		ID:                      multibanda.ID,
 		SubtelCertificateNumber: multibanda.SubtelCertificateNumber,
-		SoftwareVersion:   multibanda.SoftwareVersion,
-		HardwareVersion:   multibanda.HardwareVersion,
-		OsVersion:         multibanda.OsVersion,
-		OsVersionView:     multibanda.OsVersionView,
+		SoftwareVersion:         multibanda.SoftwareVersion,
+		HardwareVersion:         multibanda.HardwareVersion,
+		OsVersion:               multibanda.OsVersion,
+		OsVersionView:           multibanda.OsVersionView,
 	}
+}
+
+// EnrichShipmentControlSubtelCertificate resolves subtel_certificate_number from the
+// linked multibanda when the shipment control document has it empty.
+func EnrichShipmentControlSubtelCertificate(
+	item *responses.ShipmentControlExpanded,
+	multibanda *responses.MultibandaExpanded,
+) {
+	if item == nil || multibanda == nil {
+		return
+	}
+	resolved := ResolveShipmentControlSubtelCertificateNumber(item.SubtelCertificateNumber, multibanda)
+	item.SubtelCertificateNumber = resolved
+	item.Multibanda.SubtelCertificateNumber = resolved
+}
+
+func ResolveShipmentControlSubtelCertificateNumber(
+	stored string,
+	multibanda *responses.MultibandaExpanded,
+) string {
+	multibandaNumber := ""
+	if multibanda != nil {
+		multibandaNumber = multibanda.SubtelCertificateNumber
+	}
+	return firstNonEmpty(stored, multibandaNumber)
+}
+
+func PreserveShipmentControlSubtelCertificate(
+	shipment *models.ShipmentControl,
+	existing *models.ShipmentControl,
+	multibanda *responses.MultibandaExpanded,
+) {
+	if shipment == nil || strings.TrimSpace(shipment.SubtelCertificateNumber) != "" {
+		return
+	}
+	existingNumber := ""
+	if existing != nil {
+		existingNumber = existing.SubtelCertificateNumber
+	}
+	shipment.SubtelCertificateNumber = ResolveShipmentControlSubtelCertificateNumber(existingNumber, multibanda)
 }
 
 func ShipmentControlToNotify(

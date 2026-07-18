@@ -439,7 +439,10 @@ func (s *multibandaService) MultibandaNotification(
 	}
 
 	userName := fmt.Sprintf("%s %s", user.Name, user.LastName)
-	toList, isEmpty := functions.GetEmails(false, companyID)
+	toList, isEmpty := functions.GetNotificationEmails(
+		companyID,
+		functions.MultibandaNotifiesExternalRecipients(key, multibanda.CurrentPhase),
+	)
 	if isEmpty {
 		return
 	}

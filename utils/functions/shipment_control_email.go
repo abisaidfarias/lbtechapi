@@ -178,6 +178,20 @@ func GetShipmentControlDeleteNotificationMessageAndSubject(
 	}
 }
 
+func ShipmentControlNotifiesExternalRecipients(notifyKey, emailKind string) bool {
+	if notifyKey == utils.CREATE {
+		return true
+	}
+	return emailKind == shipmentControlEmailComplete
+}
+
+func MultibandaNotifiesExternalRecipients(notifyKey string, currentPhase int) bool {
+	if notifyKey == utils.CREATE {
+		return true
+	}
+	return currentPhase == enums.HomologationPhase_value["COMPLETE"]
+}
+
 func ResolveShipmentControlPhaseEmailKind(
 	notifyKey string,
 	existing *request.ShipmentControlNotify,

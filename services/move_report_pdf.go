@@ -49,17 +49,27 @@ func moveReportPDFErrHint(err error) string {
 }
 
 func movementHTMLToPDF(html []byte) ([]byte, error) {
-	return movementHTMLToPDFWithTimeout(html, moveReportPDFTimeout())
+	return htmlToPDF(html, moveReportPDFTimeout(), 0, 0)
+}
+
+func shipmentControlCertificateHTMLToPDF(html []byte) ([]byte, error) {
+	const a4WidthIn = 8.27
+	const a4HeightIn = 11.69
+	return htmlToPDF(html, moveReportPDFTimeout(), a4WidthIn, a4HeightIn)
 }
 
 func movementHTMLToPDFWithTimeout(html []byte, timeout time.Duration) ([]byte, error) {
 	if timeout <= 0 {
 		timeout = moveReportPDFTimeout()
 	}
-	return movementHTMLToPDFInternal(html, timeout)
+	return htmlToPDF(html, timeout, 0, 0)
 }
 
 func movementHTMLToPDFInternal(html []byte, timeout time.Duration) ([]byte, error) {
+	return htmlToPDF(html, timeout, 0, 0)
+}
+
+func htmlToPDF(html []byte, timeout time.Duration, paperWidthIn, paperHeightIn float64) ([]byte, error) {
 	tmpDir, err := os.MkdirTemp("", "lbtech-move-report-*")
 	if err != nil {
 		return nil, err
@@ -100,7 +110,18 @@ func movementHTMLToPDFInternal(html []byte, timeout time.Duration) ([]byte, erro
 		chromedp.WaitReady("body", chromedp.ByQuery),
 		chromedp.ActionFunc(func(ctx context.Context) error {
 			var err error
-			pdf, _, err = page.PrintToPDF().WithPrintBackground(true).Do(ctx)
+			pdfAction := page.PrintToPDF().WithPrintBackground(true)
+			if paperWidthIn > 0 && paperHeightIn > 0 {
+				pdfAction = pdfAction.
+					WithPaperWidth(paperWidthIn).
+					WithPaperHeight(paperHeightIn).
+					WithPreferCSSPageSize(true).
+					WithMarginTop(0).
+					WithMarginBottom(0).
+					WithMarginLeft(0).
+					WithMarginRight(0)
+			}
+			pdf, _, err = pdfAction.Do(ctx)
 			return err
 		}),
 	)

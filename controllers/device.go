@@ -63,6 +63,10 @@ func (c *deviceController) Create() gin.HandlerFunc {
 		deviceResponse, err := c.deviceService.Create(&device, userID)
 
 		if err != nil {
+			if utils.IsValidationError(err) {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
 			if utilsErrors.ErrorDuplicatedData(err) {
 				ctx.JSON(http.StatusConflict, gin.H{"error": utilsErrors.ErrorDuplicated.Error()})
 				return
@@ -178,6 +182,10 @@ func (c *deviceController) Update() gin.HandlerFunc {
 		err = c.deviceService.Update(id, &device, userID)
 
 		if err != nil {
+			if utils.IsValidationError(err) {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
 			if utilsErrors.ErrorDuplicatedData(err) {
 				ctx.JSON(http.StatusConflict, gin.H{"error": utilsErrors.ErrorDuplicated.Error()})
 				return

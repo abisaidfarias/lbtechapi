@@ -103,6 +103,11 @@ func initDB() *mongo.Database {
 			"commercial_model": 1,
 		}, Options: options.Index().SetUnique(true).SetCollation(&collation),
 	}
+	indexDeviceTechnicalName := mongo.IndexModel{
+		Keys: bson.M{
+			"technical_model": 1,
+		}, Options: options.Index().SetUnique(true).SetCollation(&collation).SetName("uniq_device_technical_model"),
+	}
 	indexPrinterSerial := mongo.IndexModel{
 		Keys: bson.M{
 			"serial": 1,
@@ -152,6 +157,7 @@ func initDB() *mongo.Database {
 	database.Collection("brands").Indexes().CreateOne(context.Background(), indexBrandName)
 	database.Collection("countries").Indexes().CreateOne(context.Background(), indexCountryName)
 	database.Collection("devices").Indexes().CreateOne(context.Background(), indexDeviceCommercialName)
+	database.Collection("devices").Indexes().CreateOne(context.Background(), indexDeviceTechnicalName)
 	database.Collection("printers").Indexes().CreateOne(context.Background(), indexPrinterSerial)
 	database.Collection("locations").Indexes().CreateOne(context.Background(), indexLocationName)
 	database.Collection("device_trackings").Indexes().CreateOne(context.Background(), indexImei)
