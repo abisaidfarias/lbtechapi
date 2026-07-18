@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/utils"
@@ -48,6 +49,9 @@ func NewDeviceService(deviceRepository repositories.IDeviceRepository,
 
 // Create creates a new test case
 func (s *deviceService) Create(deviceRequest *request.Device, userID string) (*responses.DeviceExpanded, error) {
+	if err := s.ensureDeviceModelsUnique("", deviceRequest.TechnicalModel, deviceRequest.CommercialModel); err != nil {
+		return nil, err
+	}
 
 	device := mapping.DeviceRequestToDevice(deviceRequest)
 
@@ -104,6 +108,9 @@ func (s *deviceService) GetById(id string, userID string) (*responses.Device, er
 
 // Update updates a test case
 func (s *deviceService) Update(id string, deviceRequest *request.Device, userID string) error {
+	if err := s.ensureDeviceModelsUnique(id, deviceRequest.TechnicalModel, deviceRequest.CommercialModel); err != nil {
+		return err
+	}
 
 	device := mapping.DeviceRequestToDevice(deviceRequest)
 
@@ -177,6 +184,58 @@ func (s *deviceService) DeviceNotification(device request.Device, key string,use
 		return
 	}
 	functions.SendNotifications(toList, body)
+}
+
+func (s *deviceService) ensureDeviceModelsUnique(excludeID, technicalModel, commercialModel string) error {
+	technicalModel = strings.TrimSpace(technicalModel)
+	commercialModel = strings.TrimSpace(commercialModel)
+	if technicalModel == "" {
+		return utils.NewValidationError("technical_model is required")
+	}
+	if commercialModel == "" {
+		return utils.NewValidationError("commercial_model is required")
+	}
+
+	if excludeID == "" {
+		byTechnical, err := s.deviceRepository.FindByTechnicalModel(technicalModel)
+		if err != nil {
+			return err
+		}
+		if len(byTechnical) > 0 {
+			return utils.NewValidationError("a device with this technical_model already exists")
+		}
+
+		byCommercial, err := s.deviceRepository.FindByCommercialModel(commercialModel)
+		if err != nil {
+			return err
+		}
+		if len(byCommercial) > 0 {
+			return utils.NewValidationError("a device with this commercial_model already exists")
+		}
+		return nil
+	}
+
+	oid, err := primitive.ObjectIDFromHex(excludeID)
+	if err != nil {
+		return utils.NewValidationError("invalid device id")
+	}
+
+	existsTechnical, err := s.deviceRepository.ExistsByTechnicalModelExcludingID(oid, technicalModel)
+	if err != nil {
+		return err
+	}
+	if existsTechnical {
+		return utils.NewValidationError("a device with this technical_model already exists")
+	}
+
+	existsCommercial, err := s.deviceRepository.ExistsByCommercialModelExcludingID(oid, commercialModel)
+	if err != nil {
+		return err
+	}
+	if existsCommercial {
+		return utils.NewValidationError("a device with this commercial_model already exists")
+	}
+	return nil
 }
 
 func userHasBrandAccess(user *responses.User, brandID primitive.ObjectID) bool {

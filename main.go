@@ -36,6 +36,18 @@ func init() {
 		log.Fatal("Failed to load secrets:", err)
 	}
 	log.Println("✅ Secrets loaded successfully")
+
+	shipmentControlService = services.NewShipmentControlService(
+		shipmentControlRepository,
+		multibandaRepository,
+		deviceRepository,
+		userRepository,
+		companyRepository,
+		countryRepository,
+		storageService,
+		services.NewLazyPDFEngine(),
+	)
+	shipmentControlController = controllers.NewShipmentControlController(shipmentControlService)
 }
 
 func getAppVersion() string {
@@ -148,8 +160,8 @@ var (
 	multibandaController controllers.IMultibandaController  = controllers.NewMultibandaController(multibandaService)
 
 	shipmentControlRepository repositories.IShipmentControlRepository = repositories.NewShipmentControlRepository(multibandaRepository)
-	shipmentControlService    services.IShipmentControlService        = services.NewShipmentControlService(shipmentControlRepository, multibandaRepository, deviceRepository, userRepository, companyRepository, countryRepository)
-	shipmentControlController controllers.IShipmentControlController  = controllers.NewShipmentControlController(shipmentControlService)
+	shipmentControlService    services.IShipmentControlService
+	shipmentControlController controllers.IShipmentControlController
 )
 
 // @title LBTech API
@@ -384,6 +396,8 @@ func main() {
 			shipmentControl.POST("", shipmentControlController.Create())
 			shipmentControl.POST("/bulk/validate", shipmentControlController.BulkValidate())
 			shipmentControl.POST("/bulk/confirm", shipmentControlController.BulkConfirm())
+			shipmentControl.POST(":id/certificate", shipmentControlController.GenerateCertificate())
+			shipmentControl.GET(":id/certificate/status", shipmentControlController.GetCertificateStatus())
 			shipmentControl.GET("", shipmentControlController.Get())
 			shipmentControl.GET("/available-multibandas", shipmentControlController.GetAvailableMultibandas())
 			shipmentControl.PUT(":id", shipmentControlController.Update())

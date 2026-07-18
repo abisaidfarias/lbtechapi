@@ -60,6 +60,8 @@ type ShipmentControl struct {
 
 	OabiCertificateNumber   string             `bson:"oabi_certificate_number"`
 
+	OabiCertificateState    *OabiCertificateState `bson:"oabi_certificate_state,omitempty"`
+
 	Comment                 string             `bson:"comment"`
 
 	RequestDelete           bool               `bson:"request_delete"`

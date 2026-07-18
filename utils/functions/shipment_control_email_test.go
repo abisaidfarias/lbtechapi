@@ -162,3 +162,43 @@ func TestRenderShipmentControlPhaseEmailHTML(t *testing.T) {
 		t.Fatal("expected non-empty html")
 	}
 }
+
+func TestShipmentControlNotifiesExternalRecipients(t *testing.T) {
+	if !ShipmentControlNotifiesExternalRecipients(utils.CREATE, "") {
+		t.Fatal("expected external recipients on create")
+	}
+	if !ShipmentControlNotifiesExternalRecipients(utils.PHASE, shipmentControlEmailComplete) {
+		t.Fatal("expected external recipients on complete")
+	}
+	if ShipmentControlNotifiesExternalRecipients(utils.PHASE, shipmentControlEmailValidationStart) {
+		t.Fatal("did not expect external recipients on validation start")
+	}
+}
+
+func TestMultibandaNotifiesExternalRecipients(t *testing.T) {
+	if !MultibandaNotifiesExternalRecipients(utils.CREATE, 0) {
+		t.Fatal("expected external recipients on create")
+	}
+	if !MultibandaNotifiesExternalRecipients(utils.PHASE, enums.HomologationPhase_value["COMPLETE"]) {
+		t.Fatal("expected external recipients on complete phase")
+	}
+	if MultibandaNotifiesExternalRecipients(utils.PHASE, enums.HomologationPhase_value["TEST"]) {
+		t.Fatal("did not expect external recipients on intermediate phase")
+	}
+}
+
+func TestRenderShipmentControlCertificateHTMLIncludesOfficialSeal(t *testing.T) {
+	html, err := RenderShipmentControlCertificateHTML(ShipmentControlCertificateData{
+		LBLogoDataURI:       "data:image/png;base64,abc",
+		OfficialSealDataURI: "data:image/png;base64,seal",
+		ControlNumber:       "002-260717001",
+		Year:                2026,
+	}, utils.TEMPLATE_SHIPMENT_CONTROL_CERTIFICATE_PATH)
+	if err != nil {
+		t.Fatalf("render certificate html: %v", err)
+	}
+	body := string(html)
+	if !strings.Contains(body, "data:image/png;base64,seal") {
+		t.Fatal("expected official seal data uri in rendered html")
+	}
+}

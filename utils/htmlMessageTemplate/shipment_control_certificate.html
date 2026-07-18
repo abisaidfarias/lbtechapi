@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Certificado Control de Embarque</title>
+  <style type="text/css">
+    @page { size: A4; margin: 0; }
+    @media print {
+      body { background: #f7f7f2; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 210mm;
+      height: 297mm;
+      background: #f7f7f2;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #1f2937;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .page-a4 {
+      position: relative;
+      width: 210mm;
+      height: 297mm;
+      margin: 0 auto;
+      padding: 0 10mm;
+      background: #f7f7f2;
+      box-sizing: border-box;
+    }
+    .page-content {
+      height: 100%;
+      box-sizing: border-box;
+      padding-bottom: 52px;
+    }
+    .page-footer {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #f7f7f2;
+    }
+    .sheet {
+      width: 100%;
+      max-width: 100%;
+    }
+    .header-title {
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+    .navy { background: #0b1736; color: #ffffff; }
+    .accent { color: #c5d926; }
+    .accent-bg { background: #c5d926; }
+    .muted { color: #6b7280; }
+    .label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
+    .value {
+      font-size: 13px;
+      font-weight: 600;
+      color: #111827;
+      line-height: 1.35;
+    }
+    .section-heading {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #0b1736;
+      margin: 0 0 12px 0;
+    }
+    .divider {
+      height: 2px;
+      background: #c5d926;
+      border: 0;
+      margin: 0;
+    }
+    .check-item {
+      font-size: 12px;
+      color: #374151;
+      padding: 4px 0;
+    }
+    .check-icon {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #c5d926;
+      color: #0b1736;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      line-height: 16px;
+      margin-right: 8px;
+    }
+    .guides-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .guides-table th {
+      background: #eef0f3;
+      color: #0b1736;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      text-align: left;
+      padding: 10px 12px;
+    }
+    .guides-table td {
+      padding: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #111827;
+      border-top: 1px solid #e5e7eb;
+    }
+    .device-grid td {
+      vertical-align: top;
+      padding: 0 18px 0 0;
+    }
+    .legal {
+      font-size: 11px;
+      line-height: 1.65;
+      color: #6b7280;
+    }
+    .legal strong { color: #374151; }
+    .signature-script {
+      font-family: "Brush Script MT", "Segoe Script", "Lucida Handwriting", cursive;
+      font-size: 34px;
+      color: #111827;
+      line-height: 1;
+      margin-top: 18px;
+      margin-bottom: 2px;
+    }
+    .signature-line {
+      width: 180px;
+      border-top: 1px solid #111827;
+      margin-top: 4px;
+      margin-bottom: 8px;
+    }
+    .official-seal {
+      width: 170px;
+      height: 170px;
+      margin: 0 auto;
+      display: block;
+    }
+    .doc-footer-note {
+      text-align: center;
+      font-size: 10px;
+      color: #94a3b8;
+      padding: 8px 32px 6px 32px;
+      background: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-a4">
+    <div class="page-content">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f7f7f2;">
+        <tr>
+          <td align="center" style="padding:0;">
+            <table class="sheet" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff; border:1px solid #e5e7eb;">
+
+          <!-- Header -->
+          <tr>
+            <td class="navy" style="padding:22px 32px 18px 32px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td width="42%" valign="middle" align="left">
+                    {{ if .LBLogoDataURI }}
+                    <img src="{{ .LBLogoDataURI }}" alt="LB Technology" style="height:42px; width:auto; max-width:220px; display:block;" />
+                    {{ end }}
+                  </td>
+                  <td width="58%" valign="middle" align="right">
+                    <div class="accent" style="font-size:11px; font-weight:700; letter-spacing:0.04em; margin-bottom:6px;">
+                      CERTIFICADO N° {{ .ControlNumber }}
+                    </div>
+                    <div class="header-title">
+                      Certificado de Control de Embarque
+                    </div>
+                    <div style="font-size:11px; color:#cbd5e1;">
+                      Versión 4 · Emitido el {{ .IssuedDate }}
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr><td class="divider"></td></tr>
+
+          <!-- Empresas -->
+          <tr>
+            <td style="padding:22px 32px 8px 32px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td width="50%" valign="top" style="padding-right:24px;">
+                    <div class="section-heading">Empresa Certificadora</div>
+                    <div style="margin-bottom:10px;">
+                      <div class="label">Empresa</div>
+                      <div class="value">{{ .CertificadoraName }}</div>
+                    </div>
+                    <div style="margin-bottom:10px;">
+                      <div class="label">RUT</div>
+                      <div class="value">{{ .CertificadoraRUT }}</div>
+                    </div>
+                    <div style="margin-bottom:10px;">
+                      <div class="label">N° Registro SUBTEL</div>
+                      <div class="value">{{ .SubtelRegistry }}</div>
+                    </div>
+                    <div>
+                      <div class="label">N° de Control</div>
+                      <div class="value">{{ .ControlNumber }}</div>
+                    </div>
+                  </td>
+                  <td width="50%" valign="top" style="padding-left:24px; border-left:1px solid #e5e7eb;">
+                    <div class="section-heading">Empresa Solicitante</div>
+                    <div style="margin-bottom:10px;">
+                      <div class="label">Empresa</div>
+                      <div class="value">{{ .SolicitanteName }}</div>
+                    </div>
+                    <div style="margin-bottom:10px;">
+                      <div class="label">RUT</div>
+                      <div class="value">{{ .SolicitanteRUT }}</div>
+                    </div>
+                    <div>
+                      <div class="label">Dirección</div>
+                      <div class="value">{{ .SolicitanteAddress }}</div>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr><td style="padding:0 32px;"><hr class="divider" /></td></tr>
+
+          <!-- Datos del dispositivo -->
+          <tr>
+            <td style="padding:18px 32px 8px 32px;">
+              <div class="section-heading">Datos del Dispositivo</div>
+              <table class="device-grid" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td>
+                    <div class="label">Marca</div>
+                    <div class="value">{{ .Brand }}</div>
+                  </td>
+                  <td>
+                    <div class="label">Tipo</div>
+                    <div class="value">{{ .DeviceType }}</div>
+                  </td>
+                  <td>
+                    <div class="label">Versión OS</div>
+                    <div class="value">{{ .OsVersion }}</div>
+                  </td>
+                  <td>
+                    <div class="label">Versión HW</div>
+                    <div class="value">{{ .HardwareVersion }}</div>
+                  </td>
+                  <td>
+                    <div class="label">Versión SW</div>
+                    <div class="value">{{ .SoftwareVersion }}</div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr><td style="padding:0 32px;"><hr class="divider" /></td></tr>
+
+          <!-- Guías del embarque -->
+          <tr>
+            <td style="padding:18px 32px 8px 32px;">
+              <div class="section-heading">Guías del Embarque</div>
+              <table class="guides-table">
+                <tr>
+                  <th>Fecha</th>
+                  <th>Registro OABI</th>
+                  <th>Modelo</th>
+                  <th>Rework</th>
+                  <th>Cantidad registrada</th>
+                </tr>
+                <tr>
+                  <td>{{ .ShipmentDate }}</td>
+                  <td>{{ .RegistroOABI }}</td>
+                  <td>{{ .CommercialModel }}</td>
+                  <td>{{ .ReworkNumber }}</td>
+                  <td><strong>{{ .RegisteredImeiCount }}</strong> IMEIs</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr><td style="padding:0 32px;"><hr class="divider" /></td></tr>
+
+          <!-- Checklist -->
+          <tr>
+            <td style="padding:18px 32px 8px 32px;">
+              <div class="section-heading">Checklist de Embarque</div>
+              <div class="muted" style="font-size:11px; margin-bottom:12px;">Comparación Embarque vs Reporte de Homologación</div>
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td width="50%" valign="top">
+                    <div class="check-item"><span class="check-icon">✓</span>Fabricante</div>
+                    <div class="check-item"><span class="check-icon">✓</span>Marca</div>
+                    <div class="check-item"><span class="check-icon">✓</span>Modelo</div>
+                  </td>
+                  <td width="50%" valign="top">
+                    <div class="check-item"><span class="check-icon">✓</span>Sistema Operativo</div>
+                    <div class="check-item"><span class="check-icon">✓</span>Etiquetas</div>
+                    <div class="check-item"><span class="check-icon">✓</span>Verificación IMEIs en Embarque</div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr><td style="padding:0 32px;"><hr class="divider" /></td></tr>
+
+          <!-- Legal + firma + sello -->
+          <tr>
+            <td style="padding:20px 32px 8px 32px;">
+              <div class="legal">
+                Asimismo, por medio de este certificado se acredita que el embarque antes descrito ha sido sometido
+                a las pruebas de control contempladas en el denominado <strong>Protocolo Básico de Homologación</strong>,
+                las cuales han resultado exitosas, y según lo cual se entenderá que los dispositivos que cumplan las
+                características contenidas en este certificado cumplen cabalmente con la Normativa de SUBTEL para
+                poder ser comercializados en el país.
+                <br /><br />
+                Este certificado es intransferible, se emiten 2 originales de este documento, en caso de requerir copias
+                adicionales por favor solicitarlos a
+                <span class="accent" style="font-weight:700;">contacto@lbtechnology-la.com</span>
+                indicando el código del certificado.
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:8px 32px 12px 32px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td width="55%" valign="bottom" style="padding-right:24px;">
+                    <div style="font-size:13px; color:#111827;">Atentamente,</div>
+                    <div class="signature-script">Glajay Tovar</div>
+                    <div class="signature-line"></div>
+                    <div style="font-size:14px; font-weight:700; color:#0b1736;">Glajay Tovar</div>
+                    <div class="muted" style="font-size:12px;">Project Manager Assistant</div>
+                    <div class="muted" style="font-size:12px;">LB Technology SPA</div>
+                    <div class="muted" style="font-size:12px;">Santiago, Chile</div>
+                  </td>
+                  <td width="45%" valign="middle" align="center">
+                    {{ if .OfficialSealDataURI }}
+                    <img
+                      class="official-seal"
+                      src="{{ .OfficialSealDataURI }}"
+                      alt="Sello oficial LB Technology SPA"
+                    />
+                    {{ end }}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+    </div>
+
+    <div class="page-footer">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f7f7f2;">
+        <tr>
+          <td align="center" style="padding:0;">
+            <table class="sheet" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff; border:1px solid #e5e7eb; border-top:0;">
+              <tr>
+                <td class="doc-footer-note">LB Technology – Certificado Control de Embarque v4</td>
+              </tr>
+              <tr>
+                <td class="navy" style="padding:12px 32px;">
+                  <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="left" style="font-size:10px; color:#94a3b8;">
+                        © {{ .Year }} LB Technology. Todos los derechos reservados.
+                      </td>
+                      <td align="right" class="accent" style="font-size:11px; font-weight:700;">
+                        {{ .ControlNumber }}
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

@@ -24,6 +24,8 @@ type IShipmentControlController interface {
 	ExportShipmentControl() gin.HandlerFunc
 	BulkValidate() gin.HandlerFunc
 	BulkConfirm() gin.HandlerFunc
+	GenerateCertificate() gin.HandlerFunc
+	GetCertificateStatus() gin.HandlerFunc
 }
 
 type shipmentControlController struct {
@@ -476,6 +478,92 @@ func (c *shipmentControlController) BulkConfirm() gin.HandlerFunc {
 				ctx.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
 				return
 			default:
+				handleErrorResponse(ctx, err)
+				return
+			}
+		}
+
+		ctx.JSON(http.StatusOK, response)
+	}
+}
+
+// GenerateCertificate godoc
+// @Summary Encolar generación de certificado OABI
+// @Description Encola la generación async del PDF cuando el shipment control está en fase Under Revision (current_phase = 2).
+// @Tags ShipmentControl
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID del shipment control"
+// @Param body body request.ShipmentControlCertificate true "Registro OABI y cantidad de IMEIs registrados"
+// @Success 202 {object} responses.ShipmentControlCertificateAccepted "Generación en curso"
+// @Failure 400 {object} map[string]string "Datos inválidos"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 403 {object} map[string]string "Sin permiso"
+// @Failure 409 {object} map[string]string "Generación ya en curso"
+// @Failure 500 {object} map[string]string "Error interno del servidor"
+// @Router /shipment-control/{id}/certificate [post]
+func (c *shipmentControlController) GenerateCertificate() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userID := ctx.MustGet("userID").(string)
+		id := ctx.Param("id")
+
+		var body request.ShipmentControlCertificate
+		if err := ctx.ShouldBindJSON(&body); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		response, err := c.shipmentControlService.GenerateCertificate(id, &body, userID)
+		if err != nil {
+			switch {
+			case utils.IsValidationError(err):
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			case errors.Is(err, utils.ErrCertificateGenerating):
+				ctx.JSON(http.StatusConflict, gin.H{"status": "generating"})
+				return
+			case errors.Is(err, utils.ErrorForbidden):
+				ctx.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+				return
+			default:
+				ctx.Status(http.StatusInternalServerError)
+				handleErrorResponse(ctx, err)
+				return
+			}
+		}
+
+		ctx.JSON(http.StatusAccepted, response)
+	}
+}
+
+// GetCertificateStatus godoc
+// @Summary Estado de generación del certificado OABI
+// @Tags ShipmentControl
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID del shipment control"
+// @Success 200 {object} responses.ShipmentControlCertificateStatus
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 403 {object} map[string]string "Sin permiso"
+// @Failure 404 {object} map[string]string "No encontrado"
+// @Router /shipment-control/{id}/certificate/status [get]
+func (c *shipmentControlController) GetCertificateStatus() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userID := ctx.MustGet("userID").(string)
+		id := ctx.Param("id")
+
+		response, err := c.shipmentControlService.GetCertificateStatus(id, userID)
+		if err != nil {
+			switch {
+			case utils.IsValidationError(err):
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			case errors.Is(err, utils.ErrorForbidden):
+				ctx.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+				return
+			default:
+				ctx.Status(http.StatusInternalServerError)
 				handleErrorResponse(ctx, err)
 				return
 			}

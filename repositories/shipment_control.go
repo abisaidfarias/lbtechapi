@@ -7,6 +7,7 @@ import (
 	"context"
 
 	"fmt"
+	"time"
 
 
 
@@ -49,6 +50,18 @@ type IShipmentControlRepository interface {
 	Delete(primitive.ObjectID) error
 
 	SetRequestDelete(primitive.ObjectID, bool) error
+
+	CountCertificatesByControlPrefix(string) (int64, error)
+
+	UpdateCertificate(primitive.ObjectID, string, string) error
+
+	ClaimCertificateGeneration(primitive.ObjectID, models.OabiCertificateState, time.Time) (bool, error)
+
+	GetCertificateState(primitive.ObjectID) (*models.OabiCertificateState, error)
+
+	MarkCertificateReady(primitive.ObjectID, string, string, time.Time) error
+
+	MarkCertificateFailed(primitive.ObjectID, string) error
 
 }
 
@@ -176,6 +189,7 @@ func (r *shipmentControlRepository) list(pipeline mongo.Pipeline) ([]*responses.
 
 				item.Multibanda = mapping.ToShipmentControlMultibandaSummary(*multibanda)
 				item.Device = mapping.ToShipmentControlDeviceSummary(*multibanda)
+				mapping.EnrichShipmentControlSubtelCertificate(&item, multibanda)
 
 			}
 
@@ -366,6 +380,76 @@ func (r *shipmentControlRepository) Delete(id primitive.ObjectID) error {
 
 func (r *shipmentControlRepository) SetRequestDelete(id primitive.ObjectID, value bool) error {
 	filter, update := queries.SetShipmentControlRequestDelete(id, value)
+	res, err := shipmentControlCollection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return err
+	}
+	if res.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+	return nil
+}
+
+func (r *shipmentControlRepository) CountCertificatesByControlPrefix(prefix string) (int64, error) {
+	return shipmentControlCollection.CountDocuments(context.TODO(), queries.CountShipmentControlCertificatesByPrefix(prefix))
+}
+
+func (r *shipmentControlRepository) UpdateCertificate(id primitive.ObjectID, certificateURL, registroOABI string) error {
+	filter, update := queries.UpdateShipmentControlCertificate(id, certificateURL, registroOABI)
+	_, err := shipmentControlCollection.UpdateOne(context.TODO(), filter, update)
+	return err
+}
+
+func (r *shipmentControlRepository) ClaimCertificateGeneration(
+	id primitive.ObjectID,
+	state models.OabiCertificateState,
+	staleBefore time.Time,
+) (bool, error) {
+	filter, update := queries.ClaimOabiCertificateGeneration(id, staleBefore, state)
+	res, err := shipmentControlCollection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return false, err
+	}
+	return res.MatchedCount > 0, nil
+}
+
+type shipmentControlCertificateStateDoc struct {
+	OabiCertificateState *models.OabiCertificateState `bson:"oabi_certificate_state"`
+	OabiCertificateUrl   string                       `bson:"oabi_certificate_url"`
+}
+
+func (r *shipmentControlRepository) GetCertificateState(id primitive.ObjectID) (*models.OabiCertificateState, error) {
+	var doc shipmentControlCertificateStateDoc
+	err := shipmentControlCollection.FindOne(
+		context.TODO(),
+		queries.GetShipmentControlById(id),
+	).Decode(&doc)
+	if err != nil {
+		return nil, err
+	}
+	return doc.OabiCertificateState, nil
+}
+
+func (r *shipmentControlRepository) MarkCertificateReady(
+	id primitive.ObjectID,
+	certificateURL, registroOABI string,
+	generatedAt time.Time,
+) error {
+	filter := queries.MarkOabiCertificateReadyFilter(id)
+	update := queries.MarkOabiCertificateReadyUpdate(certificateURL, registroOABI, generatedAt)
+	res, err := shipmentControlCollection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return err
+	}
+	if res.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+	return nil
+}
+
+func (r *shipmentControlRepository) MarkCertificateFailed(id primitive.ObjectID, errorMessage string) error {
+	filter := queries.MarkOabiCertificateFailedFilter(id)
+	update := queries.MarkOabiCertificateFailedUpdate(errorMessage)
 	res, err := shipmentControlCollection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		return err

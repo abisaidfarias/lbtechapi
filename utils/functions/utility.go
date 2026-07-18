@@ -463,21 +463,53 @@ func SendShipmentControlPhaseEmail(toList []string, subject string, data Shipmen
 	return sendBrandedHTMLEmail(toList, subject, html, logoPNG, "")
 }
 
+func isExternalNotificationRecipient(notificationType int) bool {
+	return notificationType == enums.NotificationType_value["COMPANY"]
+}
+
+// GetNotificationEmails returns company notification addresses. When includeExternalRecipients
+// is false, only INTERNAL and MANUAL entries are included (LB / configured internal contacts).
+func GetNotificationEmails(companyId primitive.ObjectID, includeExternalRecipients bool) ([]string, bool) {
+	notificationCollection := database.GetInstance().Collection("notifications")
+
+	var notification *responses.Notification
+	err := notificationCollection.FindOne(context.TODO(),
+		queries.GetNotifictionByCompany(companyId)).Decode(&notification)
+	if err != nil {
+		return nil, true
+	}
+
+	var toList []string
+	for _, entry := range notification.NotificationEmails {
+		if !includeExternalRecipients && isExternalNotificationRecipient(entry.Type) {
+			continue
+		}
+		toList = appendUniqueEmail(toList, entry.Email)
+	}
+	if len(toList) == 0 {
+		return nil, true
+	}
+	return toList, false
+}
+
+func appendUniqueEmail(toList []string, email string) []string {
+	email = strings.TrimSpace(email)
+	if email == "" {
+		return toList
+	}
+	for _, existing := range toList {
+		if strings.EqualFold(existing, email) {
+			return toList
+		}
+	}
+	return append(toList, email)
+}
+
 func GetEmails(isInternal bool, companyId primitive.ObjectID) ([]string, bool) {
 
 	var toList []string
 	if !isInternal {
-		notificationCollection := database.GetInstance().Collection("notifications")
-
-		var notification *responses.Notification
-		err := notificationCollection.FindOne(context.TODO(),
-			queries.GetNotifictionByCompany(companyId)).Decode(&notification)
-		if err != nil {
-			return nil, true
-		}
-		for _, user := range notification.NotificationEmails {
-			toList = append(toList, user.Email)
-		}
+		return GetNotificationEmails(companyId, true)
 	} else {
 		userCollection := database.GetInstance().Collection("users")
 
@@ -489,7 +521,7 @@ func GetEmails(isInternal bool, companyId primitive.ObjectID) ([]string, bool) {
 		}
 		for cursor.Next(context.TODO()) {
 			cursor.Decode(&user)
-			toList = append(toList, user.Email)
+			toList = appendUniqueEmail(toList, user.Email)
 		}
 	}
 	if len(toList) == 0 {

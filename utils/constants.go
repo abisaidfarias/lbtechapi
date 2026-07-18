@@ -26,6 +26,7 @@ var BRAND = "Brand"
 var COUNTRY = "Country"
 var MIME_HEADERS = "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
 var ErrorInvalidCredentials = errors.New("invalid credentials")
+var ErrCertificateGenerating = errors.New("certificate generation in progress")
 var CREATE = "Create"
 var PHASE = "Phase"
 var REQUEST_DELETE = "RequestDelete"
@@ -62,6 +63,7 @@ var SHIPMENT_CONTROL_REQUEST_DELETE_INTERNAL_MAIN_MESSAGE = "The client %s has r
 var SHIPMENT_CONTROL_REQUEST_DELETE_CLIENT_MAIN_MESSAGE = "We have received your request to delete the following Shipment Control project on date. You will receive a notification once the project has been deleted"
 var SHIPMENT_CONTROL_DELETED_MAIN_MESSAGE = "The following Shipment Control project has been deleted on date"
 var TEMPLATE_SHIPMENT_CONTROL_PHASE_PATH = "utils/htmlMessageTemplate/shipment_control_phase.html"
+var TEMPLATE_SHIPMENT_CONTROL_CERTIFICATE_PATH = "utils/htmlMessageTemplate/shipment_control_certificate.html"
 var TEMPLATE_HOMOLOGATION_PATH = "utils/htmlMessageTemplate/createHomologation.html"
 var TEMPLATE_FAIL_PATH = "utils/htmlMessageTemplate/createFail.html"
 var CREATE_FAIL_MAIN_MESSAGE = "A new issue has been created on date"
