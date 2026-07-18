@@ -1,6 +1,7 @@
 package queries
 
 import (
+	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -30,6 +31,89 @@ func UpdateShipmentControlCertificate(oid primitive.ObjectID, certificateURL, re
 			"oabi_certificate_url":    certificateURL,
 			"oabi_certificate_number": registroOABI,
 		},
+	}
+}
+
+func ClaimOabiCertificateGeneration(
+	oid primitive.ObjectID,
+	staleBefore time.Time,
+	state models.OabiCertificateState,
+) (bson.M, bson.M) {
+	filter := bson.M{
+		"_id": oid,
+		"$or": []bson.M{
+			{"oabi_certificate_state.status": bson.M{"$ne": models.OabiCertificateStatusGenerating}},
+			{"oabi_certificate_state.status": bson.M{"$exists": false}},
+			{
+				"oabi_certificate_state.status":     models.OabiCertificateStatusGenerating,
+				"oabi_certificate_state.started_at": bson.M{"$lt": staleBefore},
+			},
+		},
+	}
+	update := bson.M{
+		"$set": bson.M{
+			"oabi_certificate_state.status":         models.OabiCertificateStatusGenerating,
+			"oabi_certificate_state.started_at":     state.StartedAt,
+			"oabi_certificate_state.input_snapshot": state.InputSnapshot,
+			"oabi_certificate_state.control_number": state.ControlNumber,
+			"oabi_certificate_state.error":          "",
+			"oabi_certificate_state.url":            "",
+			"oabi_certificate_state.generated_at":     time.Time{},
+		},
+	}
+	return filter, update
+}
+
+func MarkOabiCertificateReadyFilter(oid primitive.ObjectID) bson.M {
+	return bson.M{
+		"_id": oid,
+		"oabi_certificate_state.status": models.OabiCertificateStatusGenerating,
+	}
+}
+
+func MarkOabiCertificateReadyUpdate(
+	certificateURL string,
+	registroOABI string,
+	generatedAt time.Time,
+) bson.M {
+	baseURL := strings.Split(certificateURL, "?")[0]
+	return bson.M{
+		"$set": bson.M{
+			"oabi_certificate_state.status":       models.OabiCertificateStatusReady,
+			"oabi_certificate_state.url":          certificateURL,
+			"oabi_certificate_state.generated_at": generatedAt,
+			"oabi_certificate_url":                baseURL,
+			"oabi_certificate_number":             registroOABI,
+		},
+		"$inc": bson.M{
+			"oabi_certificate_state.attempts": 1,
+		},
+	}
+}
+
+func MarkOabiCertificateFailedFilter(oid primitive.ObjectID) bson.M {
+	return bson.M{
+		"_id": oid,
+		"oabi_certificate_state.status": models.OabiCertificateStatusGenerating,
+	}
+}
+
+func MarkOabiCertificateFailedUpdate(errorMessage string) bson.M {
+	return bson.M{
+		"$set": bson.M{
+			"oabi_certificate_state.status": models.OabiCertificateStatusFailed,
+			"oabi_certificate_state.error":  errorMessage,
+		},
+		"$inc": bson.M{
+			"oabi_certificate_state.attempts": 1,
+		},
+	}
+}
+
+func GetShipmentControlCertificateStateProjection() bson.M {
+	return bson.M{
+		"oabi_certificate_state": 1,
+		"oabi_certificate_url":   1,
 	}
 }
 

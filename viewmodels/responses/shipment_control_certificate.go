@@ -1,8 +1,14 @@
 package responses
 
-type ShipmentControlCertificate struct {
-	URL            string `json:"url"`
-	RegistroOABI   string `json:"registro_oabi"`
-	ControlNumber  string `json:"control_number"`
-	Regenerated    bool   `json:"regenerated"`
+type ShipmentControlCertificateAccepted struct {
+	Status     string `json:"status"`
+	ShipmentID string `json:"shipment_id"`
+}
+
+type ShipmentControlCertificateStatus struct {
+	Status        string `json:"status"`
+	URL           string `json:"url,omitempty"`
+	ControlNumber string `json:"control_number,omitempty"`
+	GeneratedAt   string `json:"generated_at,omitempty"`
+	Error         string `json:"error,omitempty"`
 }

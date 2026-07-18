@@ -57,7 +57,9 @@ type IShipmentControlService interface {
 
 	BulkConfirm(*request.ShipmentControlBulkConfirm, string, string, string) (*responses.ShipmentControlBulkConfirmResponse, error)
 
-	GenerateCertificate(string, *request.ShipmentControlCertificate, string) (*responses.ShipmentControlCertificate, error)
+	GenerateCertificate(string, *request.ShipmentControlCertificate, string) (*responses.ShipmentControlCertificateAccepted, error)
+
+	GetCertificateStatus(string, string) (*responses.ShipmentControlCertificateStatus, error)
 
 }
 
@@ -79,6 +81,8 @@ type shipmentControlService struct {
 
 	storageService            IStorageService
 
+	pdfEngine                 PDFEngine
+
 }
 
 
@@ -99,6 +103,8 @@ func NewShipmentControlService(
 
 	storageService IStorageService,
 
+	pdfEngine PDFEngine,
+
 ) IShipmentControlService {
 
 	return &shipmentControlService{
@@ -116,6 +122,8 @@ func NewShipmentControlService(
 		countryRepository:         countryRepository,
 
 		storageService:            storageService,
+
+		pdfEngine:                 pdfEngine,
 
 	}
 

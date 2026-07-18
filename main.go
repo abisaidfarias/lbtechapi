@@ -11,6 +11,7 @@ import (
 	"github.com/abisaidfarias/lbtechapi/middlewares"
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/services"
+	"github.com/abisaidfarias/lbtechapi/services/pdfengine"
 	"github.com/abisaidfarias/lbtechapi/utils"
 
 	"github.com/gin-gonic/gin"
@@ -36,6 +37,22 @@ func init() {
 		log.Fatal("Failed to load secrets:", err)
 	}
 	log.Println("✅ Secrets loaded successfully")
+
+	pdfEng, err := pdfengine.New()
+	if err != nil {
+		log.Fatal("Failed to start pdf engine:", err)
+	}
+	shipmentControlService = services.NewShipmentControlService(
+		shipmentControlRepository,
+		multibandaRepository,
+		deviceRepository,
+		userRepository,
+		companyRepository,
+		countryRepository,
+		storageService,
+		pdfEng,
+	)
+	shipmentControlController = controllers.NewShipmentControlController(shipmentControlService)
 }
 
 func getAppVersion() string {
@@ -148,8 +165,8 @@ var (
 	multibandaController controllers.IMultibandaController  = controllers.NewMultibandaController(multibandaService)
 
 	shipmentControlRepository repositories.IShipmentControlRepository = repositories.NewShipmentControlRepository(multibandaRepository)
-	shipmentControlService    services.IShipmentControlService        = services.NewShipmentControlService(shipmentControlRepository, multibandaRepository, deviceRepository, userRepository, companyRepository, countryRepository, storageService)
-	shipmentControlController controllers.IShipmentControlController  = controllers.NewShipmentControlController(shipmentControlService)
+	shipmentControlService    services.IShipmentControlService
+	shipmentControlController controllers.IShipmentControlController
 )
 
 // @title LBTech API
@@ -385,6 +402,7 @@ func main() {
 			shipmentControl.POST("/bulk/validate", shipmentControlController.BulkValidate())
 			shipmentControl.POST("/bulk/confirm", shipmentControlController.BulkConfirm())
 			shipmentControl.POST(":id/certificate", shipmentControlController.GenerateCertificate())
+			shipmentControl.GET(":id/certificate/status", shipmentControlController.GetCertificateStatus())
 			shipmentControl.GET("", shipmentControlController.Get())
 			shipmentControl.GET("/available-multibandas", shipmentControlController.GetAvailableMultibandas())
 			shipmentControl.PUT(":id", shipmentControlController.Update())

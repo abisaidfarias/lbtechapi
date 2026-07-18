@@ -1,25 +1,37 @@
 package services
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/utils"
 	"github.com/abisaidfarias/lbtechapi/utils/enums"
 	"github.com/abisaidfarias/lbtechapi/utils/functions"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+)
+
+const (
+	certificateStaleJobAfter   = 2 * time.Minute
+	certificateWorkerTimeout   = 3 * time.Minute
+	certificateWorkerAttempts  = 2
+	certificateWorkerRetryWait = 5 * time.Second
+	certificateFailedUserError = "certificate generation failed, please retry"
 )
 
 func (s *shipmentControlService) GenerateCertificate(
 	id string,
 	req *request.ShipmentControlCertificate,
 	userID string,
-) (*responses.ShipmentControlCertificate, error) {
+) (*responses.ShipmentControlCertificateAccepted, error) {
 	if err := s.requireProfileClaim(userID, enums.CanWriteShipmentControl); err != nil {
 		return nil, err
 	}
@@ -46,11 +58,17 @@ func (s *shipmentControlService) GenerateCertificate(
 	}
 
 	if shipment.CurrentPhase != enums.ShipmentControlPhaseUnderRevision {
-		return nil, utils.NewValidationError("certificate can only be generated during Under Revision phase")
+		return nil, utils.NewValidationError("certificate only available in Under Revision phase")
 	}
 
 	registroOABI := strings.TrimSpace(req.RegistroOABI)
-	alreadyGenerated := strings.TrimSpace(shipment.OabiCertificateUrl) != ""
+	if registroOABI == "" {
+		return nil, utils.NewValidationError("missing field: registro_oabi")
+	}
+	registeredCount := req.RegisteredCount()
+	if registeredCount <= 0 {
+		return nil, utils.NewValidationError("missing field: registered_imei_count")
+	}
 
 	company, err := s.companyRepository.GetById(shipment.Company.Hex())
 	if err != nil {
@@ -63,15 +81,10 @@ func (s *shipmentControlService) GenerateCertificate(
 		return nil, err
 	}
 
-	multibanda, err := s.multibandaRepository.GetByIdExpanded(shipment.Multibanda)
-	if err != nil {
-		return nil, err
-	}
-	if multibanda == nil {
-		return nil, utils.NewValidationError("multibanda not found")
-	}
-
 	controlNumber := functions.ControlNumberFromCertificateURL(shipment.OabiCertificateUrl)
+	if controlNumber == "" && shipment.OabiCertificateState != nil {
+		controlNumber = strings.TrimSpace(shipment.OabiCertificateState.ControlNumber)
+	}
 	if controlNumber == "" {
 		controlNumber, err = s.nextShipmentControlNumber(company.ClientID)
 		if err != nil {
@@ -79,12 +92,160 @@ func (s *shipmentControlService) GenerateCertificate(
 		}
 	}
 
+	now := time.Now()
+	claimState := models.OabiCertificateState{
+		Status:        models.OabiCertificateStatusGenerating,
+		ControlNumber: controlNumber,
+		StartedAt:     now,
+		InputSnapshot: models.OabiCertificateInputSnapshot{
+			RegistroOABI:        registroOABI,
+			RegisteredImeiCount: registeredCount,
+		},
+	}
+
+	staleBefore := now.Add(-certificateStaleJobAfter)
+	claimed, err := s.shipmentControlRepository.ClaimCertificateGeneration(shipmentControlID, claimState, staleBefore)
+	if err != nil {
+		return nil, err
+	}
+	if !claimed {
+		return nil, utils.ErrCertificateGenerating
+	}
+
+	s.generateCertificateAsync(shipmentControlID.Hex())
+
+	return &responses.ShipmentControlCertificateAccepted{
+		Status:     models.OabiCertificateStatusGenerating,
+		ShipmentID: shipmentControlID.Hex(),
+	}, nil
+}
+
+func (s *shipmentControlService) GetCertificateStatus(
+	id string,
+	userID string,
+) (*responses.ShipmentControlCertificateStatus, error) {
+	if err := s.requireProfileClaim(userID, enums.CanReadShipmentControl); err != nil {
+		return nil, err
+	}
+
+	shipmentControlID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, utils.NewValidationError("invalid shipment control id")
+	}
+
+	shipment, err := s.shipmentControlRepository.GetById(shipmentControlID)
+	if err != nil {
+		return nil, err
+	}
+	if shipment == nil {
+		return nil, utils.NewValidationError("shipment control not found")
+	}
+
+	user, err := s.userRepository.GetByID(userID)
+	if err != nil {
+		return nil, err
+	}
+	if !functions.UserHasClientAccess(user, shipment.Company) {
+		return nil, fmt.Errorf("%w", utils.ErrorForbidden)
+	}
+
+	return mapCertificateStatus(shipment.OabiCertificateState), nil
+}
+
+func mapCertificateStatus(state *models.OabiCertificateState) *responses.ShipmentControlCertificateStatus {
+	if state == nil || strings.TrimSpace(state.Status) == "" {
+		return &responses.ShipmentControlCertificateStatus{Status: "none"}
+	}
+
+	resp := &responses.ShipmentControlCertificateStatus{
+		Status:        state.Status,
+		URL:           state.URL,
+		ControlNumber: state.ControlNumber,
+	}
+	if !state.GeneratedAt.IsZero() {
+		resp.GeneratedAt = state.GeneratedAt.UTC().Format(time.RFC3339)
+	}
+	if state.Status == models.OabiCertificateStatusFailed {
+		msg := strings.TrimSpace(state.Error)
+		if msg == "" {
+			msg = certificateFailedUserError
+		}
+		resp.Error = msg
+	}
+	return resp
+}
+
+func (s *shipmentControlService) generateCertificateAsync(shipmentControlID string) {
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Printf("panic generating certificate %s: %v", shipmentControlID, r)
+				s.markCertificateFailed(shipmentControlID, certificateFailedUserError)
+			}
+		}()
+
+		ctx, cancel := context.WithTimeout(context.Background(), certificateWorkerTimeout)
+		defer cancel()
+
+		var lastErr error
+		for attempt := 1; attempt <= certificateWorkerAttempts; attempt++ {
+			if lastErr = s.generateCertificateOnce(ctx, shipmentControlID); lastErr == nil {
+				return
+			}
+			log.Printf("shipment certificate %s attempt %d/%d failed: %v",
+				shipmentControlID, attempt, certificateWorkerAttempts, lastErr)
+			if attempt < certificateWorkerAttempts {
+				time.Sleep(certificateWorkerRetryWait)
+			}
+		}
+		log.Printf("shipment certificate %s abandoned after %d attempts: %v",
+			shipmentControlID, certificateWorkerAttempts, lastErr)
+		s.markCertificateFailed(shipmentControlID, certificateFailedUserError)
+	}()
+}
+
+func (s *shipmentControlService) generateCertificateOnce(ctx context.Context, shipmentControlID string) error {
+	oid, err := primitive.ObjectIDFromHex(shipmentControlID)
+	if err != nil {
+		return err
+	}
+
+	shipment, err := s.shipmentControlRepository.GetById(oid)
+	if err != nil {
+		return err
+	}
+	if shipment == nil || shipment.OabiCertificateState == nil {
+		return fmt.Errorf("shipment certificate state not found")
+	}
+	if shipment.OabiCertificateState.Status != models.OabiCertificateStatusGenerating {
+		return nil
+	}
+
+	snapshot := shipment.OabiCertificateState.InputSnapshot
+	controlNumber := strings.TrimSpace(shipment.OabiCertificateState.ControlNumber)
+	if controlNumber == "" {
+		controlNumber = functions.ControlNumberFromCertificateURL(shipment.OabiCertificateUrl)
+	}
+	if controlNumber == "" {
+		return fmt.Errorf("missing control number for certificate generation")
+	}
+
+	company, err := s.companyRepository.GetById(shipment.Company.Hex())
+	if err != nil || company == nil {
+		return fmt.Errorf("company not found for certificate generation")
+	}
+
+	multibanda, err := s.multibandaRepository.GetByIdExpanded(shipment.Multibanda)
+	if err != nil || multibanda == nil {
+		return fmt.Errorf("multibanda not found for certificate generation")
+	}
+
 	certData := functions.BuildShipmentControlCertificateData(
 		company,
 		multibanda,
 		controlNumber,
-		req.RegistroOABI,
-		req.RegisteredCount(),
+		snapshot.RegistroOABI,
+		snapshot.RegisteredImeiCount,
 		shipment.ReworkNumber,
 	)
 
@@ -93,30 +254,44 @@ func (s *shipmentControlService) GenerateCertificate(
 		utils.TEMPLATE_SHIPMENT_CONTROL_CERTIFICATE_PATH,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("render certificate html: %w", err)
+		return fmt.Errorf("render certificate html: %w", err)
 	}
 
-	pdfBytes, err := shipmentControlCertificateHTMLToPDF(htmlBytes)
+	if s.pdfEngine == nil {
+		return fmt.Errorf("pdf engine not configured")
+	}
+	pdfBytes, err := s.pdfEngine.RenderPDF(ctx, string(htmlBytes))
 	if err != nil {
-		return nil, fmt.Errorf("generate certificate pdf: %w", err)
+		return fmt.Errorf("generate certificate pdf: %w", err)
 	}
 
 	objectKey := shipmentCertificateObjectKey(controlNumber)
-	certificateURL, err := s.uploadShipmentCertificateToS3(objectKey, pdfBytes)
+	baseURL, err := s.uploadShipmentCertificateToS3(objectKey, pdfBytes)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	if err := s.shipmentControlRepository.UpdateCertificate(shipmentControlID, certificateURL, registroOABI); err != nil {
-		return nil, err
-	}
+	certificateURL := functions.CacheBustCertificateURL(baseURL)
+	generatedAt := time.Now()
+	return s.shipmentControlRepository.MarkCertificateReady(
+		oid,
+		certificateURL,
+		strings.TrimSpace(snapshot.RegistroOABI),
+		generatedAt,
+	)
+}
 
-	return &responses.ShipmentControlCertificate{
-		URL:           functions.CacheBustCertificateURL(certificateURL),
-		RegistroOABI:  registroOABI,
-		ControlNumber: controlNumber,
-		Regenerated:   alreadyGenerated,
-	}, nil
+func (s *shipmentControlService) markCertificateFailed(shipmentControlID, message string) {
+	oid, err := primitive.ObjectIDFromHex(shipmentControlID)
+	if err != nil {
+		log.Printf("certificate failed invalid id %s: %v", shipmentControlID, err)
+		return
+	}
+	if err := s.shipmentControlRepository.MarkCertificateFailed(oid, message); err != nil {
+		if !errors.Is(err, mongo.ErrNoDocuments) {
+			log.Printf("certificate mark failed %s: %v", shipmentControlID, err)
+		}
+	}
 }
 
 func validateCompanyCertificateFields(company *responses.Company) error {

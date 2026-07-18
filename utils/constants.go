@@ -26,6 +26,7 @@ var BRAND = "Brand"
 var COUNTRY = "Country"
 var MIME_HEADERS = "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
 var ErrorInvalidCredentials = errors.New("invalid credentials")
+var ErrCertificateGenerating = errors.New("certificate generation in progress")
 var CREATE = "Create"
 var PHASE = "Phase"
 var REQUEST_DELETE = "RequestDelete"
