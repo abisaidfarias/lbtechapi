@@ -22,8 +22,9 @@ const (
 
 // ShipmentControlCertificateData is passed to the certificate HTML template.
 type ShipmentControlCertificateData struct {
-	LBLogoDataURI      template.URL
-	CompanyLogoURL     string
+	LBLogoDataURI       template.URL
+	OfficialSealDataURI template.URL
+	CompanyLogoURL      string
 	ChileGovLogoURL    string
 	ControlNumber      string
 	CertificadoraName  string
@@ -67,8 +68,9 @@ func BuildShipmentControlCertificateData(
 	}
 
 	return ShipmentControlCertificateData{
-		LBLogoDataURI:      shipmentCertificateLogoDataURI(),
-		CompanyLogoURL:     strings.TrimSpace(company.LogoUrl),
+		LBLogoDataURI:       shipmentCertificateLogoDataURI(),
+		OfficialSealDataURI: shipmentCertificateOfficialSealDataURI(),
+		CompanyLogoURL:      strings.TrimSpace(company.LogoUrl),
 		ChileGovLogoURL:    strings.TrimSpace(os.Getenv("SHIPMENT_CERT_CHILE_LOGO_URL")),
 		ControlNumber:      controlNumber,
 		CertificadoraName:  ShipmentCertificadoraName,
@@ -132,6 +134,16 @@ func shipmentCertificateLogoDataURI() template.URL {
 		return ""
 	}
 	return template.URL("data:image/png;base64," + base64.StdEncoding.EncodeToString(utils.LBOneTrackLogoPNG))
+}
+
+func shipmentCertificateOfficialSealDataURI() template.URL {
+	if customURL := strings.TrimSpace(os.Getenv("SHIPMENT_CERT_OFFICIAL_SEAL_URL")); customURL != "" {
+		return template.URL(customURL)
+	}
+	if len(utils.ShipmentControlOfficialSealPNG) == 0 {
+		return ""
+	}
+	return template.URL("data:image/png;base64," + base64.StdEncoding.EncodeToString(utils.ShipmentControlOfficialSealPNG))
 }
 
 func formatShipmentCertificateDate(value time.Time) string {

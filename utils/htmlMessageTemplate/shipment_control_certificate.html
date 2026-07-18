@@ -147,9 +147,10 @@
       margin-bottom: 8px;
     }
     .official-seal {
-      width: 150px;
-      height: 150px;
+      width: 170px;
+      height: 170px;
       margin: 0 auto;
+      display: block;
     }
     .doc-footer-note {
       text-align: center;
@@ -350,23 +351,13 @@
                     <div class="muted" style="font-size:12px;">Santiago, Chile</div>
                   </td>
                   <td width="45%" valign="middle" align="center">
-                    <svg class="official-seal" viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sello oficial LB Technology">
-                      <defs>
-                        <path id="seal-top-arc" d="M 30 58 A 45 45 0 0 1 120 58" fill="none"/>
-                      </defs>
-                      <circle cx="75" cy="75" r="68" fill="none" stroke="#8DB319" stroke-width="3"/>
-                      <circle cx="75" cy="75" r="62" fill="none" stroke="#8DB319" stroke-width="1.5" stroke-dasharray="3 4"/>
-                      <path d="M75 12 L78 18 L84 18 L79 22 L81 28 L75 24 L69 28 L71 22 L66 18 L72 18 Z" fill="#8DB319"/>
-                      <path d="M75 138 L78 132 L84 132 L79 128 L81 122 L75 126 L69 122 L71 128 L66 132 L72 132 Z" fill="#8DB319"/>
-                      <path d="M12 75 L18 72 L18 66 L22 71 L28 69 L24 75 L28 81 L22 79 L18 84 L18 78 Z" fill="#8DB319"/>
-                      <path d="M138 75 L132 78 L132 84 L128 79 L122 81 L126 75 L122 69 L128 71 L132 66 L132 72 Z" fill="#8DB319"/>
-                      <text font-family="Arial, Helvetica, sans-serif" font-size="8" font-weight="700" fill="#8DB319" letter-spacing="0.5">
-                        <textPath href="#seal-top-arc" startOffset="50%" text-anchor="middle">LBtechnology SPA</textPath>
-                      </text>
-                      <text x="75" y="72" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#8DB319">CERTIFICADO</text>
-                      <text x="75" y="88" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#8DB319">OFICIAL</text>
-                      <text x="75" y="108" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="700" fill="#8DB319">LABORATORIO 110</text>
-                    </svg>
+                    {{ if .OfficialSealDataURI }}
+                    <img
+                      class="official-seal"
+                      src="{{ .OfficialSealDataURI }}"
+                      alt="Sello oficial LB Technology SPA"
+                    />
+                    {{ end }}
                   </td>
                 </tr>
               </table>
