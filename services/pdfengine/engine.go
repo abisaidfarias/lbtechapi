@@ -55,12 +55,7 @@ func chromeAllocatorOptions() []chromedp.ExecAllocatorOption {
 func (e *Engine) startAllocator() error {
 	opts := chromeAllocatorOptions()
 	e.allocCtx, e.allocStop = chromedp.NewExecAllocator(context.Background(), opts...)
-
-	warmupCtx, cancelWarmup := chromedp.NewContext(e.allocCtx)
-	defer cancelWarmup()
-	warmupTO, cancelTO := context.WithTimeout(warmupCtx, 30*time.Second)
-	defer cancelTO()
-	return chromedp.Run(warmupTO, chromedp.Navigate("about:blank"))
+	return nil
 }
 
 func (e *Engine) restartAllocator() error {

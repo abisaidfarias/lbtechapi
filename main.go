@@ -11,7 +11,6 @@ import (
 	"github.com/abisaidfarias/lbtechapi/middlewares"
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/services"
-	"github.com/abisaidfarias/lbtechapi/services/pdfengine"
 	"github.com/abisaidfarias/lbtechapi/utils"
 
 	"github.com/gin-gonic/gin"
@@ -38,10 +37,6 @@ func init() {
 	}
 	log.Println("✅ Secrets loaded successfully")
 
-	pdfEng, err := pdfengine.New()
-	if err != nil {
-		log.Fatal("Failed to start pdf engine:", err)
-	}
 	shipmentControlService = services.NewShipmentControlService(
 		shipmentControlRepository,
 		multibandaRepository,
@@ -50,7 +45,7 @@ func init() {
 		companyRepository,
 		countryRepository,
 		storageService,
-		pdfEng,
+		services.NewLazyPDFEngine(),
 	)
 	shipmentControlController = controllers.NewShipmentControlController(shipmentControlService)
 }
