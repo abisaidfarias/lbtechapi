@@ -267,18 +267,10 @@ func (s *shipmentControlService) generateCertificateOnce(ctx context.Context, sh
 		shipment.ReworkNumber,
 	)
 
-	htmlBytes, err := functions.RenderShipmentControlCertificateHTML(
-		certData,
-		utils.TEMPLATE_SHIPMENT_CONTROL_CERTIFICATE_PATH,
-	)
-	if err != nil {
-		return fmt.Errorf("render certificate html: %w", err)
-	}
-
-	if s.pdfEngine == nil {
-		return fmt.Errorf("pdf engine not configured")
-	}
-	pdfBytes, err := s.pdfEngine.RenderPDF(ctx, string(htmlBytes))
+	// Native PDF build: no headless browser, so this is deterministic and fast
+	// on any instance size. ctx is kept on the signature for the S3 upload and
+	// future cancellation but the render itself is CPU-bound and near-instant.
+	pdfBytes, err := functions.BuildShipmentControlCertificatePDF(certData)
 	if err != nil {
 		return fmt.Errorf("generate certificate pdf: %w", err)
 	}
