@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/abisaidfarias/lbtechapi/models"
+	"github.com/abisaidfarias/lbtechapi/services/pdfengine"
 	"github.com/abisaidfarias/lbtechapi/utils"
 	"github.com/abisaidfarias/lbtechapi/utils/enums"
 	"github.com/abisaidfarias/lbtechapi/utils/functions"
@@ -20,12 +21,29 @@ import (
 )
 
 const (
-	certificateStaleJobAfter   = 2 * time.Minute
-	certificateWorkerTimeout   = 3 * time.Minute
 	certificateWorkerAttempts  = 2
 	certificateWorkerRetryWait = 5 * time.Second
+	certificateWorkerSlack     = 30 * time.Second
 	certificateFailedUserError = "certificate generation failed, please retry"
+	certificateErrorMaxLen     = 300
 )
+
+// certificateWorkerTimeout is the budget for the whole job. It is derived from
+// the render budget so the two cannot drift apart: a worker deadline shorter
+// than attempts x render kills the job mid-render and always reports failure.
+func certificateWorkerTimeout() time.Duration {
+	render := pdfengine.RenderTimeout()
+	return time.Duration(certificateWorkerAttempts)*render +
+		time.Duration(certificateWorkerAttempts-1)*certificateWorkerRetryWait +
+		certificateWorkerSlack
+}
+
+// certificateStaleJobAfter must outlive the worker, otherwise a user retrying
+// from the modal claims a job that is still rendering and the two pile up
+// behind the render semaphore.
+func certificateStaleJobAfter() time.Duration {
+	return certificateWorkerTimeout() + time.Minute
+}
 
 func (s *shipmentControlService) GenerateCertificate(
 	id string,
@@ -81,11 +99,18 @@ func (s *shipmentControlService) GenerateCertificate(
 		return nil, err
 	}
 
-	controlNumber := functions.ControlNumberFromCertificateURL(shipment.OabiCertificateUrl)
-	if controlNumber == "" && shipment.OabiCertificateState != nil {
+	// Prefer the number already stored on the shipment; only fall back to
+	// parsing the S3 URL. Any resolved value is rebuilt from the client id when
+	// it is missing or malformed, so a value corrupted by earlier runs (e.g. a
+	// URL-encoded "%25") self-heals instead of being reused forever.
+	controlNumber := ""
+	if shipment.OabiCertificateState != nil {
 		controlNumber = strings.TrimSpace(shipment.OabiCertificateState.ControlNumber)
 	}
 	if controlNumber == "" {
+		controlNumber = functions.ControlNumberFromCertificateURL(shipment.OabiCertificateUrl)
+	}
+	if !functions.IsValidControlNumber(controlNumber) {
 		controlNumber, err = s.nextShipmentControlNumber(company.ClientID)
 		if err != nil {
 			return nil, err
@@ -103,7 +128,7 @@ func (s *shipmentControlService) GenerateCertificate(
 		},
 	}
 
-	staleBefore := now.Add(-certificateStaleJobAfter)
+	staleBefore := now.Add(-certificateStaleJobAfter())
 	claimed, err := s.shipmentControlRepository.ClaimCertificateGeneration(shipmentControlID, claimState, staleBefore)
 	if err != nil {
 		return nil, err
@@ -180,11 +205,11 @@ func (s *shipmentControlService) generateCertificateAsync(shipmentControlID stri
 		defer func() {
 			if r := recover(); r != nil {
 				log.Printf("panic generating certificate %s: %v", shipmentControlID, r)
-				s.markCertificateFailed(shipmentControlID, certificateFailedUserError)
+				s.markCertificateFailed(shipmentControlID, certificateFailureMessage(fmt.Errorf("panic: %v", r)))
 			}
 		}()
 
-		ctx, cancel := context.WithTimeout(context.Background(), certificateWorkerTimeout)
+		ctx, cancel := context.WithTimeout(context.Background(), certificateWorkerTimeout())
 		defer cancel()
 
 		var lastErr error
@@ -200,7 +225,7 @@ func (s *shipmentControlService) generateCertificateAsync(shipmentControlID stri
 		}
 		log.Printf("shipment certificate %s abandoned after %d attempts: %v",
 			shipmentControlID, certificateWorkerAttempts, lastErr)
-		s.markCertificateFailed(shipmentControlID, certificateFailedUserError)
+		s.markCertificateFailed(shipmentControlID, certificateFailureMessage(lastErr))
 	}()
 }
 
@@ -249,18 +274,10 @@ func (s *shipmentControlService) generateCertificateOnce(ctx context.Context, sh
 		shipment.ReworkNumber,
 	)
 
-	htmlBytes, err := functions.RenderShipmentControlCertificateHTML(
-		certData,
-		utils.TEMPLATE_SHIPMENT_CONTROL_CERTIFICATE_PATH,
-	)
-	if err != nil {
-		return fmt.Errorf("render certificate html: %w", err)
-	}
-
-	if s.pdfEngine == nil {
-		return fmt.Errorf("pdf engine not configured")
-	}
-	pdfBytes, err := s.pdfEngine.RenderPDF(ctx, string(htmlBytes))
+	// Native PDF build: no headless browser, so this is deterministic and fast
+	// on any instance size. ctx is kept on the signature for the S3 upload and
+	// future cancellation but the render itself is CPU-bound and near-instant.
+	pdfBytes, err := functions.BuildShipmentControlCertificatePDF(certData)
 	if err != nil {
 		return fmt.Errorf("generate certificate pdf: %w", err)
 	}
@@ -279,6 +296,43 @@ func (s *shipmentControlService) generateCertificateOnce(ctx context.Context, sh
 		strings.TrimSpace(snapshot.RegistroOABI),
 		generatedAt,
 	)
+}
+
+// certificateFailureMessage turns the internal error into something that
+// explains the failure in the modal. Storing one generic string for every cause
+// made timeouts, a missing Chrome and S3 errors indistinguishable without
+// pulling EB logs.
+func certificateFailureMessage(err error) string {
+	if err == nil {
+		return certificateFailedUserError
+	}
+	msg := strings.TrimSpace(err.Error())
+	if msg == "" {
+		return certificateFailedUserError
+	}
+
+	lower := strings.ToLower(msg)
+	var hint string
+	switch {
+	case errors.Is(err, context.DeadlineExceeded), strings.Contains(lower, "deadline exceeded"):
+		hint = "PDF render timed out (raise SHIPMENT_CERT_PDF_TIMEOUT_SEC or instance CPU)"
+	case strings.Contains(lower, "chrome failed to start"),
+		strings.Contains(lower, "executable file not found"):
+		hint = "Chrome/Chromium unavailable (install it or set CHROME_PATH)"
+	case strings.Contains(lower, "upload certificate to s3"):
+		hint = "could not upload the certificate to storage"
+	default:
+		hint = msg
+	}
+	return truncateRunes(hint, certificateErrorMaxLen)
+}
+
+func truncateRunes(s string, max int) string {
+	runes := []rune(s)
+	if len(runes) <= max {
+		return s
+	}
+	return string(runes[:max])
 }
 
 func (s *shipmentControlService) markCertificateFailed(shipmentControlID, message string) {

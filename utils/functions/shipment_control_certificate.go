@@ -5,7 +5,9 @@ import (
 	"encoding/base64"
 	"fmt"
 	"html/template"
+	"net/url"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -13,6 +15,17 @@ import (
 	"github.com/abisaidfarias/lbtechapi/utils"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 )
+
+// controlNumberPattern matches a well-formed control number: an alphanumeric
+// client code, a dash, then 9 digits (YYMMDD + 3-digit sequence).
+var controlNumberPattern = regexp.MustCompile(`^[A-Za-z0-9]+-[0-9]{9}$`)
+
+// IsValidControlNumber reports whether s has the expected control-number shape.
+// It rejects values corrupted by URL-encoding (e.g. a stray "%25") so callers
+// can rebuild a clean number from the company client id instead of reusing junk.
+func IsValidControlNumber(s string) bool {
+	return controlNumberPattern.MatchString(strings.TrimSpace(s))
+}
 
 const (
 	ShipmentCertificadoraName           = "LB Technology SPA"
@@ -190,7 +203,13 @@ func ControlNumberFromCertificateURL(certificateURL string) string {
 	}
 	certificateURL = strings.Split(certificateURL, "?")[0]
 	base := certificateURL[strings.LastIndex(certificateURL, "/")+1:]
-	return strings.TrimSuffix(base, ".pdf")
+	base = strings.TrimSuffix(base, ".pdf")
+	// S3 URLs percent-encode the key, so decode before returning to avoid a
+	// stray "%25" leaking back into the control number.
+	if decoded, err := url.QueryUnescape(base); err == nil {
+		base = decoded
+	}
+	return base
 }
 
 // CacheBustCertificateURL appends a version query param so browsers fetch the latest PDF

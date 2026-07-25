@@ -16,8 +16,17 @@ import (
 
 const (
 	defaultMaxRendersBeforeRestart = 200
-	defaultRenderTimeoutSec        = 90
+	// A render on a small EB instance regularly needs several minutes for
+	// chromedp + heavy HTML (see moveReportPDFTimeout). A local-sized budget
+	// here makes the job fail on dev/prod while passing on a dev machine.
+	defaultRenderTimeoutSec = 300
 )
+
+// RenderTimeout reports the per-render budget so callers can size their own job
+// deadlines around it instead of hardcoding a value that silently disagrees.
+func RenderTimeout() time.Duration {
+	return time.Duration(envIntPositive("SHIPMENT_CERT_PDF_TIMEOUT_SEC", defaultRenderTimeoutSec)) * time.Second
+}
 
 type Engine struct {
 	mu        sync.Mutex
@@ -76,12 +85,17 @@ func (e *Engine) RenderPDF(parent context.Context, html string) ([]byte, error) 
 		return nil, parent.Err()
 	}
 
-	pdf, err := e.renderOnce(html)
+	pdf, err := e.renderOnce(parent, html)
+	// A cancelled caller looks like a dead browser to isBrowserDead; check the
+	// caller first so giving up does not restart Chrome and render again.
+	if err != nil && parent.Err() != nil {
+		return nil, parent.Err()
+	}
 	if err != nil && isBrowserDead(err) {
 		if rerr := e.restartAllocator(); rerr != nil {
 			return nil, rerr
 		}
-		pdf, err = e.renderOnce(html)
+		pdf, err = e.renderOnce(parent, html)
 	}
 
 	e.mu.Lock()
@@ -96,7 +110,7 @@ func (e *Engine) RenderPDF(parent context.Context, html string) ([]byte, error) 
 	return pdf, err
 }
 
-func (e *Engine) renderOnce(html string) ([]byte, error) {
+func (e *Engine) renderOnce(parent context.Context, html string) ([]byte, error) {
 	tmpDir, err := os.MkdirTemp("", "lbtech-shipment-cert-*")
 	if err != nil {
 		return nil, err
@@ -113,8 +127,6 @@ func (e *Engine) renderOnce(html string) ([]byte, error) {
 		return nil, err
 	}
 
-	timeoutSec := envIntPositive("SHIPMENT_CERT_PDF_TIMEOUT_SEC", defaultRenderTimeoutSec)
-
 	e.mu.Lock()
 	allocCtx := e.allocCtx
 	e.mu.Unlock()
@@ -122,8 +134,22 @@ func (e *Engine) renderOnce(html string) ([]byte, error) {
 	jobCtx, cancelJob := chromedp.NewContext(allocCtx)
 	defer cancelJob()
 
-	ctx, cancel := context.WithTimeout(jobCtx, time.Duration(timeoutSec)*time.Second)
+	ctx, cancel := context.WithTimeout(jobCtx, RenderTimeout())
 	defer cancel()
+
+	// chromedp requires the allocator as its parent, so the caller's context
+	// cannot be chained in directly. Watch it instead: without this, a caller
+	// that times out leaves Chrome rendering in the background, and on a small
+	// instance those orphans pile up and starve every later render.
+	done := make(chan struct{})
+	defer close(done)
+	go func() {
+		select {
+		case <-parent.Done():
+			cancel()
+		case <-done:
+		}
+	}()
 
 	var pdf []byte
 	err = chromedp.Run(ctx,
