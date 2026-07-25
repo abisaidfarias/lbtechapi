@@ -200,43 +200,63 @@ func drawDeviceData(pdf *fpdf.Fpdf, data ShipmentControlCertificateData, y float
 func drawGuides(pdf *fpdf.Fpdf, data ShipmentControlCertificateData, y float64) float64 {
 	y = drawSectionHeading(pdf, certContentX0, y, certContentW, "Guías del Embarque")
 
-	headers := []string{"Fecha", "Registro OABI", "Modelo", "Rework", "Cantidad registrada"}
-	widths := []float64{0.18, 0.22, 0.24, 0.14, 0.22}
+	headers := []string{"Fecha", "Registro OABI", "Modelo", "Rework", "Imeis registrados"}
+	widths := []float64{0.15, 0.19, 0.25, 0.23, 0.18}
 	values := []string{
 		data.ShipmentDate,
 		data.RegistroOABI,
 		data.CommercialModel,
 		data.ReworkNumber,
-		data.RegisteredImeiCount + " IMEIs",
+		data.RegisteredImeiCount,
 	}
 
 	// Header row.
 	fill(pdf, certTableHead)
 	textColor(pdf, certNavy)
-	setFont(pdf, "B", 8)
 	x := certContentX0
 	for i, hh := range headers {
 		w := widths[i] * certContentW
-		pdf.SetXY(x, y)
-		pdf.CellFormat(w, 8, tr(pdf, hh), "", 0, "L", true, 0, "")
+		drawTableCell(pdf, x, y, w, 8, hh, 8, 6.5, true)
 		x += w
 	}
 	y += 8
 
-	// Value row with a top border.
+	// Value row with a top border. Each cell is shrunk/truncated to its column
+	// so long values (e.g. a rework code) can no longer bleed into the next.
 	draw(pdf, certBorder)
 	pdf.SetLineWidth(0.2)
 	pdf.Line(certContentX0, y, certContentX1, y)
 	textColor(pdf, certInk)
-	setFont(pdf, "B", 9)
 	x = certContentX0
 	for i, v := range values {
 		w := widths[i] * certContentW
-		pdf.SetXY(x, y+1)
-		pdf.CellFormat(w, 8, tr(pdf, v), "", 0, "L", false, 0, "")
+		drawTableCell(pdf, x, y+1, w, 8, v, 9, 7, false)
 		x += w
 	}
 	return y + 10
+}
+
+// drawTableCell renders text confined to its column: it shrinks the font down
+// to min, then truncates with an ellipsis, so a cell never overflows into the
+// neighbouring column.
+func drawTableCell(pdf *fpdf.Fpdf, x, y, w, h float64, text string, base, min float64, fillCell bool) {
+	const pad = 1.5
+	avail := w - 2*pad
+	size := base
+	pdf.SetFont("Helvetica", "B", size)
+	for size > min && pdf.GetStringWidth(tr(pdf, text)) > avail {
+		size -= 0.5
+		pdf.SetFont("Helvetica", "B", size)
+	}
+	txt := text
+	if pdf.GetStringWidth(tr(pdf, txt)) > avail {
+		for len(txt) > 1 && pdf.GetStringWidth(tr(pdf, txt+"...")) > avail {
+			txt = txt[:len(txt)-1]
+		}
+		txt += "..."
+	}
+	pdf.SetXY(x, y)
+	pdf.CellFormat(w, h, tr(pdf, txt), "", 0, "L", fillCell, 0, "")
 }
 
 func drawChecklist(pdf *fpdf.Fpdf, y float64) float64 {

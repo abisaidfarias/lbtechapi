@@ -99,11 +99,18 @@ func (s *shipmentControlService) GenerateCertificate(
 		return nil, err
 	}
 
-	controlNumber := functions.ControlNumberFromCertificateURL(shipment.OabiCertificateUrl)
-	if controlNumber == "" && shipment.OabiCertificateState != nil {
+	// Prefer the number already stored on the shipment; only fall back to
+	// parsing the S3 URL. Any resolved value is rebuilt from the client id when
+	// it is missing or malformed, so a value corrupted by earlier runs (e.g. a
+	// URL-encoded "%25") self-heals instead of being reused forever.
+	controlNumber := ""
+	if shipment.OabiCertificateState != nil {
 		controlNumber = strings.TrimSpace(shipment.OabiCertificateState.ControlNumber)
 	}
 	if controlNumber == "" {
+		controlNumber = functions.ControlNumberFromCertificateURL(shipment.OabiCertificateUrl)
+	}
+	if !functions.IsValidControlNumber(controlNumber) {
 		controlNumber, err = s.nextShipmentControlNumber(company.ClientID)
 		if err != nil {
 			return nil, err
