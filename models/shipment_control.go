@@ -46,6 +46,10 @@ type ShipmentControl struct {
 
 	RegisteredImeiCount     int                `bson:"registered_imei_count"`
 
+	ReferenceID             string             `bson:"reference_id"`
+
+	Validation              string             `bson:"validation"`
+
 	ReworkNumber            string             `bson:"rework_number"`
 
 	OabiCertificate         string             `bson:"oabi_certificate"`

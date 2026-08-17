@@ -100,6 +100,10 @@ type ShipmentControlExpanded struct {
 
 	RegisteredImeiCount     int                             `bson:"registered_imei_count" json:"registered_imei_count"`
 
+	ReferenceID             string                          `bson:"reference_id" json:"reference_id"`
+
+	Validation              string                          `bson:"validation" json:"validation"`
+
 	ReworkNumber            string                          `bson:"rework_number" json:"rework_number"`
 
 	OabiCertificate         string                          `bson:"oabi_certificate" json:"oabi_certificate"`

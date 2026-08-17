@@ -39,6 +39,12 @@ Brightcell;75966;Xiaomi 17T;350;2602DPT53G;1.08;3.0.302.0.WPTMIXM;DZ2026CLB0627;
 	if rows[0].TechnicalModel != "2602DPT53G" {
 		t.Fatalf("unexpected technical_model: %s", rows[0].TechnicalModel)
 	}
+	if rows[0].ReferenceID != "75966" {
+		t.Fatalf("unexpected reference_id: %s", rows[0].ReferenceID)
+	}
+	if rows[0].Validation != "4" {
+		t.Fatalf("unexpected validation: %s", rows[0].Validation)
+	}
 }
 
 func TestParseShipmentControlBulkCSV(t *testing.T) {

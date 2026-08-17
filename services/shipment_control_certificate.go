@@ -174,10 +174,11 @@ func (s *shipmentControlService) GetCertificateStatus(
 		return nil, fmt.Errorf("%w", utils.ErrorForbidden)
 	}
 
-	return mapCertificateStatus(shipment.OabiCertificateState), nil
+	return mapCertificateStatus(shipment), nil
 }
 
-func mapCertificateStatus(state *models.OabiCertificateState) *responses.ShipmentControlCertificateStatus {
+func mapCertificateStatus(shipment *models.ShipmentControl) *responses.ShipmentControlCertificateStatus {
+	state := shipment.OabiCertificateState
 	if state == nil || strings.TrimSpace(state.Status) == "" {
 		return &responses.ShipmentControlCertificateStatus{Status: "none"}
 	}
@@ -186,6 +187,14 @@ func mapCertificateStatus(state *models.OabiCertificateState) *responses.Shipmen
 		Status:        state.Status,
 		URL:           state.URL,
 		ControlNumber: state.ControlNumber,
+	}
+	if state.Status == models.OabiCertificateStatusReady {
+		resp.FileName = functions.BuildShipmentCertificateFileName(
+			state.ControlNumber,
+			shipment.ReferenceID,
+			shipment.ReworkNumber,
+			shipment.OabiCertificateNumber,
+		)
 	}
 	if !state.GeneratedAt.IsZero() {
 		resp.GeneratedAt = state.GeneratedAt.UTC().Format(time.RFC3339)
@@ -283,7 +292,13 @@ func (s *shipmentControlService) generateCertificateOnce(ctx context.Context, sh
 	}
 
 	objectKey := shipmentCertificateObjectKey(controlNumber)
-	baseURL, err := s.uploadShipmentCertificateToS3(objectKey, pdfBytes)
+	downloadFileName := functions.BuildShipmentCertificateFileName(
+		controlNumber,
+		shipment.ReferenceID,
+		shipment.ReworkNumber,
+		snapshot.RegistroOABI,
+	)
+	baseURL, err := s.uploadShipmentCertificateToS3(objectKey, downloadFileName, pdfBytes)
 	if err != nil {
 		return err
 	}
@@ -381,7 +396,7 @@ func shipmentCertificateObjectKey(controlNumber string) string {
 	return fmt.Sprintf("%s/%s.pdf", prefix, safeName)
 }
 
-func (s *shipmentControlService) uploadShipmentCertificateToS3(objectKey string, pdfBytes []byte) (string, error) {
+func (s *shipmentControlService) uploadShipmentCertificateToS3(objectKey, downloadFileName string, pdfBytes []byte) (string, error) {
 	if s.storageService == nil {
 		return "", fmt.Errorf("storage not configured")
 	}
@@ -392,7 +407,7 @@ func (s *shipmentControlService) uploadShipmentCertificateToS3(objectKey string,
 	var url string
 	var err error
 	for attempt := 1; attempt <= 3; attempt++ {
-		url, err = s.storageService.UploadFileWithKey(pdfBytes, objectKey)
+		url, err = s.storageService.UploadFileWithKeyAndName(pdfBytes, objectKey, downloadFileName)
 		if err == nil {
 			return url, nil
 		}

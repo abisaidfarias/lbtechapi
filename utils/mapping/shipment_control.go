@@ -64,6 +64,10 @@ func ShipmentControlRequestToShipmentControl(
 
 		RegisteredImeiCount:     0,
 
+		ReferenceID:             req.ReferenceID.String(),
+
+		Validation:              req.Validation.String(),
+
 		ReworkNumber:            req.ReworkNumber,
 
 		OabiCertificate:         req.OabiCertificate,
@@ -126,6 +130,10 @@ func ShipmentControlRequestToShipmentControlUpdate(
 
 		RegisteredImeiCount:     req.RegisteredImeiCount,
 
+		ReferenceID:             req.ReferenceID.String(),
+
+		Validation:              req.Validation.String(),
+
 		ReworkNumber:            req.ReworkNumber,
 
 		OabiCertificate:         req.OabiCertificate,
@@ -175,6 +183,10 @@ func ShipmentControlRequestToShipmentControlResume(
 		ImeiFileUrl:             req.ImeiFileUrl,
 
 		RegisteredImeiCount:     req.RegisteredImeiCount,
+
+		ReferenceID:             req.ReferenceID.String(),
+
+		Validation:              req.Validation.String(),
 
 		ReworkNumber:            req.ReworkNumber,
 

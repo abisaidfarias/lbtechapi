@@ -40,22 +40,26 @@ var stripAccents = transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)),
 type ShipmentControlBulkCSVRow struct {
 	RowNumber       int
 	Client          string
+	ReferenceID     string
 	QtyRaw          string
 	Qty             int
 	TechnicalModel  string
 	SoftwareVersion string
 	ReworkNumber    string
+	Validation      string
 	ImeiQuantity    int
 }
 
 // Keys are accent-insensitive, lowercased header names.
 var shipmentControlBulkCSVHeaders = map[string]string{
 	"cliente":        "client",
+	"id":             "reference_id",
 	"qty":            "qty",
 	"modelo tecnico": "technical_model",
 	"version sw":     "software_version",
 	"# rework":       "rework_number",
 	"rework":         "rework_number",
+	"validacion":     "validation",
 }
 
 var bulkCSVRequiredColumnLabels = map[string]string{
@@ -243,10 +247,12 @@ func parseShipmentControlBulkCSVRecord(record []string, columnIndex map[string]i
 	}
 
 	client := valueAt("client")
+	referenceID := valueAt("reference_id")
 	qtyRaw := valueAt("qty")
 	technicalModel := valueAt("technical_model")
 	softwareVersion := valueAt("software_version")
 	reworkNumber := valueAt("rework_number")
+	validation := valueAt("validation")
 
 	if client == "" && qtyRaw == "" && technicalModel == "" && softwareVersion == "" && reworkNumber == "" {
 		return ShipmentControlBulkCSVRow{}, false
@@ -263,11 +269,13 @@ func parseShipmentControlBulkCSVRecord(record []string, columnIndex map[string]i
 	return ShipmentControlBulkCSVRow{
 		RowNumber:       rowNumber,
 		Client:          client,
+		ReferenceID:     referenceID,
 		QtyRaw:          qtyRaw,
 		Qty:             qty,
 		TechnicalModel:  technicalModel,
 		SoftwareVersion: softwareVersion,
 		ReworkNumber:    reworkNumber,
+		Validation:      validation,
 		ImeiQuantity:    qty * 2,
 	}, true
 }
