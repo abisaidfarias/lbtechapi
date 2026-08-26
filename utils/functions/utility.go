@@ -409,6 +409,8 @@ type ShipmentControlPhaseEmailData struct {
 	Country                     string
 	Client                      string
 	ImeiQuantity                string
+	ReferenceID                 string
+	Validation                  string
 	ReworkNumber                string
 	MultibandaCertificateNumber string
 	Brand                       string

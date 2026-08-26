@@ -266,6 +266,26 @@ func PreserveShipmentControlSubtelCertificate(
 	shipment.SubtelCertificateNumber = ResolveShipmentControlSubtelCertificateNumber(existingNumber, multibanda)
 }
 
+// PreserveShipmentControlReferenceAndValidation keeps the stored reference_id
+// and validation values when a phase-change request omits them. The phase
+// transition payload only carries phase/date/status fields, not the values
+// entered at creation time, so without this a $set on phase change wipes
+// them back to empty.
+func PreserveShipmentControlReferenceAndValidation(
+	shipment *models.ShipmentControl,
+	existing *models.ShipmentControl,
+) {
+	if shipment == nil || existing == nil {
+		return
+	}
+	if strings.TrimSpace(shipment.ReferenceID) == "" {
+		shipment.ReferenceID = existing.ReferenceID
+	}
+	if strings.TrimSpace(shipment.Validation) == "" {
+		shipment.Validation = existing.Validation
+	}
+}
+
 func ShipmentControlToNotify(
 	shipment *models.ShipmentControl,
 	multibanda *responses.MultibandaExpanded,
@@ -276,6 +296,8 @@ func ShipmentControlToNotify(
 		CompanyName:             companyName,
 		CountryName:             countryName,
 		Client:                  shipment.Client,
+		ReferenceID:             shipment.ReferenceID,
+		Validation:              shipment.Validation,
 		ReworkNumber:            shipment.ReworkNumber,
 		ImeiQuantity:            shipment.ImeiQuantity,
 		ImeiFileUrl:             shipment.ImeiFileUrl,

@@ -81,6 +81,35 @@ func TestBuildShipmentControlPhaseEmailDataIncludesCertificateNumbers(t *testing
 	}
 }
 
+func TestBuildShipmentControlPhaseEmailDataIncludesReferenceIDAndValidation(t *testing.T) {
+	notify := &request.ShipmentControlNotify{
+		ReferenceID: "75962",
+		Validation:  "11",
+	}
+	data := BuildShipmentControlPhaseEmailData(
+		notify, "XIAOMI", "2510ERA8BG", "Redmi Note 15 Pro+ 5G", "Android", "Camilo Espinoza", "phase changed", shipmentControlEmailValidationStart,
+	)
+	if data.ReferenceID != "75962" {
+		t.Fatalf("reference_id: got %q", data.ReferenceID)
+	}
+	if data.Validation != "11" {
+		t.Fatalf("validation: got %q", data.Validation)
+	}
+}
+
+func TestBuildShipmentControlPhaseEmailDataDashesEmptyReferenceIDAndValidation(t *testing.T) {
+	notify := &request.ShipmentControlNotify{}
+	data := BuildShipmentControlPhaseEmailData(
+		notify, "XIAOMI", "TM", "CM", "Android", "User", "msg", shipmentControlEmailCreate,
+	)
+	if data.ReferenceID != "—" {
+		t.Fatalf("reference_id: got %q, want dash for empty", data.ReferenceID)
+	}
+	if data.Validation != "—" {
+		t.Fatalf("validation: got %q, want dash for empty", data.Validation)
+	}
+}
+
 func TestBuildShipmentControlPhaseEmailDataIncludesImeiFileURLOnlyOnCreate(t *testing.T) {
 	notify := &request.ShipmentControlNotify{
 		ImeiQuantity: 10,

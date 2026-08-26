@@ -92,6 +92,13 @@
                 </tr>
 
                 <tr>
+                  <td style="padding:10px;"><strong>ID</strong></td>
+                  <td style="padding:10px;">{{ .ReferenceID }}</td>
+                  <td style="padding:10px;"><strong>Validation</strong></td>
+                  <td style="padding:10px;">{{ .Validation }}</td>
+                </tr>
+
+                <tr>
                   <td style="padding:10px;"><strong>Brand</strong></td>
                   <td style="padding:10px;">{{ .Brand }}</td>
                   <td style="padding:10px;"><strong>Technical Model</strong></td>
@@ -114,15 +121,14 @@
 
                 <tr>
                   <td style="padding:10px;"><strong>OS Version</strong></td>
-                  <td colspan="3" style="padding:10px;">{{ .OsVersion }}</td>
-                </tr>
-
-                {{ if .ShowImeiSubmitted }}
-                <tr>
+                  <td style="padding:10px;">{{ .OsVersion }}</td>
+                  {{ if .ShowImeiSubmitted }}
                   <td style="padding:10px;"><strong>IMEI Submitted</strong></td>
-                  <td colspan="3" style="padding:10px;">{{ .ImeiSubmitted }}</td>
+                  <td style="padding:10px;">{{ .ImeiSubmitted }}</td>
+                  {{ else }}
+                  <td colspan="2" style="padding:10px;"></td>
+                  {{ end }}
                 </tr>
-                {{ end }}
 
                 {{ if .ShowCompletedFields }}
                 <tr>
