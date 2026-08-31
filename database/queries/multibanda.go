@@ -133,10 +133,49 @@ func GetMultibandas(
 		lookupStageDevice, unwindStageDevice,
 		lookupStageCompany, unwindStageCompany,
 		lookupStageBrand, unwindStageBrand,
-		sort,
 	)
+	pipeline = append(pipeline, automaticReportStatusStages()...)
+	pipeline = append(pipeline, sort)
 
 	return pipeline
+}
+
+// automaticReportStatusStages projects the automatic report's status onto each
+// multibanda as "report_status", so the list can tell apart a process that has
+// already produced its generated PDF from one that has not.
+//
+// This is deliberately independent of test_report_url: that field holds the
+// manually uploaded report from the previous flow, so an old record having it
+// says nothing about the automatic report.
+func automaticReportStatusStages() mongo.Pipeline {
+	lookupReport := bson.D{
+		primitive.E{Key: "$lookup", Value: bson.D{
+			primitive.E{Key: "from", Value: "multibanda_reports"},
+			primitive.E{Key: "localField", Value: "_id"},
+			primitive.E{Key: "foreignField", Value: "multibanda"},
+			primitive.E{Key: "as", Value: "automatic_report"},
+		}}}
+
+	// A multibanda has at most one report, so take the first match and leave
+	// report_status null when there is none.
+	addStatus := bson.D{
+		primitive.E{Key: "$addFields", Value: bson.D{
+			primitive.E{Key: "report_status", Value: bson.D{
+				primitive.E{Key: "$ifNull", Value: bson.A{
+					bson.D{primitive.E{Key: "$arrayElemAt", Value: bson.A{
+						"$automatic_report.status", 0,
+					}}},
+					nil,
+				}},
+			}},
+		}}}
+
+	dropJoin := bson.D{
+		primitive.E{Key: "$project", Value: bson.D{
+			primitive.E{Key: "automatic_report", Value: 0},
+		}}}
+
+	return mongo.Pipeline{lookupReport, addStatus, dropJoin}
 }
 
 func GetMultibandaExpandedById(oid primitive.ObjectID) mongo.Pipeline {
