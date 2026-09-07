@@ -37,7 +37,7 @@ func buildPartialReport() *request.MultibandaReportSave {
 			TestDate:               &testDate,
 			IMEI:                   "862542070112758",
 			SerialNumber:           "P16BB/W5UT00079",
-			StampCode:              "all_bands",
+			StampCode:              "5g_and_below",
 		},
 		CarriersTested: allCarrierNames(),
 		SAEScenario:    enums.SAEScenarioBoth,

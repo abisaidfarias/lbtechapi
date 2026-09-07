@@ -25,6 +25,10 @@ const (
 	mbrContentW   = mbrPageW - 2*mbrMarginX
 	mbrLineH      = 6.0
 	mbrSectionGap = 4.0
+
+	// Shared by every screenshot box (SW Version and the two SAE evidences) so
+	// the three captures print at the same size.
+	mbrEvidenceBoxH = 85.0
 )
 
 var (
@@ -271,22 +275,28 @@ func drawStampAndPhoto(pdf *fpdf.Fpdf, data MultibandaReportPDFData) {
 		return
 	}
 
+	// The stamp artwork is roughly square (the two "and_below" stamps are wider),
+	// the screenshot is a portrait phone capture, so they get different box
+	// heights. SW Version matches the SAE evidence boxes so the three screenshots
+	// in the report are printed at the same size.
+	const stampBoxH = 60.0
+	const screenshotBoxH = mbrEvidenceBoxH
+
 	pdf.Ln(3)
-	ensureSpace(pdf, 62)
+	ensureSpace(pdf, screenshotBoxH+6)
 	y := pdf.GetY()
 	colW := mbrContentW / 2
 
 	if hasStamp {
-		drawImageBox(pdf, mbrMarginX, y, colW-3, 42, "mbr_stamp", "Stamp Type Defined", data.StampLabel)
+		drawImageBox(pdf, mbrMarginX, y, colW-3, stampBoxH, "mbr_stamp", "Stamp Type Defined", data.StampLabel)
 	}
 	if hasPhoto {
-		// Taller than the stamp: this is a portrait phone screenshot.
-		drawImageBox(pdf, mbrMarginX+colW+3, y, colW-3, 56, "mbr_sw_version", "SW Version", "")
+		drawImageBox(pdf, mbrMarginX+colW+3, y, colW-3, screenshotBoxH, "mbr_sw_version", "SW Version", "")
 	}
 
-	bottom := y + 44
-	if hasPhoto && y+58 > bottom {
-		bottom = y + 58
+	bottom := y + stampBoxH + 2
+	if hasPhoto && y+screenshotBoxH+3 > bottom {
+		bottom = y + screenshotBoxH + 3
 	}
 	pdf.SetY(bottom)
 }
@@ -521,7 +531,7 @@ func drawSAEEvidence(pdf *fpdf.Fpdf, data MultibandaReportPDFData) {
 	ensureSpace(pdf, 90)
 	y := pdf.GetY()
 	colW := mbrContentW / 2
-	boxH := 85.0
+	boxH := mbrEvidenceBoxH
 
 	for i, ev := range data.SAEEvidence {
 		if i >= 2 {

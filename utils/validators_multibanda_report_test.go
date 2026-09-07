@@ -34,7 +34,7 @@ func completeReport() *request.MultibandaReportSave {
 			TestDate:               &testDate,
 			IMEI:                   "862542070112758",
 			SerialNumber:           "P16BB/W5UT00079",
-			StampCode:              "all_bands",
+			StampCode:              "5g_and_below",
 		},
 		SAEScenario:    enums.SAEScenarioBoth,
 		CarriersTested: allCarrierNames(),
@@ -315,8 +315,8 @@ func TestStampMustComeFromCatalog(t *testing.T) {
 	if err := utils.ValidateMultibandaReportForGeneration(req, initialScope()); err == nil {
 		t.Fatal("expected an unknown stamp code to be rejected")
 	}
-	if len(enums.ReportStampCatalog) != 5 {
-		t.Fatalf("expected exactly five stamps, got %d", len(enums.ReportStampCatalog))
+	if len(enums.ReportStampCatalog) != 8 {
+		t.Fatalf("expected exactly eight stamps, got %d", len(enums.ReportStampCatalog))
 	}
 }
 

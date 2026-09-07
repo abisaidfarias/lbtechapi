@@ -121,12 +121,13 @@ func (c *multibandaReportController) Generate() gin.HandlerFunc {
 
 // GetStampImage godoc
 // @Summary Obtener la imagen de un sello del catálogo
-// @Description Devuelve el PNG del sello indicado para que el selector de sellos pueda mostrarlo. Las imágenes están embebidas en el binario.
+// @Description Devuelve la imagen del sello indicado para que el selector de sellos pueda mostrarlo. Las imágenes están embebidas en el binario y el Content-Type refleja el formato real del archivo.
 // @Tags MultibandaReport
 // @Produce png
+// @Produce jpeg
 // @Security Bearer
 // @Param code path string true "Código del sello (ver catálogo del formulario)"
-// @Success 200 {file} file "Imagen PNG del sello"
+// @Success 200 {file} file "Imagen del sello"
 // @Failure 404 {object} map[string]string "Sello no encontrado"
 // @Router /multibanda/report/stamps/{code}/image [get]
 func (c *multibandaReportController) GetStampImage() gin.HandlerFunc {
@@ -146,7 +147,7 @@ func (c *multibandaReportController) GetStampImage() gin.HandlerFunc {
 		// The catalog is fixed and the assets ship with the binary, so this is
 		// safe to cache hard; a new build is what changes them.
 		ctx.Header("Cache-Control", "public, max-age=86400")
-		ctx.Data(http.StatusOK, "image/png", image)
+		ctx.Data(http.StatusOK, utils.MultibandaStampContentType(image), image)
 	}
 }
 

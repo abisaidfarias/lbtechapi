@@ -116,9 +116,13 @@ func IsValidFMRadioOption(v string) bool {
 
 // ---- Stamps ----
 
-// ReportStamp is one selectable stamp image. The five final images are
-// supplied by the project owner; Code is the stable identifier stored on the
-// report while ImageKey points at the asset to embed in the PDF.
+// ReportStamp is one selectable stamp image. Code is the stable identifier
+// stored on the report; ImageKey points at the artwork embedded in the PDF.
+//
+// Both name the bands the device DOES support, matching the artwork files:
+// "2g_4g" is a device supporting 2G and 4G but not 3G. The two "and_below"
+// stamps are the fully approved ones — they differ only in whether the 5G
+// advisory strip is printed.
 type ReportStamp struct {
 	Code        string `json:"code"`
 	Label       string `json:"label"`
@@ -128,34 +132,52 @@ type ReportStamp struct {
 
 var ReportStampCatalog = []ReportStamp{
 	{
-		Code:        "all_bands",
-		Label:       "Apto para todas las bandas",
-		Description: "2G, 3G, 4G and SAE compatible",
-		ImageKey:    "stamp_all_bands",
+		Code:        "5g_and_below",
+		Label:       "Approved — all bands (5G)",
+		Description: "Approved for all carrier bands, including the 5G advisory",
+		ImageKey:    "5G_and_below",
 	},
 	{
-		Code:        "no_2g",
-		Label:       "No apto - 2G",
-		Description: "2G not supported",
-		ImageKey:    "stamp_no_2g",
+		Code:        "4g_and_below",
+		Label:       "Approved — all bands (up to 4G)",
+		Description: "Approved for all carrier bands, without the 5G advisory",
+		ImageKey:    "4G_and_below",
 	},
 	{
-		Code:        "no_3g",
-		Label:       "No apto - 3G",
-		Description: "3G not supported",
-		ImageKey:    "stamp_no_3g",
+		Code:        "2g_3g",
+		Label:       "Supports 2G and 3G",
+		Description: "Not approved for 4G",
+		ImageKey:    "2G_3G",
 	},
 	{
-		Code:        "no_4g",
-		Label:       "No apto - 4G",
-		Description: "4G not supported",
-		ImageKey:    "stamp_no_4g",
+		Code:        "2g_4g",
+		Label:       "Supports 2G and 4G",
+		Description: "Not approved for 3G",
+		ImageKey:    "2G_4G",
 	},
 	{
-		Code:        "no_2g_4g",
-		Label:       "No apto - 2G y 4G",
-		Description: "2G and 4G not supported",
-		ImageKey:    "stamp_no_2g_4g",
+		Code:        "3g_4g",
+		Label:       "Supports 3G and 4G",
+		Description: "Not approved for 2G",
+		ImageKey:    "3G_4G",
+	},
+	{
+		Code:        "2g",
+		Label:       "Supports 2G only",
+		Description: "Not approved for 3G or 4G",
+		ImageKey:    "2G",
+	},
+	{
+		Code:        "3g",
+		Label:       "Supports 3G only",
+		Description: "Not approved for 2G or 4G",
+		ImageKey:    "3G",
+	},
+	{
+		Code:        "4g",
+		Label:       "Supports 4G only",
+		Description: "Not approved for 2G or 3G",
+		ImageKey:    "4G",
 	},
 }
 
