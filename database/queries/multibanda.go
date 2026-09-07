@@ -135,9 +135,44 @@ func GetMultibandas(
 		lookupStageBrand, unwindStageBrand,
 	)
 	pipeline = append(pipeline, automaticReportStatusStages()...)
+	pipeline = append(pipeline, requesterLookupStages()...)
 	pipeline = append(pipeline, sort)
 
 	return pipeline
+}
+
+// requesterLookupStages resolves created_by into a requester_name string by
+// joining the users collection. preserveNullAndEmptyArrays keeps records
+// created before this field existed (requester_name comes back empty).
+func requesterLookupStages() mongo.Pipeline {
+	lookupRequester := bson.D{{Key: "$lookup", Value: bson.M{
+		"from":         "users",
+		"localField":   "created_by",
+		"foreignField": "_id",
+		"as":           "requester",
+	}}}
+	unwindRequester := bson.D{{Key: "$unwind", Value: bson.M{
+		"path":                       "$requester",
+		"preserveNullAndEmptyArrays": true,
+	}}}
+	addRequesterName := bson.D{{Key: "$addFields", Value: bson.M{
+		"requester_name": bson.M{
+			"$trim": bson.M{
+				"input": bson.M{
+					"$concat": bson.A{
+						bson.M{"$ifNull": bson.A{"$requester.name", ""}},
+						" ",
+						bson.M{"$ifNull": bson.A{"$requester.lastName", ""}},
+					},
+				},
+			},
+		},
+	}}}
+	dropRequesterJoin := bson.D{{Key: "$project", Value: bson.M{
+		"requester": 0,
+	}}}
+
+	return mongo.Pipeline{lookupRequester, unwindRequester, addRequesterName, dropRequesterJoin}
 }
 
 // automaticReportStatusStages projects the automatic report's status onto each
@@ -221,12 +256,13 @@ func GetMultibandaExpandedById(oid primitive.ObjectID) mongo.Pipeline {
 			primitive.E{Key: "preserveNullAndEmptyArrays", Value: true},
 		}}}
 
-	return mongo.Pipeline{
+	pipeline := mongo.Pipeline{
 		matchStage,
 		lookupStageDevice, unwindStageDevice,
 		lookupStageCompany, unwindStageCompany,
 		lookupStageBrand, unwindStageBrand,
 	}
+	return append(pipeline, requesterLookupStages()...)
 }
 
 func UpdateMultibanda(multibanda *models.Multibanda, oid primitive.ObjectID) (primitive.M, primitive.D) {

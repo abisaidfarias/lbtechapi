@@ -41,4 +41,5 @@ type MultibandaExpanded struct {
 	RequestDelete           bool       `bson:"request_delete" json:"request_delete"`
 	IsInternalProject       bool       `bson:"is_internal_project" json:"is_internal_project"`
 	CreatedDate             *time.Time `bson:"created_date" json:"created_date"`
+	RequesterName           string     `bson:"requester_name" json:"requester_name"`
 }

@@ -285,8 +285,9 @@ func GetShipmentControls(
 	pipeline = append(pipeline,
 		lookupStageCompany, unwindStageCompany,
 		lookupStageCountry, unwindStageCountry,
-		sort,
 	)
+	pipeline = append(pipeline, requesterLookupStages()...)
+	pipeline = append(pipeline, sort)
 	return pipeline
 }
 

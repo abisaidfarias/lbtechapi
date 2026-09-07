@@ -233,6 +233,7 @@ func (s *shipmentControlService) Create(req *request.ShipmentControl, userID str
 		multibanda.SubtelCertificateNumber,
 		multibanda.MultibandCertificateUrl,
 	)
+	shipmentControl.CreatedBy = user.ID
 
 	id, err := s.shipmentControlRepository.Create(shipmentControl)
 	if err != nil {

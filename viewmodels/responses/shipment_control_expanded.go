@@ -124,6 +124,8 @@ type ShipmentControlExpanded struct {
 
 	CreatedDate             *time.Time                      `bson:"created_date" json:"created_date"`
 
+	RequesterName           string                          `bson:"requester_name" json:"requester_name"`
+
 }
 
 

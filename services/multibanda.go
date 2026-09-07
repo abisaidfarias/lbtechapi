@@ -107,6 +107,9 @@ func (s *multibandaService) Create(multibandaRequest *request.Multibanda, userID
 		deviceID,
 		brandID,
 	)
+	if creatorID, err := primitive.ObjectIDFromHex(userID); err == nil {
+		multibanda.CreatedBy = creatorID
+	}
 
 	id, err := s.multibandaRepository.Create(multibanda)
 	if err != nil {

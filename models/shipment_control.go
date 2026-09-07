@@ -72,6 +72,8 @@ type ShipmentControl struct {
 
 	CreatedDate             time.Time          `bson:"created_date"`
 
+	CreatedBy               primitive.ObjectID `bson:"created_by,omitempty"`
+
 }
 
 

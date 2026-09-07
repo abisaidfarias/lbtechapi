@@ -37,4 +37,5 @@ type Multibanda struct {
 	RequestDelete         bool               `bson:"request_delete"`
 	IsInternalProject     bool               `bson:"is_internal_project"`
 	CreatedDate       time.Time          `bson:"created_date"`
+	CreatedBy         primitive.ObjectID `bson:"created_by,omitempty"`
 }
