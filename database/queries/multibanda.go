@@ -52,6 +52,17 @@ func SetMultibandaRequestDelete(oid primitive.ObjectID, value bool) (primitive.M
 	}
 }
 
+// SetMultibandaTestReportURL points the process at the PDF produced by the
+// automatic report. It writes only that field so it can run after the report is
+// generated without disturbing anything else the process holds.
+func SetMultibandaTestReportURL(oid primitive.ObjectID, url string) (primitive.M, primitive.D) {
+	return primitive.M{"_id": oid}, primitive.D{
+		{Key: "$set", Value: primitive.D{
+			{Key: "test_report_url", Value: url},
+		}},
+	}
+}
+
 func GetMultibandas(
 	companies []primitive.ObjectID,
 	brands []primitive.ObjectID,
@@ -133,10 +144,84 @@ func GetMultibandas(
 		lookupStageDevice, unwindStageDevice,
 		lookupStageCompany, unwindStageCompany,
 		lookupStageBrand, unwindStageBrand,
-		sort,
 	)
+	pipeline = append(pipeline, automaticReportStatusStages()...)
+	pipeline = append(pipeline, requesterLookupStages()...)
+	pipeline = append(pipeline, sort)
 
 	return pipeline
+}
+
+// requesterLookupStages resolves created_by into a requester_name string by
+// joining the users collection. preserveNullAndEmptyArrays keeps records
+// created before this field existed (requester_name comes back empty).
+func requesterLookupStages() mongo.Pipeline {
+	lookupRequester := bson.D{{Key: "$lookup", Value: bson.M{
+		"from":         "users",
+		"localField":   "created_by",
+		"foreignField": "_id",
+		"as":           "requester",
+	}}}
+	unwindRequester := bson.D{{Key: "$unwind", Value: bson.M{
+		"path":                       "$requester",
+		"preserveNullAndEmptyArrays": true,
+	}}}
+	addRequesterName := bson.D{{Key: "$addFields", Value: bson.M{
+		"requester_name": bson.M{
+			"$trim": bson.M{
+				"input": bson.M{
+					"$concat": bson.A{
+						bson.M{"$ifNull": bson.A{"$requester.name", ""}},
+						" ",
+						bson.M{"$ifNull": bson.A{"$requester.lastName", ""}},
+					},
+				},
+			},
+		},
+	}}}
+	dropRequesterJoin := bson.D{{Key: "$project", Value: bson.M{
+		"requester": 0,
+	}}}
+
+	return mongo.Pipeline{lookupRequester, unwindRequester, addRequesterName, dropRequesterJoin}
+}
+
+// automaticReportStatusStages projects the automatic report's status onto each
+// multibanda as "report_status", so the list can tell apart a process that has
+// already produced its generated PDF from one that has not.
+//
+// This is deliberately independent of test_report_url: that field holds the
+// manually uploaded report from the previous flow, so an old record having it
+// says nothing about the automatic report.
+func automaticReportStatusStages() mongo.Pipeline {
+	lookupReport := bson.D{
+		primitive.E{Key: "$lookup", Value: bson.D{
+			primitive.E{Key: "from", Value: "multibanda_reports"},
+			primitive.E{Key: "localField", Value: "_id"},
+			primitive.E{Key: "foreignField", Value: "multibanda"},
+			primitive.E{Key: "as", Value: "automatic_report"},
+		}}}
+
+	// A multibanda has at most one report, so take the first match and leave
+	// report_status null when there is none.
+	addStatus := bson.D{
+		primitive.E{Key: "$addFields", Value: bson.D{
+			primitive.E{Key: "report_status", Value: bson.D{
+				primitive.E{Key: "$ifNull", Value: bson.A{
+					bson.D{primitive.E{Key: "$arrayElemAt", Value: bson.A{
+						"$automatic_report.status", 0,
+					}}},
+					nil,
+				}},
+			}},
+		}}}
+
+	dropJoin := bson.D{
+		primitive.E{Key: "$project", Value: bson.D{
+			primitive.E{Key: "automatic_report", Value: 0},
+		}}}
+
+	return mongo.Pipeline{lookupReport, addStatus, dropJoin}
 }
 
 func GetMultibandaExpandedById(oid primitive.ObjectID) mongo.Pipeline {
@@ -182,12 +267,13 @@ func GetMultibandaExpandedById(oid primitive.ObjectID) mongo.Pipeline {
 			primitive.E{Key: "preserveNullAndEmptyArrays", Value: true},
 		}}}
 
-	return mongo.Pipeline{
+	pipeline := mongo.Pipeline{
 		matchStage,
 		lookupStageDevice, unwindStageDevice,
 		lookupStageCompany, unwindStageCompany,
 		lookupStageBrand, unwindStageBrand,
 	}
+	return append(pipeline, requesterLookupStages()...)
 }
 
 func UpdateMultibanda(multibanda *models.Multibanda, oid primitive.ObjectID) (primitive.M, primitive.D) {

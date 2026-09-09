@@ -285,8 +285,9 @@ func GetShipmentControls(
 	pipeline = append(pipeline,
 		lookupStageCompany, unwindStageCompany,
 		lookupStageCountry, unwindStageCountry,
-		sort,
 	)
+	pipeline = append(pipeline, requesterLookupStages()...)
+	pipeline = append(pipeline, sort)
 	return pipeline
 }
 
@@ -318,6 +319,8 @@ func UpdateShipmentControl(shipmentControl *models.ShipmentControl, oid primitiv
 			{Key: "imei_quantity", Value: shipmentControl.ImeiQuantity},
 			{Key: "imei_file_url", Value: shipmentControl.ImeiFileUrl},
 			{Key: "registered_imei_count", Value: shipmentControl.RegisteredImeiCount},
+			{Key: "reference_id", Value: shipmentControl.ReferenceID},
+			{Key: "validation", Value: shipmentControl.Validation},
 			{Key: "rework_number", Value: shipmentControl.ReworkNumber},
 			{Key: "oabi_certificate", Value: shipmentControl.OabiCertificate},
 			{Key: "client", Value: shipmentControl.Client},
@@ -339,6 +342,8 @@ func UpdateShipmentControlPhaseChange(shipmentControl *models.ShipmentControl, o
 		{Key: "imei_quantity", Value: shipmentControl.ImeiQuantity},
 		{Key: "imei_file_url", Value: shipmentControl.ImeiFileUrl},
 		{Key: "registered_imei_count", Value: shipmentControl.RegisteredImeiCount},
+		{Key: "reference_id", Value: shipmentControl.ReferenceID},
+		{Key: "validation", Value: shipmentControl.Validation},
 		{Key: "rework_number", Value: shipmentControl.ReworkNumber},
 		{Key: "oabi_certificate", Value: shipmentControl.OabiCertificate},
 		{Key: "client", Value: shipmentControl.Client},

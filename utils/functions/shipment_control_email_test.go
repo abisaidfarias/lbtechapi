@@ -1,6 +1,8 @@
 package functions
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -9,6 +11,29 @@ import (
 	"github.com/abisaidfarias/lbtechapi/utils/enums"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 )
+
+// templatePath resolves a template constant for the test binary. The constants
+// are relative to the repository root because that is where the server runs,
+// while `go test` runs from the package directory, so the root is located by
+// walking up to go.mod.
+func templatePath(t *testing.T, relative string) string {
+	t.Helper()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("working directory: %v", err)
+	}
+	for {
+		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
+			return filepath.Join(dir, filepath.FromSlash(relative))
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			t.Fatalf("could not find the repository root above %s", dir)
+		}
+		dir = parent
+	}
+}
 
 func TestFormatShipmentControlEmailDateUsesDashForEmpty(t *testing.T) {
 	if got := FormatShipmentControlEmailDate(time.Time{}); got != "-" {
@@ -78,6 +103,35 @@ func TestBuildShipmentControlPhaseEmailDataIncludesCertificateNumbers(t *testing
 	}
 	if data.OabiCertificate != "OABI-200" {
 		t.Fatalf("oabi cert: got %q", data.OabiCertificate)
+	}
+}
+
+func TestBuildShipmentControlPhaseEmailDataIncludesReferenceIDAndValidation(t *testing.T) {
+	notify := &request.ShipmentControlNotify{
+		ReferenceID: "75962",
+		Validation:  "11",
+	}
+	data := BuildShipmentControlPhaseEmailData(
+		notify, "XIAOMI", "2510ERA8BG", "Redmi Note 15 Pro+ 5G", "Android", "Camilo Espinoza", "phase changed", shipmentControlEmailValidationStart,
+	)
+	if data.ReferenceID != "75962" {
+		t.Fatalf("reference_id: got %q", data.ReferenceID)
+	}
+	if data.Validation != "11" {
+		t.Fatalf("validation: got %q", data.Validation)
+	}
+}
+
+func TestBuildShipmentControlPhaseEmailDataDashesEmptyReferenceIDAndValidation(t *testing.T) {
+	notify := &request.ShipmentControlNotify{}
+	data := BuildShipmentControlPhaseEmailData(
+		notify, "XIAOMI", "TM", "CM", "Android", "User", "msg", shipmentControlEmailCreate,
+	)
+	if data.ReferenceID != "—" {
+		t.Fatalf("reference_id: got %q, want dash for empty", data.ReferenceID)
+	}
+	if data.Validation != "—" {
+		t.Fatalf("validation: got %q, want dash for empty", data.Validation)
 	}
 }
 
@@ -154,7 +208,7 @@ func TestRenderShipmentControlPhaseEmailHTML(t *testing.T) {
 	html, err := RenderShipmentControlPhaseEmailHTML(ShipmentControlPhaseEmailData{
 		MainMessage: "Test notification",
 		Year:        2026,
-	}, utils.TEMPLATE_SHIPMENT_CONTROL_PHASE_PATH)
+	}, templatePath(t, utils.TEMPLATE_SHIPMENT_CONTROL_PHASE_PATH))
 	if err != nil {
 		t.Fatalf("render shipment control email: %v", err)
 	}
@@ -193,7 +247,7 @@ func TestRenderShipmentControlCertificateHTMLIncludesOfficialSeal(t *testing.T) 
 		OfficialSealDataURI: "data:image/png;base64,seal",
 		ControlNumber:       "002-260717001",
 		Year:                2026,
-	}, utils.TEMPLATE_SHIPMENT_CONTROL_CERTIFICATE_PATH)
+	}, templatePath(t, utils.TEMPLATE_SHIPMENT_CONTROL_CERTIFICATE_PATH))
 	if err != nil {
 		t.Fatalf("render certificate html: %v", err)
 	}

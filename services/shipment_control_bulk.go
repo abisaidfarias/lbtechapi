@@ -126,6 +126,8 @@ func (s *shipmentControlService) validateBulkCSVRow(
 	result := responses.ShipmentControlBulkValidateRow{
 		RowNumber:       row.RowNumber,
 		Client:          row.Client,
+		ReferenceID:     row.ReferenceID,
+		Validation:      row.Validation,
 		ReworkNumber:    row.ReworkNumber,
 		TechnicalModel:  row.TechnicalModel,
 		SoftwareVersion: row.SoftwareVersion,
@@ -258,6 +260,8 @@ func (s *shipmentControlService) confirmBulkRow(
 		ImeiQuantity: row.ImeiQuantity,
 		ImeiFileUrl:  row.ImeiFileUrl,
 		Client:       row.Client,
+		ReferenceID:  row.ReferenceID,
+		Validation:   row.Validation,
 		ReworkNumber: row.ReworkNumber,
 		Country:      countryID.Hex(),
 	}

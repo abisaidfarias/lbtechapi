@@ -1,49 +1,45 @@
 package request
 
-
-
 import "time"
 
-
-
 type ShipmentControlResume struct {
+	CurrentPhase int `json:"current_phase"`
 
-	CurrentPhase            int       `json:"current_phase"`
+	ValidationStartDate time.Time `json:"validation_start_date"`
 
-	ValidationStartDate     time.Time `json:"validation_start_date"`
+	ValidationEndDate time.Time `json:"validation_end_date"`
 
-	ValidationEndDate       time.Time `json:"validation_end_date"`
+	UnderRevisionStartDate time.Time `json:"under_revision_start_date"`
 
-	UnderRevisionStartDate  time.Time `json:"under_revision_start_date"`
+	UnderRevisionEndDate time.Time `json:"under_revision_end_date"`
 
-	UnderRevisionEndDate    time.Time `json:"under_revision_end_date"`
+	CompletedDate time.Time `json:"completed_date"`
 
-	CompletedDate           time.Time `json:"completed_date"`
+	ImeiQuantity int `json:"imei_quantity"`
 
-	ImeiQuantity            int       `json:"imei_quantity"`
+	ImeiFileUrl string `json:"imei_file_url"`
 
-	ImeiFileUrl             string    `json:"imei_file_url"`
+	RegisteredImeiCount int `json:"registered_imei_count"`
 
-	RegisteredImeiCount     int       `json:"registered_imei_count"`
+	ReferenceID FlexibleString `json:"reference_id"`
 
-	ReworkNumber            string    `json:"rework_number"`
+	Validation FlexibleString `json:"validation"`
 
-	OabiCertificate         string    `json:"oabi_certificate"`
+	ReworkNumber string `json:"rework_number"`
 
-	Client                  string    `json:"client"`
+	OabiCertificate string `json:"oabi_certificate"`
 
-	Country                 string    `json:"country"`
+	Client string `json:"client"`
 
-	SubtelCertificateUrl    string    `json:"subtel_certificate_url"`
+	Country string `json:"country"`
 
-	SubtelCertificateNumber string    `json:"subtel_certificate_number"`
+	SubtelCertificateUrl string `json:"subtel_certificate_url"`
 
-	OabiCertificateUrl      string    `json:"oabi_certificate_url"`
+	SubtelCertificateNumber string `json:"subtel_certificate_number"`
 
-	OabiCertificateNumber   string    `json:"oabi_certificate_number"`
+	OabiCertificateUrl string `json:"oabi_certificate_url"`
 
-	Comment                 string    `json:"comment"`
+	OabiCertificateNumber string `json:"oabi_certificate_number"`
 
+	Comment string `json:"comment"`
 }
-
-

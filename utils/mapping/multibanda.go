@@ -154,3 +154,24 @@ func derefTime(value *time.Time) time.Time {
 	}
 	return *value
 }
+
+// PreserveMultibandaTestReportURL keeps the stored test report link when the
+// caller does not send one.
+//
+// Both update paths build the model from the request alone and write every
+// field with $set, so a client that omits test_report_url would blank it. The
+// frontend normally echoes back the value it loaded, which is why the manually
+// uploaded report survives; but the automatic report writes this field on the
+// server at generation time, so any client holding a copy loaded before that
+// would echo an empty string and undo it.
+//
+// Nothing clears this field deliberately — removing a document only clears the
+// file picker — so treating empty as "unchanged" loses no legitimate operation.
+func PreserveMultibandaTestReportURL(multibanda *models.Multibanda, existingURL string) {
+	if multibanda == nil {
+		return
+	}
+	if strings.TrimSpace(multibanda.TestReportUrl) == "" {
+		multibanda.TestReportUrl = existingURL
+	}
+}

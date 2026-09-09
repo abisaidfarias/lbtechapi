@@ -409,6 +409,8 @@ type ShipmentControlPhaseEmailData struct {
 	Country                     string
 	Client                      string
 	ImeiQuantity                string
+	ReferenceID                 string
+	Validation                  string
 	ReworkNumber                string
 	MultibandaCertificateNumber string
 	Brand                       string
@@ -859,6 +861,7 @@ func GetDeviceBodyMessage(subject string, mainMessge string, brand string,
 		return body, err
 	}
 	t.Execute(&body, struct {
+		LogoDataURI            template.URL
 		MainMessage            string
 		Date                   string
 		Type                   string
@@ -913,6 +916,7 @@ func GetDeviceBodyMessage(subject string, mainMessge string, brand string,
 		Esim                   string
 		UserName               string
 	}{
+		LogoDataURI:            shipmentCertificateLogoDataURI(),
 		MainMessage:            mainMessge,
 		Date:                   fmt.Sprintf("%02d/%02d/%d", time.Now().Day(), time.Now().Month(), time.Now().Year()),
 		Type:                   deviceRequest.Type,

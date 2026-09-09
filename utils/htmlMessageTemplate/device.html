@@ -1,112 +1,319 @@
-<!-- template.html -->
 <!DOCTYPE html>
-<html>
-<body>
+<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Device Notification</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:AllowPNG/>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <style type="text/css">
+    v\:* { behavior: url(#default#VML); display: inline-block; }
+  </style>
+  <![endif]-->
+</head>
+<body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, Helvetica, sans-serif; color:#1f2937;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:24px 0;">
+    <tr>
+      <td align="center">
+        <table width="900" style="background:#ffffff; border:1px solid #e5e7eb;">
 
-<p>{{.MainMessage}} {{.Date}}</p>
+          <tr>
+            <td style="background:#0b1736; padding:20px 32px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="left" valign="middle" width="50%">
+                    {{ if .LogoDataURI }}
+                    <img src="{{ .LogoDataURI }}" alt="LB Technology" width="200" height="40" style="height:40px; width:auto; max-width:240px; display:block;" />
+                    {{ end }}
+                  </td>
+                  <td align="right" valign="middle" style="color:#e5e7eb; font-size:13px; line-height:1.4;">
+                    Device Notification
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-<p><strong>Brand:</strong> {{.Brand}}</p>
+          <tr>
+            <td style="height:4px; background:#8DB319;"></td>
+          </tr>
 
-<p><strong>Technical Model:</strong> {{.TechnicalModel}}</p>
+          <tr>
+            <td style="padding:32px;">
+              <div style="font-size:16px; font-weight:600;">
+                Dear Team,
+              </div>
+              <div style="margin-top:12px; font-size:15px; color:#374151; line-height:1.7;">
+                This is an automated notification regarding a device record in our platform.
+              </div>
+              {{ if .MainMessage }}
+              <div style="margin-top:16px; font-size:14px; color:#111827; line-height:1.6;">
+                {{ .MainMessage }} {{ .Date }}
+              </div>
+              {{ end }}
+            </td>
+          </tr>
 
-<p><strong>Commercial Model:</strong> {{.CommercialModel}}</p>
+          <tr>
+            <td style="padding:0 32px 24px 32px;">
+              <table width="100%" style="border:1px solid #e5e7eb; background:#f9fafb;">
+                <tr>
+                  <td colspan="4" style="padding:12px 16px; background:#ecfdf5; color:#065f46; font-weight:bold; border-bottom:1px solid #e5e7eb;">
+                    General Information
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>Brand</strong></td>
+                  <td style="padding:10px;">{{ .Brand }}</td>
+                  <td style="padding:10px;"><strong>Device Type</strong></td>
+                  <td style="padding:10px;">{{ .Type }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>Technical Model</strong></td>
+                  <td style="padding:10px;">{{ .TechnicalModel }}</td>
+                  <td style="padding:10px;"><strong>Commercial Model</strong></td>
+                  <td style="padding:10px;">{{ .CommercialModel }}</td>
+                </tr>
 
-<p><strong>Device Type:</strong> {{.Type}}</p>
+                <tr>
+                  <td colspan="4" style="padding:12px 16px; background:#eef2ff; color:#3730a3; font-weight:bold; border-top:1px solid #e5e7eb; border-bottom:1px solid #e5e7eb;">
+                    Display
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>Display Type</strong></td>
+                  <td style="padding:10px;">{{ .DisplayType }}</td>
+                  <td style="padding:10px;"><strong>Display Size</strong></td>
+                  <td style="padding:10px;">{{ .DisplaySize }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>Display Resolution</strong></td>
+                  <td colspan="3" style="padding:10px;">{{ .DisplayResolution }}</td>
+                </tr>
 
-<p><strong>Display Type:</strong> {{.DisplayType}}</p>  
+                <tr>
+                  <td colspan="4" style="padding:12px 16px; background:#eef2ff; color:#3730a3; font-weight:bold; border-top:1px solid #e5e7eb; border-bottom:1px solid #e5e7eb;">
+                    Platform
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>Platform OS</strong></td>
+                  <td style="padding:10px;">{{ .PlatformOs }}</td>
+                  <td style="padding:10px;"><strong>Platform CPU</strong></td>
+                  <td style="padding:10px;">{{ .PlatformCpu }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>Chipset Brand</strong></td>
+                  <td style="padding:10px;">{{ .PlatformChipsetBrand }}</td>
+                  <td style="padding:10px;"><strong>Chipset Model</strong></td>
+                  <td style="padding:10px;">{{ .PlatformChipsetModel }}</td>
+                </tr>
 
-<p><strong>Display Syze:</strong> {{.DisplaySize}}</p>
+                <tr>
+                  <td colspan="4" style="padding:12px 16px; background:#eef2ff; color:#3730a3; font-weight:bold; border-top:1px solid #e5e7eb; border-bottom:1px solid #e5e7eb;">
+                    Memory
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>Memory ROM</strong></td>
+                  <td style="padding:10px;">{{ .MemoryRom }}</td>
+                  <td style="padding:10px;"><strong>Memory RAM</strong></td>
+                  <td style="padding:10px;">{{ .MemoryRam }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>Memory Extended</strong></td>
+                  <td style="padding:10px;">{{ .MemoryExtended }}</td>
+                  <td style="padding:10px;"><strong>Memory CPU</strong></td>
+                  <td style="padding:10px;">{{ .MemoryCpu }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>Memory Type</strong></td>
+                  <td colspan="3" style="padding:10px;">{{ .MemoryType }}</td>
+                </tr>
 
-<p><strong>Display Resolution:</strong> {{.DisplayResolution}}</p>
+                <tr>
+                  <td colspan="4" style="padding:12px 16px; background:#eef2ff; color:#3730a3; font-weight:bold; border-top:1px solid #e5e7eb; border-bottom:1px solid #e5e7eb;">
+                    Camera
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>Camera Front</strong></td>
+                  <td style="padding:10px;">{{ .CameraFront }}</td>
+                  <td style="padding:10px;"><strong>Camera Back</strong></td>
+                  <td style="padding:10px;">{{ .CameraBack }}</td>
+                </tr>
 
-<p><strong>Platform Os:</strong> {{.PlatformOs}}</p>
+                <tr>
+                  <td colspan="4" style="padding:12px 16px; background:#eef2ff; color:#3730a3; font-weight:bold; border-top:1px solid #e5e7eb; border-bottom:1px solid #e5e7eb;">
+                    Communication
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>Wlan</strong></td>
+                  <td style="padding:10px;">{{ .CommunicationWlan }}</td>
+                  <td style="padding:10px;"><strong>GPS</strong></td>
+                  <td style="padding:10px;">{{ .CommunicationGps }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>NFC</strong></td>
+                  <td style="padding:10px;">{{ .CommunicationNfc }}</td>
+                  <td style="padding:10px;"><strong>Radio</strong></td>
+                  <td style="padding:10px;">{{ .CommunicationRadio }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>USB</strong></td>
+                  <td style="padding:10px;">{{ .CommunicationUsb }}</td>
+                  <td style="padding:10px;"><strong>Bluetooth</strong></td>
+                  <td style="padding:10px;">{{ .CommunicationBluetooth }}</td>
+                </tr>
 
-<p><strong>Platform ChipsetBrand:</strong> {{.PlatformChipsetBrand}}</p>
+                <tr>
+                  <td colspan="4" style="padding:12px 16px; background:#eef2ff; color:#3730a3; font-weight:bold; border-top:1px solid #e5e7eb; border-bottom:1px solid #e5e7eb;">
+                    Battery
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>Battery Type</strong></td>
+                  <td style="padding:10px;">{{ .BatteryType }}</td>
+                  <td style="padding:10px;"><strong>Battery Capacity</strong></td>
+                  <td style="padding:10px;">{{ .BatteryCapacity }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>Battery State</strong></td>
+                  <td style="padding:10px;">{{ .BatteryState }}</td>
+                  <td style="padding:10px;"><strong>Inducted Charger</strong></td>
+                  <td style="padding:10px;">{{ .BatteryInductedCharger }}</td>
+                </tr>
 
-<p><strong>Platform ChipsetModel:</strong> {{.PlatformChipsetModel}}</p>
+                <tr>
+                  <td colspan="4" style="padding:12px 16px; background:#eef2ff; color:#3730a3; font-weight:bold; border-top:1px solid #e5e7eb; border-bottom:1px solid #e5e7eb;">
+                    Sensors
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>Fingerprint</strong></td>
+                  <td style="padding:10px;">{{ .SensorFingerprint }}</td>
+                  <td style="padding:10px;"><strong>Proximity</strong></td>
+                  <td style="padding:10px;">{{ .SensorProximity }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>Ambient Light</strong></td>
+                  <td style="padding:10px;">{{ .SensorAmbientLight }}</td>
+                  <td style="padding:10px;"><strong>Accelerometer</strong></td>
+                  <td style="padding:10px;">{{ .SensorAccelerometer }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>Gyroscope</strong></td>
+                  <td style="padding:10px;">{{ .SensorGyroscope }}</td>
+                  <td style="padding:10px;"><strong>Hall</strong></td>
+                  <td style="padding:10px;">{{ .SensorHall }}</td>
+                </tr>
 
-<p><strong>Platform Cpu:</strong> {{.PlatformCpu}}</p>
+                <tr>
+                  <td colspan="4" style="padding:12px 16px; background:#eef2ff; color:#3730a3; font-weight:bold; border-top:1px solid #e5e7eb; border-bottom:1px solid #e5e7eb;">
+                    Network
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>GSM</strong></td>
+                  <td style="padding:10px;">{{ .NetworkGsm }}</td>
+                  <td style="padding:10px;"><strong>WCDMA</strong></td>
+                  <td style="padding:10px;">{{ .NetworkWcdma }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>LTE</strong></td>
+                  <td style="padding:10px;">{{ .NetworkLte }}</td>
+                  <td style="padding:10px;"><strong>VoLTE</strong></td>
+                  <td style="padding:10px;">{{ .NetworkVolte }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>VoWifi</strong></td>
+                  <td style="padding:10px;">{{ .NetworkVowifi }}</td>
+                  <td style="padding:10px;"><strong>ViLTE</strong></td>
+                  <td style="padding:10px;">{{ .NetworkVilte }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>5G</strong></td>
+                  <td style="padding:10px;">{{ .Network5g }}</td>
+                  <td style="padding:10px;"><strong>Carrier Aggregation</strong></td>
+                  <td style="padding:10px;">{{ .NetworkCarrierAgg }}</td>
+                </tr>
 
-<p><strong>Memory Rom:</strong> {{.MemoryRom}}</p>
+                <tr>
+                  <td colspan="4" style="padding:12px 16px; background:#eef2ff; color:#3730a3; font-weight:bold; border-top:1px solid #e5e7eb; border-bottom:1px solid #e5e7eb;">
+                    Identification Codes
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>Software Code</strong></td>
+                  <td style="padding:10px;">{{ .SoftwareCode }}</td>
+                  <td style="padding:10px;"><strong>Hardware Code</strong></td>
+                  <td style="padding:10px;">{{ .HardwareCode }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>Ing Code</strong></td>
+                  <td style="padding:10px;">{{ .IngCode }}</td>
+                  <td style="padding:10px;"><strong>Logging Code</strong></td>
+                  <td style="padding:10px;">{{ .LoggingCode }}</td>
+                </tr>
 
-<p><strong>Memory Ram:</strong> {{.MemoryRam}}</p>
+                <tr>
+                  <td colspan="4" style="padding:12px 16px; background:#eef2ff; color:#3730a3; font-weight:bold; border-top:1px solid #e5e7eb; border-bottom:1px solid #e5e7eb;">
+                    SIM
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>Sim Supported</strong></td>
+                  <td style="padding:10px;">{{ .SimSupported }}</td>
+                  <td style="padding:10px;"><strong>Sim Type</strong></td>
+                  <td style="padding:10px;">{{ .SimType }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>Esim</strong></td>
+                  <td colspan="3" style="padding:10px;">{{ .Esim }}</td>
+                </tr>
 
-<p><strong>Memory Extended:</strong> {{.MemoryExtended}}</p>
+                <tr>
+                  <td colspan="4" style="padding:12px 16px; background:#eef2ff; color:#3730a3; font-weight:bold; border-top:1px solid #e5e7eb; border-bottom:1px solid #e5e7eb;">
+                    Other
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:10px; vertical-align:top;"><strong>Image Url</strong></td>
+                  <td colspan="3" style="padding:10px; word-break:break-all;">{{ .ImageUrl }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;"><strong>Responsible</strong></td>
+                  <td colspan="3" style="padding:10px;">{{ .UserName }}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-<p><strong>Memory Cpu:</strong> {{.MemoryCpu}}</p>
+          <tr>
+            <td style="padding:0 32px 24px 32px;">
+              <div style="background:#fff7ed; border:1px solid #fed7aa; padding:12px; font-size:12px;">
+                <strong>Automated Message:</strong> This email was generated automatically by the LB Technology platform. Please do not reply to this message.
+              </div>
+            </td>
+          </tr>
 
-<p><strong>Memory Type:</strong> {{.MemoryType}}</p>
+          <tr>
+            <td style="text-align:center; font-size:12px; color:#6b7280; padding:16px;">
+              Team LB Technology
+            </td>
+          </tr>
 
-<p><strong>Camera Front:</strong> {{.CameraFront}}</p>
-
-<p><strong>Camera Back:</strong> {{.CameraBack}}</p>
-
-<p><strong>Communication Wlan:</strong> {{.CommunicationWlan}}</p>
-
-<p><strong>Communication Gps:</strong> {{.CommunicationGps}}</p>
-
-<p><strong>Communication Nfc:</strong> {{.CommunicationNfc}}</p>
-
-<p><strong>Communication Radio:</strong> {{.CommunicationRadio}}</p>
-
-<p><strong>Communication Usb:</strong> {{.CommunicationUsb}}</p>
-
-<p><strong>Communication Bluetooth:</strong> {{.CommunicationBluetooth}}</p>
-
-<p><strong>Battery Type:</strong> {{.BatteryType}}</p>
-
-<p><strong>Battery Capacity:</strong> {{.BatteryCapacity}}</p>
-
-<p><strong>Battery State:</strong> {{.BatteryState}}</p>
-
-<p><strong>Battery InductedCharger:</strong> {{.BatteryInductedCharger}}</p>
-
-<p><strong>Sensor Fingerprint:</strong> {{.SensorFingerprint}}</p>
-
-<p><strong>Sensor Proximity:</strong> {{.SensorProximity}}</p>
-
-<p><strong>Sensor AmbientLight:</strong> {{.SensorAmbientLight}}</p>
-
-<p><strong>Sensor Accelerometer:</strong> {{.SensorAccelerometer}}</p>
-
-<p><strong>Sensor Gyroscope:</strong> {{.SensorGyroscope}}</p>
-
-<p><strong>Sensor Hall:</strong> {{.SensorHall}}</p>
-
-<p><strong>Network Gsm:</strong> {{.NetworkGsm}}</p>
-
-<p><strong>Network Wcdma:</strong> {{.NetworkWcdma}}</p>
-
-<p><strong>Network Lte:</strong> {{.NetworkLte}}</p>
-
-<p><strong>Network Volte:</strong> {{.NetworkVolte}}</p>
-
-<p><strong>Network Vowifi:</strong> {{.NetworkVowifi}}</p>
-
-<p><strong>Network Vilte:</strong> {{.NetworkVilte}}</p>
-
-<p><strong>Network 5g:</strong> {{.Network5g}}</p>
-
-<p><strong>Network CarrierAgg:</strong> {{.NetworkCarrierAgg}}</p>
-
-<p><strong>Image Url:</strong> {{.ImageUrl}}</p>
-
-<p><strong>Software Code:</strong> {{.SoftwareCode}}</p>
-
-<p><strong>Hardware Code:</strong> {{.HardwareCode}}</p>
-
-<p><strong>Ing Code:</strong> {{.IngCode}}</p>
-
-<p><strong>Logging Code:</strong> {{.LoggingCode}}</p>
-
-<p><strong>Sim Supported:</strong> {{.SimSupported}}</p>
-
-<p><strong>Sim Type:</strong> {{.SimType}}</p>
-
-<p><strong>Esim:</strong> {{.Esim}}</p>
-
-<p><strong>Responsible: </strong>{{.UserName}}</p>
-
-<h3>Team LB Technology</h3>
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>

@@ -9,6 +9,7 @@ type ShipmentControlCertificateStatus struct {
 	Status        string `json:"status"`
 	URL           string `json:"url,omitempty"`
 	ControlNumber string `json:"control_number,omitempty"`
+	FileName      string `json:"file_name,omitempty"`
 	GeneratedAt   string `json:"generated_at,omitempty"`
 	Error         string `json:"error,omitempty"`
 }

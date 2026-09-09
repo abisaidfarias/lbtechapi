@@ -6,6 +6,8 @@ type ShipmentControlNotify struct {
 	CompanyName             string
 	CountryName             string
 	Client                  string
+	ReferenceID             string
+	Validation              string
 	ReworkNumber            string
 	ImeiQuantity            int
 	ImeiFileUrl             string

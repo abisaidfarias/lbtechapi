@@ -159,6 +159,12 @@ var (
 	multibandaService    services.IMultibandaService        = services.NewMultibandaService(multibandaRepository, userRepository, companyRepository, deviceRepository, brandRepository)
 	multibandaController controllers.IMultibandaController  = controllers.NewMultibandaController(multibandaService)
 
+	multibandaReportRepository repositories.IMultibandaReportRepository = repositories.NewMultibandaReportRepository()
+	multibandaReportService    services.IMultibandaReportService        = services.NewMultibandaReportService(
+		multibandaReportRepository, multibandaRepository, deviceRepository, userRepository, storageService,
+	)
+	multibandaReportController controllers.IMultibandaReportController = controllers.NewMultibandaReportController(multibandaReportService)
+
 	shipmentControlRepository repositories.IShipmentControlRepository = repositories.NewShipmentControlRepository(multibandaRepository)
 	shipmentControlService    services.IShipmentControlService
 	shipmentControlController controllers.IShipmentControlController
@@ -387,6 +393,10 @@ func main() {
 			multibanda.GET("", multibandaController.Get())
 			multibanda.PUT(":id", multibandaController.Update())
 			multibanda.PUT(":id/phase", multibandaController.PhaseChange())
+			multibanda.GET("report/stamps/:code/image", multibandaReportController.GetStampImage())
+			multibanda.GET(":id/report", multibandaReportController.GetForm())
+			multibanda.PUT(":id/report/draft", multibandaReportController.SaveDraft())
+			multibanda.POST(":id/report/generate", multibandaReportController.Generate())
 			multibanda.PATCH(":id/request-delete", multibandaController.PatchRequestDelete())
 			multibanda.PATCH(":id/reject-delete", multibandaController.RejectRequestDelete())
 			multibanda.DELETE(":id", multibandaController.Delete())

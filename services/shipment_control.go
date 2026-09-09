@@ -233,6 +233,7 @@ func (s *shipmentControlService) Create(req *request.ShipmentControl, userID str
 		multibanda.SubtelCertificateNumber,
 		multibanda.MultibandCertificateUrl,
 	)
+	shipmentControl.CreatedBy = user.ID
 
 	id, err := s.shipmentControlRepository.Create(shipmentControl)
 	if err != nil {
@@ -409,6 +410,7 @@ func (s *shipmentControlService) Update(id string, req *request.ShipmentControl,
 
 	)
 	mapping.PreserveShipmentControlSubtelCertificate(shipmentControl, existing, multibanda)
+	mapping.PreserveShipmentControlReferenceAndValidation(shipmentControl, existing)
 
 	return s.shipmentControlRepository.Update(id, shipmentControl)
 
@@ -591,6 +593,7 @@ func (s *shipmentControlService) PhaseChange(id string, req *request.ShipmentCon
 		return err
 	}
 	mapping.PreserveShipmentControlSubtelCertificate(shipmentControl, existing, multibanda)
+	mapping.PreserveShipmentControlReferenceAndValidation(shipmentControl, existing)
 
 	functions.ApplyShipmentControlStatusRules(shipmentControl, existing)
 	functions.ApplyShipmentControlPhaseDateRules(shipmentControl, existing)

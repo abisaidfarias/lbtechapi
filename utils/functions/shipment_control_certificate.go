@@ -27,6 +27,32 @@ func IsValidControlNumber(s string) bool {
 	return controlNumberPattern.MatchString(strings.TrimSpace(s))
 }
 
+// BuildShipmentCertificateFileName builds the certificate's download file name
+// (via Content-Disposition, not the S3 object key) as
+// "{control_number}-{reference_id}-{rework_number}-{registro_oabi}.pdf",
+// omitting any segment that is empty rather than leaving a stray separator.
+func BuildShipmentCertificateFileName(controlNumber, referenceID, reworkNumber, registroOABI string) string {
+	segments := []string{
+		strings.TrimSpace(controlNumber),
+		strings.TrimSpace(referenceID),
+		strings.TrimSpace(reworkNumber),
+		strings.TrimSpace(registroOABI),
+	}
+
+	nonEmpty := make([]string, 0, len(segments))
+	for _, s := range segments {
+		if s != "" {
+			nonEmpty = append(nonEmpty, s)
+		}
+	}
+
+	if len(nonEmpty) == 0 {
+		return ""
+	}
+
+	return strings.Join(nonEmpty, "-") + ".pdf"
+}
+
 const (
 	ShipmentCertificadoraName           = "LB Technology SPA"
 	ShipmentCertificadoraRUT            = "76.527.872-4"

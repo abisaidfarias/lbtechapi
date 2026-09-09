@@ -271,6 +271,8 @@ func BuildShipmentControlPhaseEmailData(
 		Country:                     emptyAsDash(notify.CountryName),
 		Client:                      emptyAsDash(notify.Client),
 		ImeiQuantity:                strconv.Itoa(notify.ImeiQuantity),
+		ReferenceID:                 emptyAsDash(notify.ReferenceID),
+		Validation:                  emptyAsDash(notify.Validation),
 		ReworkNumber:                emptyAsDash(notify.ReworkNumber),
 		MultibandaCertificateNumber: emptyAsDash(notify.SubtelCertificateNumber),
 		Brand:                       brandName,

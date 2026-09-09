@@ -26,6 +26,7 @@ type IMultibandaRepository interface {
 	Update(string, *models.Multibanda) error
 	Delete(primitive.ObjectID) error
 	SetRequestDelete(primitive.ObjectID, bool) error
+	SetTestReportURL(primitive.ObjectID, string) error
 }
 
 type multibandaRepository struct {
@@ -196,6 +197,18 @@ func (r *multibandaRepository) Delete(id primitive.ObjectID) error {
 		return err
 	}
 	if res.DeletedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+	return nil
+}
+
+func (r *multibandaRepository) SetTestReportURL(id primitive.ObjectID, url string) error {
+	filter, update := queries.SetMultibandaTestReportURL(id, url)
+	res, err := multibandaCollection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return err
+	}
+	if res.MatchedCount == 0 {
 		return mongo.ErrNoDocuments
 	}
 	return nil

@@ -15,6 +15,8 @@ type ShipmentControlBulkValidateRow struct {
 	RowNumber               int                                       `json:"row_number"`
 	Status                  string                                    `json:"status"`
 	Client                  string                                    `json:"client,omitempty"`
+	ReferenceID             string                                    `json:"reference_id,omitempty"`
+	Validation              string                                    `json:"validation,omitempty"`
 	ReworkNumber            string                                    `json:"rework_number,omitempty"`
 	TechnicalModel          string                                    `json:"technical_model,omitempty"`
 	SoftwareVersion         string                                    `json:"software_version,omitempty"`

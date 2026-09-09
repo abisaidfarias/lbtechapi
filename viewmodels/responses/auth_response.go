@@ -6,11 +6,12 @@ import (
 
 // AuthResponse response to client
 type AuthResponse struct {
-	ID       primitive.ObjectID `json:"_id" bson:"_id"`
-	Profile  Profile            `json:"profile" bson:"profile"`
-	Email    string             `json:"email" bson:"email"`
-	Token    string             `json:"token" bson:"token"`
-	Name     string             `json:"name" bson:"name"`
-	LastName string             `json:"lastName" bson:"lastName"`
-	Company  primitive.ObjectID `json:"company" bson:"company"`
+	ID       primitive.ObjectID   `json:"_id" bson:"_id"`
+	Profile  Profile              `json:"profile" bson:"profile"`
+	Email    string               `json:"email" bson:"email"`
+	Token    string               `json:"token" bson:"token"`
+	Name     string               `json:"name" bson:"name"`
+	LastName string               `json:"lastName" bson:"lastName"`
+	Company  primitive.ObjectID   `json:"company" bson:"company"`
+	Brands   []primitive.ObjectID `json:"brands" bson:"brands"`
 }

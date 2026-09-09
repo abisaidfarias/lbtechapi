@@ -21,6 +21,10 @@ type IStorageService interface {
 	UploadUserFile([]byte, string) (responses.UploadFileResponse, error)
 	// UploadFileWithKey uploads bytes using the given S3 object key (path inside the bucket).
 	UploadFileWithKey([]byte, string) (string, error)
+	// UploadFileWithKeyAndName uploads bytes using the given S3 object key, but sets
+	// Content-Disposition so the file downloads under downloadFileName instead of the
+	// (URL-safe) key. The key itself is untouched, so it stays safe to embed in a URL.
+	UploadFileWithKeyAndName(filesf []byte, key, downloadFileName string) (string, error)
 }
 
 type storageService struct {
@@ -74,11 +78,15 @@ func (s *storageService) UploadUserFile(filesf []byte, originalFileName string) 
 }
 
 func (s *storageService) UploadFileWithKey(filesf []byte, key string) (string, error) {
+	return s.UploadFileWithKeyAndName(filesf, key, "")
+}
+
+func (s *storageService) UploadFileWithKeyAndName(filesf []byte, key, downloadFileName string) (string, error) {
 	key = strings.TrimSpace(key)
 	if key == "" {
 		return s.UploadFile(filesf)
 	}
-	return s.uploadToS3(filesf, key, "", "")
+	return s.uploadToS3(filesf, key, strings.TrimSpace(downloadFileName), "")
 }
 
 func (s *storageService) uploadToS3(filesf []byte, key, downloadFileName, contentType string) (string, error) {

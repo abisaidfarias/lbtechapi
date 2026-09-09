@@ -46,6 +46,10 @@ type ShipmentControl struct {
 
 	RegisteredImeiCount     int                `bson:"registered_imei_count"`
 
+	ReferenceID             string             `bson:"reference_id"`
+
+	Validation              string             `bson:"validation"`
+
 	ReworkNumber            string             `bson:"rework_number"`
 
 	OabiCertificate         string             `bson:"oabi_certificate"`
@@ -67,6 +71,8 @@ type ShipmentControl struct {
 	RequestDelete           bool               `bson:"request_delete"`
 
 	CreatedDate             time.Time          `bson:"created_date"`
+
+	CreatedBy               primitive.ObjectID `bson:"created_by,omitempty"`
 
 }
 

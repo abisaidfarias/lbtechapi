@@ -100,6 +100,10 @@ type ShipmentControlExpanded struct {
 
 	RegisteredImeiCount     int                             `bson:"registered_imei_count" json:"registered_imei_count"`
 
+	ReferenceID             string                          `bson:"reference_id" json:"reference_id"`
+
+	Validation              string                          `bson:"validation" json:"validation"`
+
 	ReworkNumber            string                          `bson:"rework_number" json:"rework_number"`
 
 	OabiCertificate         string                          `bson:"oabi_certificate" json:"oabi_certificate"`
@@ -119,6 +123,8 @@ type ShipmentControlExpanded struct {
 	RequestDelete           bool                            `bson:"request_delete" json:"request_delete"`
 
 	CreatedDate             *time.Time                      `bson:"created_date" json:"created_date"`
+
+	RequesterName           string                          `bson:"requester_name" json:"requester_name"`
 
 }
 

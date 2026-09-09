@@ -107,6 +107,9 @@ func (s *multibandaService) Create(multibandaRequest *request.Multibanda, userID
 		deviceID,
 		brandID,
 	)
+	if creatorID, err := primitive.ObjectIDFromHex(userID); err == nil {
+		multibanda.CreatedBy = creatorID
+	}
 
 	id, err := s.multibandaRepository.Create(multibanda)
 	if err != nil {
@@ -225,6 +228,7 @@ func (s *multibandaService) Update(id string, multibandaRequest *request.Multiba
 		deviceID,
 		brandID,
 	)
+	mapping.PreserveMultibandaTestReportURL(multibanda, existing.TestReportUrl)
 	setMultibandaDashboardPhase(multibanda)
 
 	return s.multibandaRepository.Update(id, multibanda)
@@ -250,6 +254,7 @@ func (s *multibandaService) PhaseChange(id string, multibandaRequest *request.Mu
 
 	multibanda := mapping.MultibandaRequestToMultibandaResume(multibandaRequest)
 	functions.ApplyMultibandaPhaseDateRules(multibanda, existing)
+	mapping.PreserveMultibandaTestReportURL(multibanda, existing.TestReportUrl)
 	setMultibandaDashboardPhase(multibanda)
 
 	if err := s.multibandaRepository.PhaseChange(id, multibanda); err != nil {

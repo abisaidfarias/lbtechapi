@@ -34,3 +34,5 @@ move-report-debug/
 *_SECRETS.md
 *_CREDENTIALS.md
 PROD_ENVIRONMENT_CONFIG.md
+# Ruido de Chromium/crashpad al generar PDFs en local
+debug.log
