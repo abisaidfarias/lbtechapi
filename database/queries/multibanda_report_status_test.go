@@ -15,21 +15,45 @@ func stageName(stage bson.D) string {
 	return stage[0].Key
 }
 
+// stageDefinesKey reports whether a stage's body sets the given field. Stages
+// in this file are written as bson.D and elsewhere as bson.M, so both are
+// accepted: the test is about what the pipeline does, not how it is spelled.
+func stageDefinesKey(stage bson.D, key string) bool {
+	switch body := stage[0].Value.(type) {
+	case bson.D:
+		for _, elem := range body {
+			if elem.Key == key {
+				return true
+			}
+		}
+	case bson.M:
+		_, ok := body[key]
+		return ok
+	}
+	return false
+}
+
 // The list must join the automatic report so the UI can colour its icon.
 func TestGetMultibandasJoinsAutomaticReport(t *testing.T) {
 	pipeline := GetMultibandas(nil, nil, true, primitive.NilObjectID)
 
+	// The pipeline carries other joins that also add and drop fields, so each
+	// stage is picked by what it does rather than by being the last of its kind.
 	var lookup, addFields, project bson.D
 	for _, stage := range pipeline {
 		switch stageName(stage) {
 		case "$lookup":
-			if from := lookupFrom(stage); from == "multibanda_reports" {
+			if lookupFrom(stage) == "multibanda_reports" {
 				lookup = stage
 			}
 		case "$addFields":
-			addFields = stage
+			if stageDefinesKey(stage, "report_status") {
+				addFields = stage
+			}
 		case "$project":
-			project = stage
+			if stageDefinesKey(stage, "automatic_report") {
+				project = stage
+			}
 		}
 	}
 
