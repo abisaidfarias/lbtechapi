@@ -52,6 +52,17 @@ func SetMultibandaRequestDelete(oid primitive.ObjectID, value bool) (primitive.M
 	}
 }
 
+// SetMultibandaTestReportURL points the process at the PDF produced by the
+// automatic report. It writes only that field so it can run after the report is
+// generated without disturbing anything else the process holds.
+func SetMultibandaTestReportURL(oid primitive.ObjectID, url string) (primitive.M, primitive.D) {
+	return primitive.M{"_id": oid}, primitive.D{
+		{Key: "$set", Value: primitive.D{
+			{Key: "test_report_url", Value: url},
+		}},
+	}
+}
+
 func GetMultibandas(
 	companies []primitive.ObjectID,
 	brands []primitive.ObjectID,

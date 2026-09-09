@@ -41,6 +41,7 @@ type repositoriesMultibandaReport interface {
 
 type repositoriesMultibanda interface {
 	GetByIdExpanded(primitive.ObjectID) (*responses.MultibandaExpanded, error)
+	SetTestReportURL(primitive.ObjectID, string) error
 }
 
 type repositoriesDevice interface {
@@ -180,6 +181,17 @@ func (s *multibandaReportService) Generate(
 	generatedAt := time.Now()
 	if err := s.reportRepository.MarkGenerated(ctx.multibandaOID, reportURL, userID, generatedAt); err != nil {
 		return nil, err
+	}
+
+	// The generated PDF is the process's test report: the automatic report
+	// replaces the manual upload of the old flow, so everything already reading
+	// test_report_url (the detail screen, the phase change email) points at it
+	// without those places having to know the report module exists.
+	//
+	// Regeneration produces a new cache-busted URL, so this runs every time and
+	// not only on the first generation.
+	if err := s.multibandaRepository.SetTestReportURL(ctx.multibandaOID, reportURL); err != nil {
+		return nil, fmt.Errorf("link multibanda test report: %w", err)
 	}
 
 	return &responses.MultibandaReportGenerated{
