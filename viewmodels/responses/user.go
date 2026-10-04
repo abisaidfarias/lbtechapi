@@ -1,6 +1,8 @@
 package responses
 
 import (
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -16,5 +18,7 @@ type User struct {
 	Brands     []primitive.ObjectID `bson:"brands"`
 	Countries  []primitive.ObjectID `bson:"countries"`
 	Clients    []primitive.ObjectID `bson:"clients"`
-	IsInternal bool                 `bson:"is_internal"`
+	IsInternal    bool       `bson:"is_internal"`
+	AccountStatus string     `bson:"account_status"`
+	PasswordSetAt *time.Time `bson:"password_set_at"`
 }

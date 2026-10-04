@@ -75,14 +75,16 @@ func getDeployID() string {
 }
 
 var (
-	userRepository repositories.IUserRepository = repositories.NewUserRepository()
-	authService    services.IAuthService        = services.NewAuthService(userRepository)
-	authController controllers.IAuthController  = controllers.NewAuthController(authService)
+	userRepository         repositories.IUserRepository         = repositories.NewUserRepository()
+	passwordTokenRepository repositories.IPasswordTokenRepository = repositories.NewPasswordTokenRepository()
+	passwordTokenService    services.IPasswordTokenService        = services.NewPasswordTokenService(passwordTokenRepository, userRepository)
+	authService             services.IAuthService                 = services.NewAuthService(userRepository, passwordTokenService)
+	authController          controllers.IAuthController           = controllers.NewAuthController(authService)
 
 	profileRepository repositories.IProfileRepository = repositories.NewProfileRepository()
 	companyRepository repositories.ICompanyRepository = repositories.NewCompanyRepository()
 
-	userService    services.IUserService       = services.NewUserService(userRepository, profileRepository, companyRepository)
+	userService    services.IUserService       = services.NewUserService(userRepository, profileRepository, companyRepository, passwordTokenService)
 	userController controllers.IUserController = controllers.NewUserController(userService)
 
 	testCategoryRepository repositories.ITestCategoryRepository = repositories.NewTestCategoryRepository()
@@ -243,13 +245,21 @@ func main() {
 			upgrade.POST("", userController.Upgrade())
 		}
 		v1.POST("/sign-in", authController.SignIn())
+		authPublic := v1.Group("/auth")
+		{
+			authPublic.POST("/forgot-password", authController.ForgotPassword())
+			authPublic.POST("/set-password", authController.SetPassword())
+			authPublic.GET("/password-token/validate", authController.ValidatePasswordToken())
+		}
 		v1.Use(middlewares.AuthMiddleware())
 
 		users := v1.Group("/users")
 		{
 			users.POST("", userController.Create())
+			users.POST(":id/resend-invitation", userController.ResendInvitation())
 			users.GET("", userController.Get())
 			users.GET("/profile", userController.GetProfileByID())
+			users.PUT("/me/password", userController.ChangeMyPassword())
 			users.PUT(":id", userController.Update())
 			users.DELETE(":id", userController.Delete())
 			users.PUT(":id/changePassword", userController.ChangePassword())

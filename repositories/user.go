@@ -2,6 +2,8 @@ package repositories
 
 import (
 	"context"
+	"strings"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -11,6 +13,7 @@ import (
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/database/queries"
 	"github.com/abisaidfarias/lbtechapi/models"
+	"github.com/abisaidfarias/lbtechapi/utils/functions"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 )
 
@@ -25,12 +28,14 @@ type IUserRepository interface {
 	Update(string, *models.User) error
 	Delete(string) error
 	ChangePassword(string, string) error
+	ActivatePassword(primitive.ObjectID, string, time.Time) error
 	GetByIDExpanded(string) (*responses.UserExpanded, error)
 	Updgrade(*models.User) error
 	GetUserByCompany(primitive.ObjectID) (*responses.User, error)
 	GetInternalUser() ([]*responses.User, error)
 	GetUsersByCompany(primitive.ObjectID) ([]*responses.User, error)
 	Count() (int64, error)
+	IsEmailTaken(string) (bool, error)
 }
 
 type userRepository struct {
@@ -107,6 +112,10 @@ func (r *userRepository) Get() ([]*bson.M, error) {
 		if err != nil {
 			return nil, err
 		}
+		hash, _ := user["passwordHash"].(string)
+		if _, ok := user["account_status"]; !ok {
+			user["account_status"] = functions.NormalizeListAccountStatus("", hash)
+		}
 		user["passwordHash"] = ""
 		users = append(users, &user)
 	}
@@ -116,10 +125,13 @@ func (r *userRepository) Get() ([]*bson.M, error) {
 // Save saves the new user
 func (r *userRepository) Create(user *models.User) error {
 
-	_, err := userCollection.InsertOne(context.TODO(), user)
+	res, err := userCollection.InsertOne(context.TODO(), user)
 
 	if err != nil {
 		return err
+	}
+	if oid, ok := res.InsertedID.(primitive.ObjectID); ok {
+		user.ID = oid
 	}
 
 	return nil
@@ -178,6 +190,19 @@ func (r *userRepository) ChangePassword(hashPassword string, email string) error
 		return err.Err()
 	}
 
+	return nil
+}
+
+func (r *userRepository) ActivatePassword(userID primitive.ObjectID, hashPassword string, activatedAt time.Time) error {
+	filter := queries.ActivateUserPasswordFilter(userID)
+	update := queries.ActivateUserPasswordUpdate(hashPassword, activatedAt)
+	res, err := userCollection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return err
+	}
+	if res.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
 	return nil
 }
 func (r *userRepository) GetByIDExpanded(id string) (*responses.UserExpanded, error) {
@@ -268,4 +293,25 @@ func (r *userRepository) Count() (int64, error) {
 		return 0, err
 	}
 	return count, nil
+}
+
+func (r *userRepository) IsEmailTaken(email string) (bool, error) {
+	email = strings.ToLower(strings.TrimSpace(email))
+	if email == "" {
+		return false, nil
+	}
+	collation := &options.Collation{
+		Locale:   "es",
+		Strength: 2,
+	}
+	countOpts := options.Count().SetCollation(collation)
+	count, err := userCollection.CountDocuments(
+		context.TODO(),
+		queries.GetUserByEmail(email),
+		countOpts,
+	)
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }

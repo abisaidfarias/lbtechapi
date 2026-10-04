@@ -1,6 +1,8 @@
 package responses
 
 import (
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -10,7 +12,9 @@ type AuthUser struct {
 	Email        string               `bson:"email"`
 	Name         string               `bson:"name"`
 	LastName     string               `bson:"lastName"`
-	PasswordHash string               `bson:"passwordHash"`
+	PasswordHash  string               `bson:"passwordHash"`
+	AccountStatus string               `bson:"account_status"`
+	PasswordSetAt *time.Time           `bson:"password_set_at"`
 	Phone        string               `bson:"phone"`
 	Profile      primitive.ObjectID   `bson:"profile"`
 	Company      primitive.ObjectID   `bson:"company"`

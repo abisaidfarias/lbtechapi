@@ -1,12 +1,14 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/services"
-	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
+	"github.com/abisaidfarias/lbtechapi/utils"
+	utilsErrors "github.com/abisaidfarias/lbtechapi/utils/errors"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/gin-gonic/gin"
 )
@@ -21,9 +23,11 @@ type IUserController interface {
 	Get() gin.HandlerFunc
 	GetProfileByID() gin.HandlerFunc
 	ChangePassword() gin.HandlerFunc
+	ChangeMyPassword() gin.HandlerFunc
 	Upgrade() gin.HandlerFunc
 	GetByInternal() gin.HandlerFunc
 	GetUserByCompany() gin.HandlerFunc
+	ResendInvitation() gin.HandlerFunc
 }
 
 // AuthController implementation of the interface
@@ -68,15 +72,28 @@ func (c *userController) Create() gin.HandlerFunc {
 		err = c.userService.Create(&user)
 
 		if err != nil {
-			if utils.ErrorDuplicatedData(err) {
-				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicated.Error()})
+			if utilsErrors.IsDuplicateUserEmailConflict(err) {
+				respondDuplicateUserEmail(ctx)
+				return
+			}
+			if errors.Is(err, utilsErrors.ErrorUserCreatedInviteFailed) {
+				ctx.JSON(http.StatusCreated, gin.H{
+					"message": "User created but invitation email could not be sent. Check FRONTEND_BASE_URL and email settings, then resend the invite.",
+					"warning": err.Error(),
+				})
+				return
+			}
+			if utils.IsValidationError(err) {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 				return
 			}
 			handleErrorResponse(ctx, err)
 			return
 		}
 
-		ctx.Status(http.StatusCreated)
+		ctx.JSON(http.StatusCreated, gin.H{
+			"message": "User created. An email was sent to set their password.",
+		})
 	}
 }
 
@@ -108,13 +125,13 @@ func (c *userController) Upgrade() gin.HandlerFunc {
 		err = c.userService.Upgrade(&user)
 
 		if err != nil {
-			if utils.ErrorDuplicatedData(err) {
-				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicated.Error()})
+			if utilsErrors.IsDuplicateUserEmailConflict(err) {
+				respondDuplicateUserEmail(ctx)
 				return
 			}
 			// Verificar si es el error de upgrade no permitido
-			if err.Error() == utils.ErrorUpgradeNotAllowed.Error() {
-				ctx.JSON(http.StatusForbidden, gin.H{"error": utils.ErrorUpgradeNotAllowed.Error()})
+			if err.Error() == utilsErrors.ErrorUpgradeNotAllowed.Error() {
+				ctx.JSON(http.StatusForbidden, gin.H{"error": utilsErrors.ErrorUpgradeNotAllowed.Error()})
 				return
 			}
 			handleErrorResponse(ctx, err)
@@ -130,7 +147,7 @@ func (c *userController) GetByID() gin.HandlerFunc {
 		id := ctx.Param("id")
 
 		if id == "" {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("%w", utils.ErrorInvalidURLParams)})
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("%w", utilsErrors.ErrorInvalidURLParams)})
 			return
 		}
 
@@ -152,7 +169,7 @@ func (c *userController) GetByEmail() gin.HandlerFunc {
 		email := ctx.Param("email")
 
 		if id == "" {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("%w", utils.ErrorInvalidURLParams)})
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("%w", utilsErrors.ErrorInvalidURLParams)})
 			return
 		}
 
@@ -185,8 +202,8 @@ func (c *userController) Update() gin.HandlerFunc {
 		err = c.userService.Update(id, &user)
 
 		if err != nil {
-			if utils.ErrorDuplicatedData(err) {
-				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicated.Error()})
+			if utilsErrors.IsDuplicateUserEmailConflict(err) {
+				respondDuplicateUserEmail(ctx)
 				return
 			}
 			handleErrorResponse(ctx, err)
@@ -198,6 +215,53 @@ func (c *userController) Update() gin.HandlerFunc {
 
 	}
 
+}
+
+// ResendInvitation godoc
+// @Summary Resend user invitation email
+// @Description Sends a new password-invite link to a user who has not set their password yet
+// @Tags Users
+// @Produce json
+// @Security Bearer
+// @Param id path string true "User ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 429 {object} map[string]string
+// @Router /users/{id}/resend-invitation [post]
+func (c *userController) ResendInvitation() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		targetID := ctx.Param("id")
+		if targetID == "" {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": utilsErrors.ErrorInvalidURLParams.Error()})
+			return
+		}
+		actorID := ctx.MustGet("userID").(string)
+		err := c.userService.ResendInvitation(actorID, targetID)
+		if err != nil {
+			if errors.Is(err, utilsErrors.ErrorUserNotPendingInvite) {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+			if errors.Is(err, utilsErrors.ErrorInviteResendRateLimited) {
+				ctx.JSON(http.StatusTooManyRequests, gin.H{"error": err.Error()})
+				return
+			}
+			if errors.Is(err, utilsErrors.ErrorResourceNotFound) {
+				ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+				return
+			}
+			if errors.Is(err, utilsErrors.ErrorUserCreatedInviteFailed) {
+				ctx.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+				return
+			}
+			handleErrorResponse(ctx, err)
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{
+			"message": "Invitation email sent.",
+		})
+	}
 }
 
 func (c *userController) Delete() gin.HandlerFunc {
@@ -261,26 +325,28 @@ func (c *userController) GetProfileByID() gin.HandlerFunc {
 }
 func (c *userController) ChangePassword() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		ctx.JSON(http.StatusGone, gin.H{"error": utilsErrors.ErrorDeprecatedPasswordEndpoint.Error()})
+	}
+}
 
-		email := ctx.Param("id")
-
+func (c *userController) ChangeMyPassword() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userID := ctx.MustGet("userID").(string)
 		var changePassword request.ChangePassword
-
-		err := ctx.ShouldBindJSON(&changePassword)
-		if err != nil {
+		if err := ctx.ShouldBindJSON(&changePassword); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		err = c.userService.ChangePassword(email, changePassword)
-
-		if err != nil {
+		if err := c.userService.ChangeMyPassword(userID, changePassword); err != nil {
+			if errors.Is(err, utilsErrors.ErrorInvalidCredentials) {
+				ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+				return
+			}
 			handleErrorResponse(ctx, err)
 			return
 		}
-
 		ctx.Status(http.StatusOK)
 	}
-
 }
 func (c *userController) GetByInternal() gin.HandlerFunc {
 	return func(ctx *gin.Context) {

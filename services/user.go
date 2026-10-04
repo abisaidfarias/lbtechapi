@@ -2,9 +2,13 @@ package services
 
 import (
 	"fmt"
+	"log"
+	"strings"
+	"time"
 
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/repositories"
+	apputils "github.com/abisaidfarias/lbtechapi/utils"
 	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
 	"github.com/abisaidfarias/lbtechapi/utils/functions"
 	"github.com/abisaidfarias/lbtechapi/utils/mapping"
@@ -24,22 +28,31 @@ type IUserService interface {
 	Update(string, *models.User) error
 	Delete(string) error
 	ChangePassword(string, request.ChangePassword) error
+	ChangeMyPassword(string, request.ChangePassword) error
 	Upgrade(*request.User) error
 	GetInternalUser() ([]*responses.User, error)
 	GetUsersByCompany(string) ([]*responses.User, error)
+	ResendInvitation(actorUserID, targetUserID string) error
 }
 type userService struct {
-	userRepository    repositories.IUserRepository
-	profileRepository repositories.IProfileRepository
-	companyRepository repositories.ICompanyRepository
+	userRepository       repositories.IUserRepository
+	profileRepository    repositories.IProfileRepository
+	companyRepository    repositories.ICompanyRepository
+	passwordTokenService IPasswordTokenService
 }
 
 // NewUserService is a constructor
-func NewUserService(userRepository repositories.IUserRepository, profileRepository repositories.IProfileRepository, companyRepository repositories.ICompanyRepository) IUserService {
+func NewUserService(
+	userRepository repositories.IUserRepository,
+	profileRepository repositories.IProfileRepository,
+	companyRepository repositories.ICompanyRepository,
+	passwordTokenService IPasswordTokenService,
+) IUserService {
 	return &userService{
-		userRepository:    userRepository,
-		profileRepository: profileRepository,
-		companyRepository: companyRepository,
+		userRepository:       userRepository,
+		profileRepository:    profileRepository,
+		companyRepository:    companyRepository,
+		passwordTokenService: passwordTokenService,
 	}
 }
 
@@ -55,16 +68,76 @@ func (s *userService) Create(userRequest *request.User) error {
 		userRequest.Company = userLogged.Company.Hex()
 	}
 
-	user := mapping.UserRequestToUser(userRequest)
+	if strings.TrimSpace(userRequest.Password) != "" {
+		return fmt.Errorf("%w", apputils.NewValidationError("password must not be sent when creating users; user will receive an email to set password"))
+	}
+
+	userRequest.Email = normalizeUserEmail(userRequest.Email)
+	taken, err := s.userRepository.IsEmailTaken(userRequest.Email)
+	if err != nil {
+		return err
+	}
+	if taken {
+		return fmt.Errorf("%w", utils.ErrorDuplicateUserEmail)
+	}
+
+	user := mapping.UserRequestToPendingUser(userRequest)
 
 	err = s.userRepository.Create(user)
 
 	if err != nil {
+		if utils.ErrorDuplicatedData(err) {
+			return fmt.Errorf("%w", utils.ErrorDuplicateUserEmail)
+		}
 		return err
+	}
+
+	name := strings.TrimSpace(user.Name + " " + user.LastName)
+	if err := s.passwordTokenService.IssueAndEmail(user.ID, user.Email, name, models.PasswordTokenPurposeInvite); err != nil {
+		log.Printf("invite email failed for user %s: %v", user.Email, err)
+		return fmt.Errorf("%w: %v", utils.ErrorUserCreatedInviteFailed, err)
 	}
 
 	return nil
 }
+
+func (s *userService) ResendInvitation(actorUserID, targetUserID string) error {
+	actor, err := s.userRepository.GetByID(actorUserID)
+	if err != nil {
+		return err
+	}
+	target, err := s.userRepository.GetByID(targetUserID)
+	if err != nil {
+		return err
+	}
+	if !actor.IsInternal && actor.Company != target.Company {
+		return fmt.Errorf("%w", utils.ErrorResourceNotFound)
+	}
+	if !userPendingInvitation(target) {
+		return fmt.Errorf("%w", utils.ErrorUserNotPendingInvite)
+	}
+	rateKey := "invite-resend:" + targetUserID
+	if !forgotPasswordLimiter.allow(rateKey, time.Minute) {
+		return fmt.Errorf("%w", utils.ErrorInviteResendRateLimited)
+	}
+	name := strings.TrimSpace(target.Name + " " + target.LastName)
+	if err := s.passwordTokenService.IssueAndEmail(target.ID, target.Email, name, models.PasswordTokenPurposeInvite); err != nil {
+		return fmt.Errorf("%w: %v", utils.ErrorUserCreatedInviteFailed, err)
+	}
+	return nil
+}
+
+func userPendingInvitation(user *responses.User) bool {
+	if user == nil {
+		return false
+	}
+	if user.PasswordSetAt != nil {
+		return false
+	}
+	status := functions.NormalizeListAccountStatus(user.AccountStatus, "")
+	return status == models.AccountStatusPending
+}
+
 func (s *userService) Upgrade(userRequest *request.User) error {
 	// Verificar si ya existen usuarios en el sistema
 	userCount, err := s.userRepository.Count()
@@ -175,11 +248,20 @@ func (s *userService) Upgrade(userRequest *request.User) error {
 	userRequest.Profile = profileID.Hex()
 	userRequest.Company = companyID.Hex()
 
-	user := mapping.UserRequestToUser(userRequest)
+	if strings.TrimSpace(userRequest.Password) == "" {
+		return fmt.Errorf("%w", apputils.NewValidationError("password is required for initial system upgrade"))
+	}
+
+	user := mapping.UserRequestToActiveUser(userRequest)
+
+	userRequest.Email = normalizeUserEmail(userRequest.Email)
 
 	err = s.userRepository.Create(user)
 
 	if err != nil {
+		if utils.ErrorDuplicatedData(err) {
+			return fmt.Errorf("%w", utils.ErrorDuplicateUserEmail)
+		}
 		return err
 	}
 
@@ -227,13 +309,21 @@ func (s *userService) GetByEmail(email string) (*responses.AuthUser, error) {
 }
 
 func (s *userService) Update(id string, user *models.User) error {
+	user.Email = normalizeUserEmail(user.Email)
 
 	err := s.userRepository.Update(id, user)
 
 	if err != nil {
+		if utils.ErrorDuplicatedData(err) {
+			return fmt.Errorf("%w", utils.ErrorDuplicateUserEmail)
+		}
 		return err
 	}
 	return nil
+}
+
+func normalizeUserEmail(email string) string {
+	return strings.ToLower(strings.TrimSpace(email))
 }
 
 func (s *userService) Delete(id string) error {
@@ -255,7 +345,19 @@ func (s *userService) GetProfileByID(id string) (*responses.Profile, error) {
 	}
 	return profile, nil
 }
+func (s *userService) ChangeMyPassword(userID string, changePassword request.ChangePassword) error {
+	user, err := s.userRepository.GetByID(userID)
+	if err != nil {
+		return err
+	}
+	return s.changePasswordForEmail(user.Email, changePassword)
+}
+
 func (s *userService) ChangePassword(email string, changePassword request.ChangePassword) error {
+	return fmt.Errorf("%w", utils.ErrorDeprecatedPasswordEndpoint)
+}
+
+func (s *userService) changePasswordForEmail(email string, changePassword request.ChangePassword) error {
 
 	user, err := s.userRepository.GetByEmail(email)
 	if err != nil {

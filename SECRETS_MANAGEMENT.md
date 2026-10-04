@@ -24,6 +24,8 @@ Cada ambiente tiene los siguientes secretos encriptados:
 ├── EMAIL_PASSWORD      - Password del email
 ├── EMAIL_PORT          - Puerto SMTP
 ├── SMTP_CLIENTE        - Host SMTP
+├── FRONTEND_BASE_URL   - SPA origin for invite/reset links (no trailing slash)
+├── PASSWORD_TOKEN_TTL_HOURS - Invite/reset token TTL (default 48)
 └── MONTH_INTERVAL      - Intervalo de meses para reportes
 ```
 

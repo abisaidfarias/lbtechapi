@@ -165,6 +165,20 @@ func initDB() *mongo.Database {
 	database.Collection("multibandas").Indexes().CreateOne(context.Background(), indexMultibandaCompanyDeviceSoftwareOs)
 	database.Collection("shipment_controls").Indexes().CreateOne(context.Background(), indexShipmentControlMultibanda)
 	database.Collection("shipment_controls").Indexes().CreateOne(context.Background(), indexShipmentControlCompanyCreated)
+	indexPasswordTokenHash := mongo.IndexModel{
+		Keys: bson.M{
+			"token_hash": 1,
+		},
+		Options: options.Index().SetUnique(true),
+	}
+	indexPasswordTokenTTL := mongo.IndexModel{
+		Keys: bson.M{
+			"expires_at": 1,
+		},
+		Options: options.Index().SetExpireAfterSeconds(0),
+	}
+	database.Collection("password_tokens").Indexes().CreateOne(context.Background(), indexPasswordTokenHash)
+	database.Collection("password_tokens").Indexes().CreateOne(context.Background(), indexPasswordTokenTTL)
 	return database
 }
 func GetMongoDBClient() *mongo.Client {

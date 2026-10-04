@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -9,6 +11,8 @@ type User struct {
 	ID           primitive.ObjectID   `bson:"_id,omitempty"`
 	Email        string               `bson:"email,omitempty"`
 	PasswordHash string               `bson:"passwordHash,omitempty"`
+	AccountStatus string              `bson:"account_status,omitempty"`
+	PasswordSetAt *time.Time          `bson:"password_set_at,omitempty"`
 	Name         string               `bson:"name,omitempty"`
 	LastName     string               `bson:"lastName,omitempty"`
 	Phone        string               `bson:"phone,omitempty"`
