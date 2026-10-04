@@ -327,11 +327,16 @@ func normalizeUserEmail(email string) string {
 }
 
 func (s *userService) Delete(id string) error {
-
-	err := s.userRepository.Delete(id)
-
+	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
+		return fmt.Errorf("%w", utils.ErrorResourceNotFound)
+	}
+
+	if err := s.userRepository.Delete(id); err != nil {
 		return err
+	}
+	if err := s.passwordTokenService.RevokeAllForUser(oid); err != nil {
+		log.Printf("revoke password tokens for deleted user %s: %v", id, err)
 	}
 	return nil
 }

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reporte de Mantenimiento — Septiembre 2026 — LBOneTrack</title>
+  <link rel="stylesheet" href="styles/report-client.css" />
+</head>
+<body>
+
+  <section class="cover">
+    <div class="cover-brand">LB <span>OneTrack</span></div>
+    <div>
+      <h1>Reporte de mantenimiento mensual</h1>
+      <p class="cover-sub">Mejoras de septiembre 2026: informe Multi-banda, trazabilidad y nuevo modelo de accesos por correo (invitación y recuperación de contraseña).</p>
+    </div>
+    <div class="cover-meta">
+      <p><strong>Cliente:</strong> Camilo Espinoza — LBOneTrack</p>
+      <p><strong>Período:</strong> 1 – 30 de septiembre de 2026</p>
+      <p><strong>Emisión:</strong> 4 de octubre de 2026</p>
+      <p><strong>Preparado por:</strong> Abisaid Farías · LB Technology</p>
+      <p><strong>Plataforma:</strong> Desarrollo y producción (lbonetrack.com)</p>
+    </div>
+  </section>
+
+  <div class="content">
+
+    <h2>Resumen en pocas palabras</h2>
+    <p class="lead">
+      En septiembre se <strong>cerró el informe automático Multi-banda</strong> (sellos oficiales y enlace al trámite),
+      se mejoró la <strong>trazabilidad</strong> (quién solicitó cada proceso) y se implementó un <strong>nuevo sistema de accesos</strong>:
+      los usuarios ya no reciben contraseñas del administrador; activan la cuenta por correo, pueden <strong>recuperar la contraseña</strong> si la olvidan
+      y el administrador puede <strong>reenviar la invitación</strong> cuando haga falta.
+    </p>
+
+    <div class="status-row">
+      <span class="pill pill-ok">Multi-banda listo con sellos oficiales</span>
+      <span class="pill pill-ok">Accesos e invitación por correo (servidor)</span>
+      <span class="pill pill-warn">Pantallas web finales en integración</span>
+    </div>
+
+    <h2>Lo más importante del mes</h2>
+    <div class="highlights">
+      <div class="card">
+        <strong>Sellos oficiales en el informe Multi-banda</strong>
+        <p>Arte definitivo integrado. No se emite un documento con sello antiguo o incorrecto.</p>
+      </div>
+      <div class="card">
+        <strong>Informe conectado al trámite</strong>
+        <p>El PDF generado queda asociado al proyecto; correos y detalle muestran el mismo archivo.</p>
+      </div>
+      <div class="card">
+        <strong>Quién solicitó el trámite</strong>
+        <p>En listas aparece el nombre de quien creó Multi-banda o Control de embarque.</p>
+      </div>
+      <div class="card">
+        <strong>Alta de usuario sin contraseña manual</strong>
+        <p>El administrador solo registra datos; la persona recibe un correo para crear su contraseña.</p>
+      </div>
+      <div class="card">
+        <strong>Olvidé mi contraseña</strong>
+        <p>Desde el inicio de sesión se puede pedir un enlace por correo para definir una contraseña nueva.</p>
+      </div>
+      <div class="card">
+        <strong>Reenviar invitación</strong>
+        <p>Si el correo no llega, el administrador reenvía la invitación al usuario pendiente desde la plataforma.</p>
+      </div>
+    </div>
+
+    <h2>Informe Multi-banda — flujo simplificado</h2>
+    <ol class="steps">
+      <li>Terminan las pruebas en la plataforma.</li>
+      <li>Completan el formulario (se puede guardar y continuar otro día).</li>
+      <li>La plataforma valida que no falte información obligatoria.</li>
+      <li>Se genera el PDF con el sello oficial.</li>
+      <li>El informe queda archivado en el trámite (sin subir un archivo aparte).</li>
+    </ol>
+
+    <h2>Accesos y contraseñas — qué se entregó en septiembre</h2>
+    <p class="lead">Cambio de modelo: más seguridad y menos dependencia del administrador para compartir claves.</p>
+
+    <table class="simple">
+      <thead>
+        <tr>
+          <th>Función</th>
+          <th>Qué hace el usuario / administrador</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Invitación al crear usuario</strong></td>
+          <td>Al dar de alta un usuario, la plataforma envía un correo con enlace seguro para que elija su contraseña la primera vez.</td>
+        </tr>
+        <tr>
+          <td><strong>Activar cuenta</strong></td>
+          <td>La persona abre el enlace del correo, define su contraseña y ya puede iniciar sesión.</td>
+        </tr>
+        <tr>
+          <td><strong>Olvidé mi contraseña</strong></td>
+          <td>En la pantalla de inicio de sesión puede solicitar un correo con enlace para restablecer la contraseña (sin intervención del administrador).</td>
+        </tr>
+        <tr>
+          <td><strong>Reenviar invitación</strong></td>
+          <td>El administrador puede reenviar el correo de invitación a usuarios que aún no han activado la cuenta.</td>
+        </tr>
+        <tr>
+          <td><strong>Cambiar mi contraseña</strong></td>
+          <td>Usuario ya registrado puede cambiar su contraseña desde su sesión, con la contraseña actual.</td>
+        </tr>
+        <tr>
+          <td><strong>Correos con enlace correcto</strong></td>
+          <td>Enlaces configurados para el sitio de prueba y producción en la nube (no enlaces rotos en despliegue).</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Flujo: nuevo usuario</h3>
+    <ol class="steps">
+      <li>Administrador crea el usuario (sin escribir una contraseña por él).</li>
+      <li>Llega un correo “Active su cuenta” con enlace seguro.</li>
+      <li>El usuario elige su contraseña.</li>
+      <li>Inicia sesión con su correo y la contraseña que definió.</li>
+    </ol>
+
+    <h3>Flujo: olvidé mi contraseña</h3>
+    <ol class="steps">
+      <li>En inicio de sesión, elige “Olvidé mi contraseña”.</li>
+      <li>Ingresa su correo.</li>
+      <li>Recibe un enlace para crear una contraseña nueva.</li>
+      <li>Vuelve a iniciar sesión con la contraseña nueva.</li>
+    </ol>
+
+    <p class="note-box">Los enlaces de los correos tienen vigencia limitada por seguridad. Si un correo no aparece en la bandeja de entrada, revisar spam o usar <strong>reenviar invitación</strong> (usuarios nuevos).</p>
+
+    <h2>Entregas del período</h2>
+    <table class="simple">
+      <thead>
+        <tr>
+          <th>Cuándo</th>
+          <th>Qué se entregó</th>
+          <th>Beneficio</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>7 sep</td>
+          <td>Sellos oficiales y layout del PDF Multi-banda</td>
+          <td>Documento alineado al formato regulatorio</td>
+        </tr>
+        <tr>
+          <td>7 sep</td>
+          <td>Nombre del solicitante en listas</td>
+          <td>Trazabilidad operativa</td>
+        </tr>
+        <tr>
+          <td>8 sep</td>
+          <td>Informe automático ligado al trámite</td>
+          <td>Menos pasos manuales</td>
+        </tr>
+        <tr>
+          <td>30 sep</td>
+          <td>Sistema de invitación, recuperación y reenvío de contraseña (servidor)</td>
+          <td>Accesos más seguros; sin contraseñas compartidas</td>
+        </tr>
+        <tr>
+          <td>30 sep</td>
+          <td>Corrección al eliminar usuarios y mensajes claros si el correo ya existe</td>
+          <td>Menos confusiones al administrar cuentas</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Mantenimiento continuo (cada mes)</h2>
+    <div class="section-box">
+      <ul class="simple">
+        <li>Revisión de registros del sistema y corrección de fallos reportados.</li>
+        <li>Despliegues controlados a prueba y producción.</li>
+        <li>Revisión de alertas de seguridad en componentes de software.</li>
+        <li>Pruebas antes de publicar cambios.</li>
+      </ul>
+    </div>
+
+    <h2>Puntos a planificar</h2>
+    <ul class="simple">
+      <li><strong>Pantallas web</strong> de “olvidé contraseña” y “activar cuenta” (el servidor ya soporta el flujo completo).</li>
+      <li><strong>Validación conjunta</strong> de un informe Multi-banda impreso con sellos oficiales.</li>
+      <li>Actualizaciones de seguridad programadas y modernización del servidor en la nube.</li>
+    </ul>
+
+    <div class="next-steps">
+      <h3>Próximos pasos sugeridos</h3>
+      <ul class="simple">
+        <li>Terminar pantallas en la web y probar invitación + recuperación de punta a punta en ambiente de prueba.</li>
+        <li>Publicar en producción cuando el flujo esté validado con usuarios reales.</li>
+        <li>Revisión del PDF Multi-banda impreso con el cliente.</li>
+      </ul>
+    </div>
+
+    <h2>Cierre</h2>
+    <p class="lead">
+      Septiembre dejó el <strong>informe Multi-banda</strong> en condiciones de uso real con sellos oficiales y, en el mismo período,
+      modernizó la <strong>gestión de accesos</strong> con invitación por correo, recuperación de contraseña y reenvío de invitaciones.
+      Agradecemos la entrega de los gráficos de sellos; fue fundamental para cerrar este módulo.
+    </p>
+
+    <p class="footer-note">
+      LBOneTrack · Reporte de mantenimiento · Septiembre 2026 · Versión para cliente
+    </p>
+  </div>
+
+</body>
+</html>

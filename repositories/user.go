@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/abisaidfarias/lbtechapi/database"
 	"github.com/abisaidfarias/lbtechapi/database/queries"
 	"github.com/abisaidfarias/lbtechapi/models"
+	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
 	"github.com/abisaidfarias/lbtechapi/utils/functions"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 )
@@ -155,12 +157,18 @@ func (r *userRepository) Update(id string, user *models.User) error {
 
 // Delete deletes the user
 func (r *userRepository) Delete(id string) error {
-	oid, _ := primitive.ObjectIDFromHex(id)
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return fmt.Errorf("%w", utils.ErrorResourceNotFound)
+	}
 
-	_, err := userCollection.DeleteOne(context.TODO(), queries.DeleteUser(oid))
+	res, err := userCollection.DeleteOne(context.TODO(), queries.DeleteUser(oid))
 
 	if err != nil {
 		return err
+	}
+	if res.DeletedCount == 0 {
+		return fmt.Errorf("%w", utils.ErrorResourceNotFound)
 	}
 
 	return nil

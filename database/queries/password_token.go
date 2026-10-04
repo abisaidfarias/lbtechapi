@@ -7,6 +7,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+func InvalidateAllPasswordTokensForUserFilter(userID primitive.ObjectID) bson.M {
+	return bson.M{
+		"user_id": userID,
+		"used_at": bson.M{"$exists": false},
+	}
+}
+
 func InvalidatePasswordTokensFilter(userID primitive.ObjectID, purpose string) bson.M {
 	return bson.M{
 		"user_id":   userID,

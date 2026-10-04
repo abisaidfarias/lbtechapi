@@ -14,6 +14,7 @@ import (
 type IPasswordTokenRepository interface {
 	Create(*models.PasswordToken) error
 	InvalidateActive(userID primitive.ObjectID, purpose string) error
+	InvalidateAllForUser(userID primitive.ObjectID) error
 	FindValidByHash(tokenHash string) (*models.PasswordToken, error)
 	MarkUsed(id primitive.ObjectID) error
 }
@@ -33,6 +34,13 @@ func (r *passwordTokenRepository) Create(token *models.PasswordToken) error {
 
 func (r *passwordTokenRepository) InvalidateActive(userID primitive.ObjectID, purpose string) error {
 	filter := queries.InvalidatePasswordTokensFilter(userID, purpose)
+	update := queries.InvalidatePasswordTokensUpdate(time.Now())
+	_, err := passwordTokenCollection.UpdateMany(context.TODO(), filter, update)
+	return err
+}
+
+func (r *passwordTokenRepository) InvalidateAllForUser(userID primitive.ObjectID) error {
+	filter := queries.InvalidateAllPasswordTokensForUserFilter(userID)
 	update := queries.InvalidatePasswordTokensUpdate(time.Now())
 	_, err := passwordTokenCollection.UpdateMany(context.TODO(), filter, update)
 	return err

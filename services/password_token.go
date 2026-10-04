@@ -14,6 +14,7 @@ import (
 
 type IPasswordTokenService interface {
 	IssueAndEmail(userID primitive.ObjectID, email, name, purpose string) error
+	RevokeAllForUser(userID primitive.ObjectID) error
 	ValidateRawToken(raw string) (*models.PasswordToken, error)
 	Consume(raw, newPassword string) error
 }
@@ -31,6 +32,10 @@ func NewPasswordTokenService(
 		tokenRepo: tokenRepo,
 		userRepo:  userRepo,
 	}
+}
+
+func (s *passwordTokenService) RevokeAllForUser(userID primitive.ObjectID) error {
+	return s.tokenRepo.InvalidateAllForUser(userID)
 }
 
 func (s *passwordTokenService) IssueAndEmail(userID primitive.ObjectID, email, name, purpose string) error {

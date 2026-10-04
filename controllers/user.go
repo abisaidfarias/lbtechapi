@@ -272,6 +272,10 @@ func (c *userController) Delete() gin.HandlerFunc {
 		err := c.userService.Delete(id)
 
 		if err != nil {
+			if errors.Is(err, utilsErrors.ErrorResourceNotFound) {
+				ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+				return
+			}
 			handleErrorResponse(ctx, err)
 			return
 		}

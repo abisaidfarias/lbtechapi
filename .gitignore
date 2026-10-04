@@ -16,6 +16,9 @@
 __debug_bin
 .env
 
+docs/mantenimiento/node_modules/
+docs/mantenimiento/package-lock.json
+
 # Runbook local (no commitear; ver RUN_LOCAL.md)
 RUN_LOCAL.md
 
