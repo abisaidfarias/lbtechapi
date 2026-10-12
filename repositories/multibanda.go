@@ -27,6 +27,7 @@ type IMultibandaRepository interface {
 	Delete(primitive.ObjectID) error
 	SetRequestDelete(primitive.ObjectID, bool) error
 	SetTestReportURL(primitive.ObjectID, string) error
+	SetReportAttachments(primitive.ObjectID, string, string, string, string) error
 }
 
 type multibandaRepository struct {
@@ -204,6 +205,21 @@ func (r *multibandaRepository) Delete(id primitive.ObjectID) error {
 
 func (r *multibandaRepository) SetTestReportURL(id primitive.ObjectID, url string) error {
 	filter, update := queries.SetMultibandaTestReportURL(id, url)
+	res, err := multibandaCollection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return err
+	}
+	if res.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+	return nil
+}
+
+func (r *multibandaRepository) SetReportAttachments(
+	id primitive.ObjectID,
+	adbURL, adbName, bandURL, bandName string,
+) error {
+	filter, update := queries.SetMultibandaReportAttachments(id, adbURL, adbName, bandURL, bandName)
 	res, err := multibandaCollection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		return err

@@ -12,6 +12,7 @@ import (
 
 func initialScope() utils.MultibandaReportScope {
 	return utils.MultibandaReportScope{
+		MultibandaType:    enums.MultibandaTypeInitialProcess,
 		IncludesSimlock:   true,
 		IncludesMultiband: true,
 		SupportsGSM:       true,
@@ -73,6 +74,10 @@ func completeReport() *request.MultibandaReportSave {
 		{EvidenceType: enums.SAEEvidenceCBHistory, URL: "https://example.com/cb.png",
 			Scenario: enums.SAEScenarioRoom, Operator: "Movistar"},
 	}
+	req.AdbInfoURL = "https://example.com/adb.xlsx"
+	req.AdbInfoOriginalFileName = "adb.xlsx"
+	req.BandValidationURL = "https://example.com/band.zip"
+	req.BandValidationOriginalFileName = "band.zip"
 	return req
 }
 

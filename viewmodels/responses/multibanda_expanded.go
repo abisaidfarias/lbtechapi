@@ -34,6 +34,10 @@ type MultibandaExpanded struct {
 	// TestReportUrl, which holds the manually uploaded report of the old flow.
 	ReportStatus            string     `bson:"report_status" json:"report_status"`
 	MultibandCertificateUrl string     `bson:"multiband_certificate_url" json:"multiband_certificate_url"`
+	AdbInfoUrl              string     `bson:"adb_info_url" json:"adb_info_url"`
+	AdbInfoOriginalFileName string     `bson:"adb_info_original_file_name" json:"adb_info_original_file_name"`
+	BandValidationUrl       string     `bson:"band_validation_url" json:"band_validation_url"`
+	BandValidationOriginalFileName string `bson:"band_validation_original_file_name" json:"band_validation_original_file_name"`
 	SubtelCertificateNumber string     `bson:"subtel_certificate_number" json:"subtel_certificate_number"`
 	Comment                 string     `bson:"comment" json:"comment"`
 	NeedReflash             bool       `bson:"need_reflash" json:"need_reflash"`

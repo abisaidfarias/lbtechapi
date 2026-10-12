@@ -30,8 +30,13 @@ func (l *forgotPasswordRateLimiter) allow(key string, minInterval time.Duration)
 }
 
 func (s *authService) sendForgotPasswordIfExists(email string) {
-	key := "email:" + strings.ToLower(strings.TrimSpace(email))
+	email = strings.ToLower(strings.TrimSpace(email))
+	if email == "" {
+		return
+	}
+	key := "email:" + email
 	if !forgotPasswordLimiter.allow(key, time.Minute) {
+		log.Printf("forgot-password rate limited for %s", email)
 		return
 	}
 	user, err := s.userRepository.GetByEmail(email)

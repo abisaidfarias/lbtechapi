@@ -21,6 +21,7 @@ type IMultibandaReportService interface {
 	GetForm(multibandaID, userID string) (*responses.MultibandaReportForm, error)
 	SaveDraft(multibandaID string, req *request.MultibandaReportSave, userID string) (*responses.MultibandaReportForm, error)
 	Generate(multibandaID string, req *request.MultibandaReportSave, userID string) (*responses.MultibandaReportGenerated, error)
+	UploadAttachment(multibandaID, userID, kind string, fileBytes []byte, originalFileName string) (*responses.MultibandaReportForm, error)
 }
 
 type multibandaReportService struct {
@@ -42,6 +43,7 @@ type repositoriesMultibandaReport interface {
 type repositoriesMultibanda interface {
 	GetByIdExpanded(primitive.ObjectID) (*responses.MultibandaExpanded, error)
 	SetTestReportURL(primitive.ObjectID, string) error
+	SetReportAttachments(primitive.ObjectID, string, string, string, string) error
 }
 
 type repositoriesDevice interface {
@@ -129,6 +131,9 @@ func (s *multibandaReportService) SaveDraft(
 	if err := s.reportRepository.Upsert(report); err != nil {
 		return nil, err
 	}
+	if err := s.syncReportAttachmentsToProcess(ctx.multibandaOID, report); err != nil {
+		return nil, err
+	}
 
 	return s.GetForm(multibandaID, userID)
 }
@@ -193,6 +198,9 @@ func (s *multibandaReportService) Generate(
 	if err := s.multibandaRepository.SetTestReportURL(ctx.multibandaOID, reportURL); err != nil {
 		return nil, fmt.Errorf("link multibanda test report: %w", err)
 	}
+	if err := s.syncReportAttachmentsToProcess(ctx.multibandaOID, report); err != nil {
+		return nil, err
+	}
 
 	return &responses.MultibandaReportGenerated{
 		ReportURL:   reportURL,
@@ -254,6 +262,7 @@ func (s *multibandaReportService) loadContext(multibandaID, userID string) (*mul
 		report:        report,
 		prefilled:     prefilled,
 		scope: utils.MultibandaReportScope{
+			MultibandaType:    multibanda.Type,
 			IncludesSimlock:   includesInitialBlocks,
 			IncludesMultiband: includesInitialBlocks,
 			SupportsGSM:       prefilled.SupportsGSM,

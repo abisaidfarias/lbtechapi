@@ -167,6 +167,13 @@ var (
 	)
 	multibandaReportController controllers.IMultibandaReportController = controllers.NewMultibandaReportController(multibandaReportService)
 
+	imeiValidationRepository repositories.IImeiValidationRepository = repositories.NewImeiValidationRepository()
+	imeiInfoClient           services.IImeiInfoClient               = services.NewImeiInfoClient()
+	imeiValidationService    services.IImeiValidationService        = services.NewImeiValidationService(
+		imeiValidationRepository, userRepository, imeiInfoClient,
+	)
+	imeiValidationController controllers.IImeiValidationController = controllers.NewImeiValidationController(imeiValidationService)
+
 	shipmentControlRepository repositories.IShipmentControlRepository = repositories.NewShipmentControlRepository(multibandaRepository)
 	shipmentControlService    services.IShipmentControlService
 	shipmentControlController controllers.IShipmentControlController
@@ -397,6 +404,12 @@ func main() {
 			notification.POST("", notificationController.Create())
 			notification.GET("/company/:id", notificationController.GetByCompany())
 		}
+		imeiValidation := v1.Group("/imei-validation")
+		{
+			imeiValidation.POST("/lookup", imeiValidationController.Lookup())
+			imeiValidation.GET("/queries", imeiValidationController.ListHistory())
+			imeiValidation.GET("/queries/export", imeiValidationController.ExportHistory())
+		}
 		multibanda := v1.Group("/multibanda")
 		{
 			multibanda.POST("", multibandaController.Create())
@@ -407,6 +420,7 @@ func main() {
 			multibanda.GET(":id/report", multibandaReportController.GetForm())
 			multibanda.PUT(":id/report/draft", multibandaReportController.SaveDraft())
 			multibanda.POST(":id/report/generate", multibandaReportController.Generate())
+			multibanda.POST(":id/report/attachments/:kind", multibandaReportController.UploadAttachment())
 			multibanda.PATCH(":id/request-delete", multibandaController.PatchRequestDelete())
 			multibanda.PATCH(":id/reject-delete", multibandaController.RejectRequestDelete())
 			multibanda.DELETE(":id", multibandaController.Delete())

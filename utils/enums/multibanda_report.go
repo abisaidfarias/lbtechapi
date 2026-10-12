@@ -356,3 +356,10 @@ const ReportFMRadioTestName = "FM Radio Application — Non-removable"
 func ReportIncludesSimlockAndMultiband(multibandaType string) bool {
 	return multibandaType == MultibandaTypeInitialProcess
 }
+
+// ReportRequiresBandValidationAttachment is true for Initial processes only.
+// MR, OS Upgrade and the other non-initial types may upload Band Validation but
+// it is not mandatory for report completion.
+func ReportRequiresBandValidationAttachment(multibandaType string) bool {
+	return multibandaType == MultibandaTypeInitialProcess
+}

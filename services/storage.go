@@ -25,6 +25,8 @@ type IStorageService interface {
 	// Content-Disposition so the file downloads under downloadFileName instead of the
 	// (URL-safe) key. The key itself is untouched, so it stays safe to embed in a URL.
 	UploadFileWithKeyAndName(filesf []byte, key, downloadFileName string) (string, error)
+	// DeletePublicFile removes an object previously uploaded to the public bucket.
+	DeletePublicFile(fileURL string) error
 }
 
 type storageService struct {
@@ -129,4 +131,27 @@ func mtypeString(mtype *mimetype.MIME) string {
 
 func escapeContentDispositionFilename(name string) string {
 	return strings.NewReplacer(`\`, `_`, `"`, `_`).Replace(name)
+}
+
+func (s *storageService) DeletePublicFile(fileURL string) error {
+	key, ok := utils.ObjectKeyFromPublicURL(fileURL)
+	if !ok || key == "" {
+		return nil
+	}
+
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String("us-east-1")},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to connect to aws s3, %v", err)
+	}
+
+	_, err = s3.New(sess).DeleteObject(&s3.DeleteObjectInput{
+		Bucket: aws.String("lbtechimages"),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to delete file, %v", err)
+	}
+	return nil
 }

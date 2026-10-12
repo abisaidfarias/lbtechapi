@@ -55,6 +55,10 @@ func (s *stubMultibandaRepo) SetTestReportURL(_ primitive.ObjectID, url string) 
 	return nil
 }
 
+func (s *stubMultibandaRepo) SetReportAttachments(_ primitive.ObjectID, _, _, _, _ string) error {
+	return nil
+}
+
 type stubDeviceRepo struct{}
 
 func (stubDeviceRepo) GetById(string) (*responses.Device, error) { return &responses.Device{}, nil }
@@ -80,6 +84,8 @@ func (s stubStorage) UploadUserFile([]byte, string) (responses.UploadFileRespons
 }
 
 func (s stubStorage) UploadFileWithKey([]byte, string) (string, error) { return s.url, nil }
+
+func (stubStorage) DeletePublicFile(string) error { return nil }
 
 // ---- fixtures ----
 
@@ -111,6 +117,8 @@ func buildGeneratableReport() *request.MultibandaReportSave {
 			{EvidenceType: enums.SAEEvidenceCBHistory, URL: "http://127.0.0.1:1/cb.png",
 				Scenario: enums.SAEScenarioLaboratory, Operator: "Entel"},
 		},
+		AdbInfoURL:                "https://example.com/adb.xlsx",
+		AdbInfoOriginalFileName:   "adb.xlsx",
 	}
 
 	for _, scenario := range enums.SAEScenariosFor(enums.SAEScenarioLaboratory) {

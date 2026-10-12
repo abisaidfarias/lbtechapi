@@ -11,6 +11,7 @@ import (
 // MultibandaReportScope describes which blocks apply to the process being
 // reported, so validation only demands what the process type actually needs.
 type MultibandaReportScope struct {
+	MultibandaType    string
 	IncludesSimlock   bool
 	IncludesMultiband bool
 	SupportsGSM       bool
@@ -72,6 +73,10 @@ func ValidateMultibandaReportDraft(req *request.MultibandaReportSave, scope Mult
 		return NewValidationError("invalid fm_radio_result")
 	}
 
+	if err := ValidateMultibandaReportAttachmentsDraft(req); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -104,6 +109,9 @@ func ValidateMultibandaReportForGeneration(req *request.MultibandaReportSave, sc
 	}
 	// Evidence is validated after SAE so the scenario selection is known good.
 	if err := validateReportEvidence(req.Evidence, enums.SAEScenariosFor(strings.TrimSpace(req.SAEScenario))); err != nil {
+		return err
+	}
+	if err := ValidateMultibandaReportAttachmentsForGeneration(req, scope.MultibandaType); err != nil {
 		return err
 	}
 

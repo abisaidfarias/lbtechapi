@@ -30,6 +30,10 @@ type Multibanda struct {
 	DashBoardPhase        int                `bson:"dashboard_phase"`
 	TestReportUrl         string             `bson:"test_report_url,omitempty"`
 	MultibandCertificateUrl string           `bson:"multiband_certificate_url,omitempty"`
+	AdbInfoUrl              string             `bson:"adb_info_url,omitempty"`
+	AdbInfoOriginalFileName string             `bson:"adb_info_original_file_name,omitempty"`
+	BandValidationUrl       string             `bson:"band_validation_url,omitempty"`
+	BandValidationOriginalFileName string      `bson:"band_validation_original_file_name,omitempty"`
 	SubtelCertificateNumber string             `bson:"subtel_certificate_number,omitempty"`
 	Comment               string             `bson:"comment,omitempty"`
 	NeedReflash           bool               `bson:"need_reflash"`
