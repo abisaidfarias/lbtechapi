@@ -8,6 +8,8 @@ type Multibanda struct {
 	Brand                   string     `json:"brand" binding:"required"`
 	SoftwareVersion         string     `json:"software_version" binding:"required"`
 	HardwareVersion         string     `json:"hardware_version"`
+	Carrier                 string     `json:"carrier"`
+	BaseBandVersion         string     `json:"base_band_version"`
 	OsVersion               string     `json:"os_version" binding:"required"`
 	OsVersionView           string     `json:"os_version_view"`
 	Type                    string     `json:"type" binding:"required"`

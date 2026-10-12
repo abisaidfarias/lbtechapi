@@ -79,6 +79,13 @@ func ValidateMultibandaCreateRequest(multibanda *request.Multibanda) error {
 		return NewValidationError(err.Error())
 	}
 
+	if err := validateOptionalMultibandaFreeText("carrier", multibanda.Carrier); err != nil {
+		return err
+	}
+	if err := validateOptionalMultibandaFreeText("base_band_version", multibanda.BaseBandVersion); err != nil {
+		return err
+	}
+
 	return validateMultibandaReflashFields(multibanda.NeedReflash, multibanda.CommentsReflash)
 }
 
@@ -127,7 +134,27 @@ func ValidateMultibandaUpdateRequest(multibanda *request.Multibanda) error {
 		return err
 	}
 
+	if err := validateOptionalMultibandaFreeText("carrier", multibanda.Carrier); err != nil {
+		return err
+	}
+	if err := validateOptionalMultibandaFreeText("base_band_version", multibanda.BaseBandVersion); err != nil {
+		return err
+	}
+
 	return validateMultibandaReflashFields(multibanda.NeedReflash, multibanda.CommentsReflash)
+}
+
+const maxMultibandaOptionalTextLen = 256
+
+func validateOptionalMultibandaFreeText(field, value string) error {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return nil
+	}
+	if len(value) > maxMultibandaOptionalTextLen {
+		return NewValidationError(fmt.Sprintf("%s must be at most %d characters", field, maxMultibandaOptionalTextLen))
+	}
+	return nil
 }
 
 func validateHomologationStatus(status int) error {

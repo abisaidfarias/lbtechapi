@@ -4,7 +4,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/abisaidfarias/lbtechapi/utils/enums"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 )
 
@@ -58,7 +57,7 @@ func validateAttachmentFile(
 }
 
 // ValidateMultibandaReportAttachmentsDraft validates attachment metadata on a
-// save payload when URLs are present. Completeness is enforced at generation.
+// save payload when URLs are present (optional for PDF generation).
 func ValidateMultibandaReportAttachmentsDraft(req *request.MultibandaReportSave) error {
 	if req == nil {
 		return nil
@@ -84,21 +83,8 @@ func ValidateMultibandaReportAttachmentsDraft(req *request.MultibandaReportSave)
 	return nil
 }
 
-// ValidateMultibandaReportAttachmentsForGeneration enforces mandatory TEST
-// ENTRY attachments according to process type.
-func ValidateMultibandaReportAttachmentsForGeneration(req *request.MultibandaReportSave, multibandaType string) error {
-	if req == nil {
-		return NewValidationError("report payload is required")
-	}
-	if strings.TrimSpace(req.AdbInfoURL) == "" {
-		return NewValidationError("missing required field: adb_info")
-	}
-	if err := ValidateMultibandaReportAttachmentsDraft(req); err != nil {
-		return err
-	}
-	if enums.ReportRequiresBandValidationAttachment(multibandaType) &&
-		strings.TrimSpace(req.BandValidationURL) == "" {
-		return NewValidationError("missing required field: band_validation")
-	}
-	return nil
+// ValidateMultibandaReportAttachmentsForGeneration validates attachment metadata
+// when present. ADB INFO and Band Validation are not required to generate the PDF.
+func ValidateMultibandaReportAttachmentsForGeneration(req *request.MultibandaReportSave, _ string) error {
+	return ValidateMultibandaReportAttachmentsDraft(req)
 }

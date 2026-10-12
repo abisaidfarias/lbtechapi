@@ -301,6 +301,8 @@ func UpdateMultibanda(multibanda *models.Multibanda, oid primitive.ObjectID) (pr
 			{Key: "brand", Value: multibanda.Brand},
 			{Key: "software_version", Value: multibanda.SoftwareVersion},
 			{Key: "hardware_version", Value: multibanda.HardwareVersion},
+			{Key: "carrier", Value: multibanda.Carrier},
+			{Key: "base_band_version", Value: multibanda.BaseBandVersion},
 			{Key: "os_version", Value: multibanda.OsVersion},
 			{Key: "os_version_view", Value: multibanda.OsVersionView},
 			{Key: "type", Value: multibanda.Type},

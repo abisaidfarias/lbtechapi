@@ -111,9 +111,8 @@ func ValidateMultibandaReportForGeneration(req *request.MultibandaReportSave, sc
 	if err := validateReportEvidence(req.Evidence, enums.SAEScenariosFor(strings.TrimSpace(req.SAEScenario))); err != nil {
 		return err
 	}
-	if err := ValidateMultibandaReportAttachmentsForGeneration(req, scope.MultibandaType); err != nil {
-		return err
-	}
+	// ADB INFO and Band Validation are stored separately and are not part of the PDF;
+	// only validate metadata when URLs are present (same as draft).
 
 	return nil
 }

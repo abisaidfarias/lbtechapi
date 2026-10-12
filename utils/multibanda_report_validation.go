@@ -108,20 +108,6 @@ func BuildMultibandaReportValidation(
 		addBlocker(reportSectionDeviceInfo, "Device Information: Test Date", 1)
 	}
 
-	hasAdb := strings.TrimSpace(req.AdbInfoURL) != ""
-	deviceCount.add(1, hasAdb)
-	if !hasAdb {
-		addBlocker(reportSectionDeviceInfo, "Device Information: ADB INFO", 1)
-	}
-	requiresBand := enums.ReportRequiresBandValidationAttachment(scope.MultibandaType)
-	if requiresBand {
-		hasBand := strings.TrimSpace(req.BandValidationURL) != ""
-		deviceCount.add(1, hasBand)
-		if !hasBand {
-			addBlocker(reportSectionDeviceInfo, "Device Information: Band Validation Results", 1)
-		}
-	}
-
 	addSection(responses.MultibandaReportSection{
 		Key:       reportSectionDeviceInfo,
 		Label:     "Device Information",

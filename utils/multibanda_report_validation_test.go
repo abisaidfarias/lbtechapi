@@ -116,8 +116,8 @@ func TestValidationMatchesWorkedExample(t *testing.T) {
 	if v.CompletionPercentage != 35 {
 		t.Errorf("completion_percentage: got %d, want 35", v.CompletionPercentage)
 	}
-	if v.RequiredFieldsLeft != 136 {
-		t.Errorf("required_fields_left: got %d, want 136", v.RequiredFieldsLeft)
+	if v.RequiredFieldsLeft != 135 {
+		t.Errorf("required_fields_left: got %d, want 135", v.RequiredFieldsLeft)
 	}
 	if v.CommentsMissing != 2 {
 		t.Errorf("comments_missing: got %d, want 2", v.CommentsMissing)
@@ -128,7 +128,7 @@ func TestValidationSectionTotals(t *testing.T) {
 	v := utils.BuildMultibandaReportValidation(buildPartialReport(), scopeNoUMTS())
 
 	want := map[string]struct{ completed, total int }{
-		"device_info": {6, 8},
+		"device_info": {6, 7},
 		"evidence":    {4, 7},
 		"simlock":     {4, 14},
 		"multiband":   {17, 17},

@@ -24,6 +24,8 @@ func MultibandaRequestToMultibanda(
 		Brand:             brandID,
 		SoftwareVersion:   multibanda.SoftwareVersion,
 		HardwareVersion:   multibanda.HardwareVersion,
+		Carrier:           normalizeOptionalMultibandaText(multibanda.Carrier),
+		BaseBandVersion:   normalizeOptionalMultibandaText(multibanda.BaseBandVersion),
 		OsVersion:         multibanda.OsVersion,
 		OsVersionView:     multibanda.OsVersionView,
 		Type:              multibanda.Type,
@@ -62,6 +64,8 @@ func MultibandaRequestToMultibandaUpdate(
 		Brand:                   brandID,
 		SoftwareVersion:         strings.TrimSpace(multibanda.SoftwareVersion),
 		HardwareVersion:           multibanda.HardwareVersion,
+		Carrier:                   normalizeOptionalMultibandaText(multibanda.Carrier),
+		BaseBandVersion:           normalizeOptionalMultibandaText(multibanda.BaseBandVersion),
 		OsVersion:                 strings.TrimSpace(multibanda.OsVersion),
 		OsVersionView:             multibanda.OsVersionView,
 		Type:                      multibanda.Type,
@@ -153,6 +157,10 @@ func derefTime(value *time.Time) time.Time {
 		return time.Time{}
 	}
 	return *value
+}
+
+func normalizeOptionalMultibandaText(value string) string {
+	return strings.TrimSpace(value)
 }
 
 // PreserveMultibandaTestReportURL keeps the stored test report link when the

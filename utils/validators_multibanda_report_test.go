@@ -95,6 +95,17 @@ func TestCompleteReportPassesGenerationValidation(t *testing.T) {
 	}
 }
 
+func TestGenerationAllowsMissingTestEntryAttachments(t *testing.T) {
+	req := completeReport()
+	req.AdbInfoURL = ""
+	req.AdbInfoOriginalFileName = ""
+	req.BandValidationURL = ""
+	req.BandValidationOriginalFileName = ""
+	if err := utils.ValidateMultibandaReportForGeneration(req, initialScope()); err != nil {
+		t.Fatalf("PDF generation must not require ADB/Band attachments, got: %v", err)
+	}
+}
+
 // AC-03: a draft may be incomplete.
 func TestDraftAllowsIncompleteReport(t *testing.T) {
 	req := &request.MultibandaReportSave{
