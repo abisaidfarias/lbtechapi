@@ -73,3 +73,14 @@ func multibandaReportObjectKey(multibandaID, controlName string) string {
 	safe := strings.NewReplacer("/", "-", "\\", "-", " ", "-").Replace(controlName)
 	return fmt.Sprintf("%s/%s-%s.pdf", prefix, multibandaID, safe)
 }
+
+func multibandaReportAttachmentObjectKey(multibandaID, technicalModel, suffix, ext string) string {
+	prefix := strings.TrimSpace(utils.EnvOrDefault("MULTIBANDA_REPORT_S3_PREFIX", "multibanda-reports"))
+	prefix = strings.Trim(prefix, "/")
+	safeModel := strings.NewReplacer("/", "-", "\\", "-", " ", "-").Replace(strings.TrimSpace(technicalModel))
+	ext = strings.TrimSpace(ext)
+	if ext != "" && !strings.HasPrefix(ext, ".") {
+		ext = "." + ext
+	}
+	return fmt.Sprintf("%s/%s-%s-%s%s", prefix, multibandaID, safeModel, suffix, ext)
+}

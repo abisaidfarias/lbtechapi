@@ -84,10 +84,13 @@ func GetDeviceTrackingExpanded(isInternal bool, companyID primitive.ObjectID,
 		hasStage = true
 	}
 
+	// External users are always limited to their company, even with no other filter.
+	if !isInternal {
+		objectStage = append(objectStage, primitive.E{Key: "company._id", Value: companyID})
+		hasStage = true
+	}
+
 	if hasStage {
-		if !isInternal {
-			objectStage = append(objectStage, primitive.E{Key: "company._id", Value: companyID})
-		}
 		matchStage = append(matchStage, primitive.E{Key: "$match", Value: objectStage})
 		return mongo.Pipeline{lookupCompany, unwindCompany,
 			lookupDevice, unwindDevice, lookupBrand, unwindBrand, matchStage}
@@ -215,8 +218,10 @@ func GetDeviceTrackingAdvancedSearch(companyID primitive.ObjectID,
 			Value: locationStageIn})
 		hasStage = true
 	}
+	// External users are always limited to their company, even with no other filter.
 	if !isInternal {
 		objectStage = append(objectStage, primitive.E{Key: "company._id", Value: companyID})
+		hasStage = true
 	}
 	if hasStage {
 		matchStage = append(matchStage, primitive.E{Key: "$match", Value: objectStage})

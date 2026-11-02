@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -41,13 +42,32 @@ func LoadSecrets() (*Secrets, error) {
 		environment = "dev"
 	}
 
-	// Check if we should use local .env (for local development)
+	var secrets *Secrets
+	var err error
+
 	useLocal := os.Getenv("USE_LOCAL_ENV")
 	if useLocal == "true" {
-		return loadFromEnv(), nil
+		secrets = loadFromEnv()
+	} else {
+		secrets, err = loadSecretsFromSSM(environment)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	// Load from AWS Parameter Store
+	// Docker on EB often has no .env file inside the container; fill missing vars from SSM.
+	hydrateMissingFromSSM(environment, secrets)
+
+	if strings.TrimSpace(secrets.UseSESSMTP) == "" {
+		secrets.UseSESSMTP = "false"
+	}
+
+	appSecrets = secrets
+	logPasswordEmailReadiness()
+	return secrets, nil
+}
+
+func loadSecretsFromSSM(environment string) (*Secrets, error) {
 	ctx := context.TODO()
 	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion("us-east-1"))
 	if err != nil {
@@ -59,16 +79,15 @@ func LoadSecrets() (*Secrets, error) {
 
 	secrets := &Secrets{}
 
-	// Load each parameter
 	params := map[string]*string{
-		"SECRET_KEY":      &secrets.SecretKey,
-		"MONGO_URI":       &secrets.MongoURI,
-		"MONGO_DB":        &secrets.MongoDB,
-		"EMAIL_FROM":      &secrets.EmailFrom,
-		"EMAIL_PASSWORD":  &secrets.EmailPassword,
-		"EMAIL_PORT":      &secrets.EmailPort,
-		"SMTP_CLIENTE":    &secrets.SMTPClient,
-		"MONTH_INTERVAL":  &secrets.MonthInterval,
+		"SECRET_KEY":     &secrets.SecretKey,
+		"MONGO_URI":      &secrets.MongoURI,
+		"MONGO_DB":       &secrets.MongoDB,
+		"EMAIL_FROM":     &secrets.EmailFrom,
+		"EMAIL_PASSWORD": &secrets.EmailPassword,
+		"EMAIL_PORT":     &secrets.EmailPort,
+		"SMTP_CLIENTE":   &secrets.SMTPClient,
+		"MONTH_INTERVAL": &secrets.MonthInterval,
 	}
 
 	optionalParams := map[string]*string{
@@ -94,12 +113,93 @@ func LoadSecrets() (*Secrets, error) {
 		}
 	}
 
-	if strings.TrimSpace(secrets.UseSESSMTP) == "" {
-		secrets.UseSESSMTP = "false"
+	return secrets, nil
+}
+
+// hydrateMissingFromSSM backfills env vars (and Secrets fields) not present in the process
+// environment — required for password reset links on Elastic Beanstalk Docker.
+func hydrateMissingFromSSM(environment string, secrets *Secrets) {
+	ctx := context.TODO()
+	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion("us-east-1"))
+	if err != nil {
+		return
+	}
+	ssmClient := ssm.NewFromConfig(cfg)
+	basePath := fmt.Sprintf("/lbtechapi/%s", environment)
+
+	runtimeKeys := []string{
+		"FRONTEND_BASE_URL",
+		"PASSWORD_TOKEN_TTL_HOURS",
+		"DEV_EMAIL_TO",
+	}
+	secretKeys := map[string]*string{
+		"SECRET_KEY":     &secrets.SecretKey,
+		"MONGO_URI":      &secrets.MongoURI,
+		"MONGO_DB":       &secrets.MongoDB,
+		"EMAIL_FROM":     &secrets.EmailFrom,
+		"EMAIL_PASSWORD": &secrets.EmailPassword,
+		"EMAIL_PORT":     &secrets.EmailPort,
+		"SMTP_CLIENTE":   &secrets.SMTPClient,
+		"SMTP_USER":      &secrets.SMTPUser,
+		"USE_SES_SMTP":   &secrets.UseSESSMTP,
 	}
 
-	appSecrets = secrets
-	return secrets, nil
+	tryHydrate := func(key string, dest *string) {
+		if dest != nil && strings.TrimSpace(*dest) != "" {
+			return
+		}
+		if strings.TrimSpace(os.Getenv(key)) != "" {
+			if dest != nil {
+				*dest = strings.TrimSpace(os.Getenv(key))
+			}
+			return
+		}
+		val, err := fetchSSMParameter(ctx, ssmClient, basePath, key)
+		if err != nil || strings.TrimSpace(val) == "" {
+			return
+		}
+		_ = os.Setenv(key, val)
+		if dest != nil {
+			*dest = val
+		}
+	}
+
+	for _, key := range runtimeKeys {
+		tryHydrate(key, nil)
+	}
+	for key, dest := range secretKeys {
+		tryHydrate(key, dest)
+	}
+}
+
+func fetchSSMParameter(ctx context.Context, ssmClient *ssm.Client, basePath, key string) (string, error) {
+	paramName := fmt.Sprintf("%s/%s", basePath, key)
+	result, err := ssmClient.GetParameter(ctx, &ssm.GetParameterInput{
+		Name:           aws.String(paramName),
+		WithDecryption: aws.Bool(true),
+	})
+	if err != nil {
+		var notFound *types.ParameterNotFound
+		if errors.As(err, &notFound) {
+			return "", nil
+		}
+		return "", err
+	}
+	if result.Parameter == nil || result.Parameter.Value == nil {
+		return "", nil
+	}
+	return strings.TrimSpace(*result.Parameter.Value), nil
+}
+
+func logPasswordEmailReadiness() {
+	base := strings.TrimSpace(os.Getenv("FRONTEND_BASE_URL"))
+	from := strings.TrimSpace(GetValue("EMAIL_FROM"))
+	if base == "" {
+		log.Println("⚠️  FRONTEND_BASE_URL is empty — invite/reset password emails will not send")
+	}
+	if from == "" {
+		log.Println("⚠️  EMAIL_FROM is empty — transactional email will not send")
+	}
 }
 
 func loadOptionalSSMParameter(ctx context.Context, ssmClient *ssm.Client, basePath, key string, dest *string) error {

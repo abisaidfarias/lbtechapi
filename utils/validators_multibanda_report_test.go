@@ -12,6 +12,7 @@ import (
 
 func initialScope() utils.MultibandaReportScope {
 	return utils.MultibandaReportScope{
+		MultibandaType:    enums.MultibandaTypeInitialProcess,
 		IncludesSimlock:   true,
 		IncludesMultiband: true,
 		SupportsGSM:       true,
@@ -73,6 +74,10 @@ func completeReport() *request.MultibandaReportSave {
 		{EvidenceType: enums.SAEEvidenceCBHistory, URL: "https://example.com/cb.png",
 			Scenario: enums.SAEScenarioRoom, Operator: "Movistar"},
 	}
+	req.AdbInfoURL = "https://example.com/adb.xlsx"
+	req.AdbInfoOriginalFileName = "adb.xlsx"
+	req.BandValidationURL = "https://example.com/band.zip"
+	req.BandValidationOriginalFileName = "band.zip"
 	return req
 }
 
@@ -87,6 +92,17 @@ func allCarrierNames() []string {
 func TestCompleteReportPassesGenerationValidation(t *testing.T) {
 	if err := utils.ValidateMultibandaReportForGeneration(completeReport(), initialScope()); err != nil {
 		t.Fatalf("expected complete report to pass, got: %v", err)
+	}
+}
+
+func TestGenerationAllowsMissingTestEntryAttachments(t *testing.T) {
+	req := completeReport()
+	req.AdbInfoURL = ""
+	req.AdbInfoOriginalFileName = ""
+	req.BandValidationURL = ""
+	req.BandValidationOriginalFileName = ""
+	if err := utils.ValidateMultibandaReportForGeneration(req, initialScope()); err != nil {
+		t.Fatalf("PDF generation must not require ADB/Band attachments, got: %v", err)
 	}
 }
 

@@ -1,0 +1,61 @@
+---
+description: Crear o actualizar reportes de mantenimiento mensual LBOneTrack (cliente + técnico, PDF). Usar cuando el usuario pida reporte mensual, mantenimiento mensual o informe para Camilo.
+globs: docs/mantenimiento/**
+alwaysApply: false
+---
+
+# Reporte de mantenimiento mensual (LBOneTrack)
+
+Documentación completa: `docs/mantenimiento/PROCESO_REPORTE_MENSUAL.md`.
+
+## Dos entregables cada mes
+
+| Audiencia | Archivo | Tono |
+|-----------|---------|------|
+| Cliente (PDF) | `REPORTE_MANTENIMIENTO_<MES>_<AÑO>_CLIENTE.html` → PDF | Español claro, sin commits/APIs/jerga |
+| Interno / repo | `REPORTE_MANTENIMIENTO_<MES>_<AÑO>.md` | Técnico, commits, riesgos, Mermaid opcional |
+
+Copiar plantillas: `REPORTE_PLANTILLA.md` (técnico) y el HTML cliente del mes anterior (p. ej. septiembre 2026).
+
+## Metadatos fijos en portada
+
+- **Plataforma:** LBOneTrack (LB Technology SPA)
+- **Cliente:** Camilo Espinoza — LBOneTrack
+- **Mantenedor:** Abisaid Farías
+- **Repos:** `lbtechapi` + `lbtechfront`
+- **Ambientes:** dev (lbtechdev S3 / api test) · prod (lbonetrack.com)
+
+## Versión cliente (HTML)
+
+Estructura obligatoria:
+
+1. Portada (colores `#0b1736` / `#8DB319`, CSS `styles/report-client.css`)
+2. Resumen en pocas palabras
+3. Pills de estado (🟢🟡)
+4. Tarjetas “Lo más importante del mes” (4–6)
+5. Flujos en listas numeradas (no Mermaid en PDF cliente)
+6. Tabla entregas: cuándo · qué · beneficio (sin hashes de commit)
+7. Mantenimiento recurrente, puntos a planificar, próximos pasos, cierre
+
+Incluir trabajo de **ambos** repositorios. Si el cierre del mes cae en los primeros días del mes siguiente, **contabilizarlo en el mes del reporte** (ej. accesos/contraseñas en reporte de septiembre).
+
+**No** usar `page-break` vacío ni `md-to-pdf` sobre `.html` (imprime código crudo).
+
+## PDF cliente (obligatorio)
+
+```bash
+cd docs/mantenimiento
+npm install puppeteer --no-save   # primera vez
+node generate-client-pdf.cjs      # o: node generate-client-pdf.cjs REPORTE_..._CLIENTE.html
+```
+
+Salida: mismo nombre con extensión `.pdf`. Actualizar `generate-client-pdf.cjs` si el HTML tiene otro nombre.
+
+## Versión técnica (Markdown)
+
+Secciones 1–7 como julio/agosto: resumen, contexto, trabajo (tabla commits `git log`), alcance recurrente, riesgos Dependabot/EB, recomendaciones, conclusión. Opcional: Mermaid solo en `.md`.
+
+## Al terminar
+
+- Añadir fila en `docs/mantenimiento/README.md`
+- No commitear `docs/mantenimiento/node_modules/` ni PDFs si el equipo prefiere solo HTML (PDF se regenera); si el cliente necesita copia en repo, incluir el `.pdf` explícitamente cuando lo pidan.

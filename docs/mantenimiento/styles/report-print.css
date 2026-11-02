@@ -1,0 +1,85 @@
+/* LBOneTrack — estilos para exportar reportes Markdown a PDF (Pandoc o impresión) */
+@page {
+  margin: 2cm;
+}
+
+body {
+  font-family: "Segoe UI", Calibri, Arial, sans-serif;
+  font-size: 11pt;
+  line-height: 1.45;
+  color: #1f2937;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+h1 {
+  color: #0b1736;
+  font-size: 22pt;
+  border-bottom: 4px solid #8db319;
+  padding-bottom: 0.35em;
+}
+
+h2 {
+  color: #0b1736;
+  font-size: 14pt;
+  margin-top: 1.4em;
+  page-break-after: avoid;
+}
+
+h3 {
+  color: #374151;
+  font-size: 12pt;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+  font-size: 10pt;
+}
+
+th {
+  background: #0b1736;
+  color: #fff;
+  text-align: left;
+  padding: 8px 10px;
+}
+
+td {
+  border: 1px solid #e5e7eb;
+  padding: 6px 10px;
+  vertical-align: top;
+}
+
+tr:nth-child(even) td {
+  background: #f9fafb;
+}
+
+blockquote {
+  border-left: 4px solid #8db319;
+  margin: 1em 0;
+  padding: 0.5em 1em;
+  background: #f4f6f8;
+  color: #374151;
+}
+
+code {
+  background: #f3f4f6;
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+a {
+  color: #0b1736;
+}
+
+/* Mermaid / pre blocks: avoid ugly page breaks */
+pre {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  padding: 10px;
+  font-size: 9pt;
+  overflow-x: auto;
+  page-break-inside: avoid;
+}

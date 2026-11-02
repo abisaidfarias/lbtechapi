@@ -47,6 +47,11 @@ type MultibandaReport struct {
 	FMRadioResult  string `bson:"fm_radio_result,omitempty"`
 	FMRadioComment string `bson:"fm_radio_comment,omitempty"`
 
+	AdbInfoURL                   string `bson:"adb_info_url,omitempty"`
+	AdbInfoOriginalFileName      string `bson:"adb_info_original_file_name,omitempty"`
+	BandValidationURL            string `bson:"band_validation_url,omitempty"`
+	BandValidationOriginalFileName string `bson:"band_validation_original_file_name,omitempty"`
+
 	ReportURL   string    `bson:"report_url,omitempty"`
 	GeneratedAt time.Time `bson:"generated_at,omitempty"`
 	GeneratedBy string    `bson:"generated_by,omitempty"`

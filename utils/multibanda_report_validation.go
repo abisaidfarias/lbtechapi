@@ -107,6 +107,7 @@ func BuildMultibandaReportValidation(
 	if !hasTestDate {
 		addBlocker(reportSectionDeviceInfo, "Device Information: Test Date", 1)
 	}
+
 	addSection(responses.MultibandaReportSection{
 		Key:       reportSectionDeviceInfo,
 		Label:     "Device Information",

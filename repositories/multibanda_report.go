@@ -64,6 +64,10 @@ func (r *multibandaReportRepository) Upsert(report *models.MultibandaReport) err
 			"carriers_tested":  report.CarriersTested,
 			"fm_radio_result":  report.FMRadioResult,
 			"fm_radio_comment": report.FMRadioComment,
+			"adb_info_url":                     report.AdbInfoURL,
+			"adb_info_original_file_name":      report.AdbInfoOriginalFileName,
+			"band_validation_url":              report.BandValidationURL,
+			"band_validation_original_file_name": report.BandValidationOriginalFileName,
 			"updated_date":     now,
 		},
 		// created_date and the generated PDF fields survive a draft save:

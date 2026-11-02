@@ -11,6 +11,7 @@ import (
 // MultibandaReportScope describes which blocks apply to the process being
 // reported, so validation only demands what the process type actually needs.
 type MultibandaReportScope struct {
+	MultibandaType    string
 	IncludesSimlock   bool
 	IncludesMultiband bool
 	SupportsGSM       bool
@@ -72,6 +73,10 @@ func ValidateMultibandaReportDraft(req *request.MultibandaReportSave, scope Mult
 		return NewValidationError("invalid fm_radio_result")
 	}
 
+	if err := ValidateMultibandaReportAttachmentsDraft(req); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -106,6 +111,8 @@ func ValidateMultibandaReportForGeneration(req *request.MultibandaReportSave, sc
 	if err := validateReportEvidence(req.Evidence, enums.SAEScenariosFor(strings.TrimSpace(req.SAEScenario))); err != nil {
 		return err
 	}
+	// ADB INFO and Band Validation are stored separately and are not part of the PDF;
+	// only validate metadata when URLs are present (same as draft).
 
 	return nil
 }

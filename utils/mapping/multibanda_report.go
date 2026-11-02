@@ -36,6 +36,11 @@ func MultibandaReportRequestToModel(
 		CarriersTested: trimAll(req.CarriersTested),
 		FMRadioResult:  strings.TrimSpace(req.FMRadioResult),
 		FMRadioComment: strings.TrimSpace(req.FMRadioComment),
+
+		AdbInfoURL:                     strings.TrimSpace(req.AdbInfoURL),
+		AdbInfoOriginalFileName:        strings.TrimSpace(req.AdbInfoOriginalFileName),
+		BandValidationURL:              strings.TrimSpace(req.BandValidationURL),
+		BandValidationOriginalFileName: strings.TrimSpace(req.BandValidationOriginalFileName),
 	}
 	if req.DeviceInfo.TestDate != nil {
 		report.DeviceInfo.TestDate = *req.DeviceInfo.TestDate
@@ -101,6 +106,12 @@ func MultibandaReportModelToSaved(report *models.MultibandaReport) *responses.Mu
 		CarriersTested: report.CarriersTested,
 		FMRadioResult:  report.FMRadioResult,
 		FMRadioComment: report.FMRadioComment,
+
+		AdbInfoURL:                     report.AdbInfoURL,
+		AdbInfoOriginalFileName:        report.AdbInfoOriginalFileName,
+		BandValidationURL:              report.BandValidationURL,
+		BandValidationOriginalFileName: report.BandValidationOriginalFileName,
+
 		SimlockResults: []responses.MultibandaReportSimlockResult{},
 		BandResults:    []responses.MultibandaReportBandResult{},
 		SAEResults:     []responses.MultibandaReportSAEResult{},
@@ -159,6 +170,11 @@ func MultibandaReportModelToSaveRequest(report *models.MultibandaReport) *reques
 		SAEScenario:    report.SAEScenario,
 		FMRadioResult:  report.FMRadioResult,
 		FMRadioComment: report.FMRadioComment,
+
+		AdbInfoURL:                     report.AdbInfoURL,
+		AdbInfoOriginalFileName:        report.AdbInfoOriginalFileName,
+		BandValidationURL:              report.BandValidationURL,
+		BandValidationOriginalFileName: report.BandValidationOriginalFileName,
 	}
 	if !report.DeviceInfo.TestDate.IsZero() {
 		d := report.DeviceInfo.TestDate

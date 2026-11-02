@@ -1,6 +1,7 @@
 package utils_test
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -47,6 +48,25 @@ func TestValidateMultibandaUpdateRequestRejectsMultipleEvaluationTypes(t *testin
 
 	if err := utils.ValidateMultibandaUpdateRequest(req); !utils.IsValidationError(err) {
 		t.Fatalf("expected validation error for multiple evaluation types on update, got %v", err)
+	}
+}
+
+func TestValidateMultibandaCreateRequestOptionalCarrierAndBaseBand(t *testing.T) {
+	req := validMultibandaRequest()
+	req.CurrentPhase = enums.MultibandaPhasePlanning
+	req.Carrier = "Movistar"
+	req.BaseBandVersion = "v1.2.3"
+	if err := utils.ValidateMultibandaCreateRequest(req); err != nil {
+		t.Fatalf("expected optional carrier/base_band_version, got: %v", err)
+	}
+}
+
+func TestValidateMultibandaCreateRequestRejectsLongCarrier(t *testing.T) {
+	req := validMultibandaRequest()
+	req.CurrentPhase = enums.MultibandaPhasePlanning
+	req.Carrier = strings.Repeat("x", 257)
+	if err := utils.ValidateMultibandaCreateRequest(req); !utils.IsValidationError(err) {
+		t.Fatalf("expected validation error for long carrier, got: %v", err)
 	}
 }
 

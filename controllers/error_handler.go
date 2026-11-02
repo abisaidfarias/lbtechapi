@@ -8,6 +8,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func respondDuplicateUserEmail(ctx *gin.Context) {
+	ctx.JSON(http.StatusConflict, gin.H{
+		"error": utils.ErrorDuplicateUserEmail.Error(),
+		"code":  "duplicate_email",
+	})
+}
+
 func handleErrorResponse(ctx *gin.Context, err error) {
 	if err != nil {
 		switch {

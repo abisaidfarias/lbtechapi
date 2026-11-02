@@ -13,6 +13,7 @@ import (
 // the denominator.
 func scopeNoUMTS() utils.MultibandaReportScope {
 	return utils.MultibandaReportScope{
+		MultibandaType:    enums.MultibandaTypeMR,
 		IncludesSimlock: true, IncludesMultiband: true,
 		SupportsGSM: true, SupportsUMTS: false, SupportsLTE: true, Supports5G: true,
 	}

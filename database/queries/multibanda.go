@@ -63,6 +63,22 @@ func SetMultibandaTestReportURL(oid primitive.ObjectID, url string) (primitive.M
 	}
 }
 
+// SetMultibandaReportAttachments mirrors TEST ENTRY attachment URLs onto the
+// process document for the Multi-band documents modal.
+func SetMultibandaReportAttachments(
+	oid primitive.ObjectID,
+	adbURL, adbName, bandURL, bandName string,
+) (primitive.M, primitive.D) {
+	return primitive.M{"_id": oid}, primitive.D{
+		{Key: "$set", Value: primitive.D{
+			{Key: "adb_info_url", Value: adbURL},
+			{Key: "adb_info_original_file_name", Value: adbName},
+			{Key: "band_validation_url", Value: bandURL},
+			{Key: "band_validation_original_file_name", Value: bandName},
+		}},
+	}
+}
+
 func GetMultibandas(
 	companies []primitive.ObjectID,
 	brands []primitive.ObjectID,
@@ -285,6 +301,8 @@ func UpdateMultibanda(multibanda *models.Multibanda, oid primitive.ObjectID) (pr
 			{Key: "brand", Value: multibanda.Brand},
 			{Key: "software_version", Value: multibanda.SoftwareVersion},
 			{Key: "hardware_version", Value: multibanda.HardwareVersion},
+			{Key: "carrier", Value: multibanda.Carrier},
+			{Key: "base_band_version", Value: multibanda.BaseBandVersion},
 			{Key: "os_version", Value: multibanda.OsVersion},
 			{Key: "os_version_view", Value: multibanda.OsVersionView},
 			{Key: "type", Value: multibanda.Type},

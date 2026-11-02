@@ -13,6 +13,8 @@ type Multibanda struct {
 	Brand             primitive.ObjectID `bson:"brand,omitempty"`
 	SoftwareVersion   string             `bson:"software_version,omitempty"`
 	HardwareVersion   string             `bson:"hardware_version,omitempty"`
+	Carrier           string             `bson:"carrier,omitempty"`
+	BaseBandVersion   string             `bson:"base_band_version,omitempty"`
 	OsVersion         string             `bson:"os_version,omitempty"`
 	OsVersionView     string             `bson:"os_version_view,omitempty"`
 	Type              string             `bson:"type,omitempty"`
@@ -30,6 +32,10 @@ type Multibanda struct {
 	DashBoardPhase        int                `bson:"dashboard_phase"`
 	TestReportUrl         string             `bson:"test_report_url,omitempty"`
 	MultibandCertificateUrl string           `bson:"multiband_certificate_url,omitempty"`
+	AdbInfoUrl              string             `bson:"adb_info_url,omitempty"`
+	AdbInfoOriginalFileName string             `bson:"adb_info_original_file_name,omitempty"`
+	BandValidationUrl       string             `bson:"band_validation_url,omitempty"`
+	BandValidationOriginalFileName string      `bson:"band_validation_original_file_name,omitempty"`
 	SubtelCertificateNumber string             `bson:"subtel_certificate_number,omitempty"`
 	Comment               string             `bson:"comment,omitempty"`
 	NeedReflash           bool               `bson:"need_reflash"`

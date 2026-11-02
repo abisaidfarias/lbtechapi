@@ -13,6 +13,8 @@ type Multibanda struct {
 	Brand             primitive.ObjectID `bson:"brand" json:"brand"`
 	SoftwareVersion   string             `bson:"software_version" json:"software_version"`
 	HardwareVersion   string             `bson:"hardware_version" json:"hardware_version"`
+	Carrier           string             `bson:"carrier" json:"carrier"`
+	BaseBandVersion   string             `bson:"base_band_version" json:"base_band_version"`
 	OsVersion         string             `bson:"os_version" json:"os_version"`
 	OsVersionView     string             `bson:"os_version_view" json:"os_version_view"`
 	Type              string             `bson:"type" json:"type"`

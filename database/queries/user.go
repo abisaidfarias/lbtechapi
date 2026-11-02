@@ -1,6 +1,8 @@
 package queries
 
 import (
+	"time"
+
 	"github.com/abisaidfarias/lbtechapi/models"
 	"go.mongodb.org/mongo-driver/bson"
 	primitive "go.mongodb.org/mongo-driver/bson/primitive"
@@ -122,7 +124,11 @@ func ChangePassword(email string, hashPassword string) (primitive.M, primitive.M
 		"email": email,
 	}
 	update := primitive.M{
-		"$set": primitive.M{"passwordHash": hashPassword},
+		"$set": primitive.M{
+			"passwordHash":    hashPassword,
+			"account_status":  "active",
+			"password_set_at": time.Now(),
+		},
 	}
 	return filter, update
 }

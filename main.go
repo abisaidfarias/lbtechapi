@@ -75,14 +75,16 @@ func getDeployID() string {
 }
 
 var (
-	userRepository repositories.IUserRepository = repositories.NewUserRepository()
-	authService    services.IAuthService        = services.NewAuthService(userRepository)
-	authController controllers.IAuthController  = controllers.NewAuthController(authService)
+	userRepository         repositories.IUserRepository         = repositories.NewUserRepository()
+	passwordTokenRepository repositories.IPasswordTokenRepository = repositories.NewPasswordTokenRepository()
+	passwordTokenService    services.IPasswordTokenService        = services.NewPasswordTokenService(passwordTokenRepository, userRepository)
+	authService             services.IAuthService                 = services.NewAuthService(userRepository, passwordTokenService)
+	authController          controllers.IAuthController           = controllers.NewAuthController(authService)
 
 	profileRepository repositories.IProfileRepository = repositories.NewProfileRepository()
 	companyRepository repositories.ICompanyRepository = repositories.NewCompanyRepository()
 
-	userService    services.IUserService       = services.NewUserService(userRepository, profileRepository, companyRepository)
+	userService    services.IUserService       = services.NewUserService(userRepository, profileRepository, companyRepository, passwordTokenService)
 	userController controllers.IUserController = controllers.NewUserController(userService)
 
 	testCategoryRepository repositories.ITestCategoryRepository = repositories.NewTestCategoryRepository()
@@ -165,6 +167,13 @@ var (
 	)
 	multibandaReportController controllers.IMultibandaReportController = controllers.NewMultibandaReportController(multibandaReportService)
 
+	imeiValidationRepository repositories.IImeiValidationRepository = repositories.NewImeiValidationRepository()
+	imeiInfoClient           services.IImeiInfoClient               = services.NewImeiInfoClient()
+	imeiValidationService    services.IImeiValidationService        = services.NewImeiValidationService(
+		imeiValidationRepository, userRepository, imeiInfoClient,
+	)
+	imeiValidationController controllers.IImeiValidationController = controllers.NewImeiValidationController(imeiValidationService)
+
 	shipmentControlRepository repositories.IShipmentControlRepository = repositories.NewShipmentControlRepository(multibandaRepository)
 	shipmentControlService    services.IShipmentControlService
 	shipmentControlController controllers.IShipmentControlController
@@ -243,13 +252,21 @@ func main() {
 			upgrade.POST("", userController.Upgrade())
 		}
 		v1.POST("/sign-in", authController.SignIn())
+		authPublic := v1.Group("/auth")
+		{
+			authPublic.POST("/forgot-password", authController.ForgotPassword())
+			authPublic.POST("/set-password", authController.SetPassword())
+			authPublic.GET("/password-token/validate", authController.ValidatePasswordToken())
+		}
 		v1.Use(middlewares.AuthMiddleware())
 
 		users := v1.Group("/users")
 		{
 			users.POST("", userController.Create())
+			users.POST(":id/resend-invitation", userController.ResendInvitation())
 			users.GET("", userController.Get())
 			users.GET("/profile", userController.GetProfileByID())
+			users.PUT("/me/password", userController.ChangeMyPassword())
 			users.PUT(":id", userController.Update())
 			users.DELETE(":id", userController.Delete())
 			users.PUT(":id/changePassword", userController.ChangePassword())
@@ -387,6 +404,12 @@ func main() {
 			notification.POST("", notificationController.Create())
 			notification.GET("/company/:id", notificationController.GetByCompany())
 		}
+		imeiValidation := v1.Group("/imei-validation")
+		{
+			imeiValidation.POST("/lookup", imeiValidationController.Lookup())
+			imeiValidation.GET("/queries", imeiValidationController.ListHistory())
+			imeiValidation.GET("/queries/export", imeiValidationController.ExportHistory())
+		}
 		multibanda := v1.Group("/multibanda")
 		{
 			multibanda.POST("", multibandaController.Create())
@@ -397,6 +420,7 @@ func main() {
 			multibanda.GET(":id/report", multibandaReportController.GetForm())
 			multibanda.PUT(":id/report/draft", multibandaReportController.SaveDraft())
 			multibanda.POST(":id/report/generate", multibandaReportController.Generate())
+			multibanda.POST(":id/report/attachments/:kind", multibandaReportController.UploadAttachment())
 			multibanda.PATCH(":id/request-delete", multibandaController.PatchRequestDelete())
 			multibanda.PATCH(":id/reject-delete", multibandaController.RejectRequestDelete())
 			multibanda.DELETE(":id", multibandaController.Delete())

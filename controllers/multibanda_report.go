@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"errors"
+	"io"
 	"net/http"
 
 	"github.com/abisaidfarias/lbtechapi/services"
@@ -16,6 +17,7 @@ type IMultibandaReportController interface {
 	SaveDraft() gin.HandlerFunc
 	Generate() gin.HandlerFunc
 	GetStampImage() gin.HandlerFunc
+	UploadAttachment() gin.HandlerFunc
 }
 
 type multibandaReportController struct {
@@ -148,6 +150,64 @@ func (c *multibandaReportController) GetStampImage() gin.HandlerFunc {
 		// safe to cache hard; a new build is what changes them.
 		ctx.Header("Cache-Control", "public, max-age=86400")
 		ctx.Data(http.StatusOK, utils.MultibandaStampContentType(image), image)
+	}
+}
+
+// UploadAttachment godoc
+// @Summary Subir adjunto TEST ENTRY del reporte Multi-banda
+// @Description Sube ADB INFO o Band Validation Results con validación de tipo/tamaño y nombre determinístico en S3.
+// @Tags MultibandaReport
+// @Accept multipart/form-data
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID del proceso Multi-banda"
+// @Param kind path string true "adb_info o band_validation"
+// @Param file formData file true "Archivo"
+// @Success 200 {object} responses.MultibandaReportForm
+// @Failure 400 {object} map[string]string "Archivo inválido"
+// @Failure 401 {object} map[string]string "No autorizado"
+// @Failure 403 {object} map[string]string "Sin acceso"
+// @Router /multibanda/{id}/report/attachments/{kind} [post]
+func (c *multibandaReportController) UploadAttachment() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userID := ctx.MustGet("userID").(string)
+
+		form, err := ctx.MultipartForm()
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		files := form.File["file"]
+		if len(files) == 0 {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "file is required"})
+			return
+		}
+		header := files[0]
+		fileContent, err := header.Open()
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		defer fileContent.Close()
+
+		bytes, err := io.ReadAll(fileContent)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		result, err := c.multibandaReportService.UploadAttachment(
+			ctx.Param("id"),
+			userID,
+			ctx.Param("kind"),
+			bytes,
+			header.Filename,
+		)
+		if err != nil {
+			handleMultibandaReportError(ctx, err)
+			return
+		}
+		ctx.JSON(http.StatusOK, result)
 	}
 }
 

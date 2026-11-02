@@ -24,6 +24,11 @@ type MultibandaReportSave struct {
 
 	FMRadioResult  string `json:"fm_radio_result"`
 	FMRadioComment string `json:"fm_radio_comment"`
+
+	AdbInfoURL                   string `json:"adb_info_url"`
+	AdbInfoOriginalFileName      string `json:"adb_info_original_file_name"`
+	BandValidationURL            string `json:"band_validation_url"`
+	BandValidationOriginalFileName string `json:"band_validation_original_file_name"`
 }
 
 type MultibandaReportDeviceInfo struct {
