@@ -150,6 +150,12 @@ func (s *multibandaReportService) Generate(
 		return nil, err
 	}
 
+	// The report closes the testing stage, so it cannot be generated until the
+	// process reaches Under Evaluation. Complete stays allowed for regeneration.
+	if ctx.multibanda.CurrentPhase < enums.HomologationPhase_value["UNDER_EVALUATION"] {
+		return nil, utils.NewValidationError("report can only be generated from under evaluation")
+	}
+
 	// Server-side completeness check, as the spec requires in addition to the
 	// frontend keeping the button disabled.
 	if err := utils.ValidateMultibandaReportForGeneration(req, ctx.scope); err != nil {

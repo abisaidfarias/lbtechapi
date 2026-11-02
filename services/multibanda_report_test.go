@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/abisaidfarias/lbtechapi/models"
+	"github.com/abisaidfarias/lbtechapi/utils"
 	"github.com/abisaidfarias/lbtechapi/utils/enums"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
@@ -147,8 +148,9 @@ func newReportServiceForTest(storageURL string) (*multibandaReportService, *stub
 
 	multibandaRepo := &stubMultibandaRepo{
 		multibanda: &responses.MultibandaExpanded{
-			Type:    enums.MultibandaTypeSMR,
-			Company: responses.Company{ID: companyID},
+			Type:         enums.MultibandaTypeSMR,
+			Company:      responses.Company{ID: companyID},
+			CurrentPhase: enums.HomologationPhase_value["UNDER_EVALUATION"],
 		},
 	}
 	reportRepo := &stubReportRepo{}
@@ -222,6 +224,43 @@ func TestGenerateReportsLinkFailure(t *testing.T) {
 
 	if _, err := service.Generate(testMultibandaHex, buildGeneratableReport(), "user-1"); err == nil {
 		t.Fatal("expected an error when the process could not be linked")
+	}
+}
+
+// Before Under Evaluation testing is still open, so generation has to be
+// refused without saving anything or touching the process.
+func TestGenerateRejectsPhasesBeforeUnderEvaluation(t *testing.T) {
+	for _, phase := range []string{"PLANNING", "SAMPLE_RECEPTION", "TEST"} {
+		t.Run(phase, func(t *testing.T) {
+			service, multibandaRepo, reportRepo := newReportServiceForTest("https://s3/report.pdf")
+			multibandaRepo.multibanda.CurrentPhase = enums.HomologationPhase_value[phase]
+
+			_, err := service.Generate(testMultibandaHex, buildGeneratableReport(), "user-1")
+			if !utils.IsValidationError(err) {
+				t.Fatalf("expected a validation error, got %v", err)
+			}
+			if reportRepo.upsertCalls != 0 {
+				t.Errorf("the report was saved %d times", reportRepo.upsertCalls)
+			}
+			if multibandaRepo.linkCalls != 0 {
+				t.Errorf("the process was linked %d times", multibandaRepo.linkCalls)
+			}
+		})
+	}
+}
+
+// Complete must keep working so a finished process can still regenerate its
+// report.
+func TestGenerateAllowsUnderEvaluationAndComplete(t *testing.T) {
+	for _, phase := range []string{"UNDER_EVALUATION", "COMPLETE"} {
+		t.Run(phase, func(t *testing.T) {
+			service, multibandaRepo, _ := newReportServiceForTest("https://s3/report.pdf")
+			multibandaRepo.multibanda.CurrentPhase = enums.HomologationPhase_value[phase]
+
+			if _, err := service.Generate(testMultibandaHex, buildGeneratableReport(), "user-1"); err != nil {
+				t.Fatalf("generate: %v", err)
+			}
+		})
 	}
 }
 
