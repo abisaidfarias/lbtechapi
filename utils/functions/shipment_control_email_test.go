@@ -239,6 +239,11 @@ func TestMultibandaNotifiesExternalRecipients(t *testing.T) {
 	if MultibandaNotifiesExternalRecipients(utils.PHASE, enums.HomologationPhase_value["TEST"]) {
 		t.Fatal("did not expect external recipients on intermediate phase")
 	}
+	for _, phase := range []string{"UNDER_EVALUATION", "COMPLETE"} {
+		if MultibandaNotifiesExternalRecipients(utils.REPORT, enums.HomologationPhase_value[phase]) {
+			t.Fatalf("did not expect external recipients on the report email (%s)", phase)
+		}
+	}
 }
 
 func TestRenderShipmentControlCertificateHTMLIncludesOfficialSeal(t *testing.T) {

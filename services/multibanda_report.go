@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -30,6 +31,13 @@ type multibandaReportService struct {
 	deviceRepository     repositoriesDevice
 	userRepository       repositoriesUser
 	storageService       IStorageService
+	notifier             reportGeneratedNotifier
+}
+
+// reportGeneratedNotifier sends the "test report available" email; the
+// multibanda service owns the notification recipients and template.
+type reportGeneratedNotifier interface {
+	NotifyReportGenerated(primitive.ObjectID, string)
 }
 
 // Narrow local interfaces keep this service decoupled from the full repository
@@ -43,6 +51,7 @@ type repositoriesMultibandaReport interface {
 type repositoriesMultibanda interface {
 	GetByIdExpanded(primitive.ObjectID) (*responses.MultibandaExpanded, error)
 	SetTestReportURL(primitive.ObjectID, string) error
+	SetReportDate(primitive.ObjectID, time.Time) error
 	SetReportAttachments(primitive.ObjectID, string, string, string, string) error
 }
 
@@ -60,6 +69,7 @@ func NewMultibandaReportService(
 	deviceRepository repositoriesDevice,
 	userRepository repositoriesUser,
 	storageService IStorageService,
+	notifier reportGeneratedNotifier,
 ) IMultibandaReportService {
 	return &multibandaReportService{
 		reportRepository:     reportRepository,
@@ -67,6 +77,7 @@ func NewMultibandaReportService(
 		deviceRepository:     deviceRepository,
 		userRepository:       userRepository,
 		storageService:       storageService,
+		notifier:             notifier,
 	}
 }
 
@@ -162,6 +173,10 @@ func (s *multibandaReportService) Generate(
 		return nil, err
 	}
 
+	// Only the first generation announces the report; regenerations are
+	// corrections and would flood the inbox.
+	firstGeneration := ctx.report == nil || ctx.report.Status != enums.MultibandaReportStatusGenerated
+
 	report := mapping.MultibandaReportRequestToModel(
 		req, ctx.multibandaOID, ctx.multibanda.Type, enums.MultibandaReportStatusGenerated)
 	if err := s.reportRepository.Upsert(report); err != nil {
@@ -206,6 +221,18 @@ func (s *multibandaReportService) Generate(
 	}
 	if err := s.syncReportAttachmentsToProcess(ctx.multibandaOID, report); err != nil {
 		return nil, err
+	}
+
+	if firstGeneration {
+		// The report is already generated and linked at this point, so a failure
+		// here is logged rather than failing a request the user would retry as a
+		// regeneration, which would never set the date or send the email.
+		if err := s.multibandaRepository.SetReportDate(ctx.multibandaOID, generatedAt); err != nil {
+			log.Printf("multibanda report date (%s): %v", ctx.multibandaOID.Hex(), err)
+		}
+		if s.notifier != nil {
+			s.notifier.NotifyReportGenerated(ctx.multibandaOID, userID)
+		}
 	}
 
 	return &responses.MultibandaReportGenerated{

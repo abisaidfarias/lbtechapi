@@ -31,6 +31,7 @@ type Multibanda struct {
 	Status                  int                `bson:"status"`
 	DashBoardPhase        int                `bson:"dashboard_phase"`
 	TestReportUrl         string             `bson:"test_report_url,omitempty"`
+	ReportDate            *time.Time         `bson:"report_date,omitempty"`
 	MultibandCertificateUrl string           `bson:"multiband_certificate_url,omitempty"`
 	AdbInfoUrl              string             `bson:"adb_info_url,omitempty"`
 	AdbInfoOriginalFileName string             `bson:"adb_info_original_file_name,omitempty"`

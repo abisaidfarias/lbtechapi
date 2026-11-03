@@ -189,6 +189,11 @@ func MultibandaNotifiesExternalRecipients(notifyKey string, currentPhase int) bo
 	if notifyKey == utils.CREATE {
 		return true
 	}
+	// The report email is internal only, even when the report is first
+	// generated on a process that is already complete.
+	if notifyKey == utils.REPORT {
+		return false
+	}
 	return currentPhase == enums.HomologationPhase_value["COMPLETE"]
 }
 

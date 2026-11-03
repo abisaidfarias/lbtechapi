@@ -1,6 +1,8 @@
 package queries
 
 import (
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -59,6 +61,17 @@ func SetMultibandaTestReportURL(oid primitive.ObjectID, url string) (primitive.M
 	return primitive.M{"_id": oid}, primitive.D{
 		{Key: "$set", Value: primitive.D{
 			{Key: "test_report_url", Value: url},
+		}},
+	}
+}
+
+// SetMultibandaReportDate records when the automatic report was first
+// generated. The filter only matches while the date is unset, so a later
+// generation can never move it.
+func SetMultibandaReportDate(oid primitive.ObjectID, date time.Time) (primitive.M, primitive.D) {
+	return primitive.M{"_id": oid, "report_date": nil}, primitive.D{
+		{Key: "$set", Value: primitive.D{
+			{Key: "report_date", Value: date.UTC()},
 		}},
 	}
 }

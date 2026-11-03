@@ -41,6 +41,13 @@ type stubMultibandaRepo struct {
 	linkedURL string
 	linkCalls int
 	linkErr   error
+	// reportDates records every first-generation date Generate stored.
+	reportDates []time.Time
+}
+
+func (s *stubMultibandaRepo) SetReportDate(_ primitive.ObjectID, date time.Time) error {
+	s.reportDates = append(s.reportDates, date)
+	return nil
 }
 
 func (s *stubMultibandaRepo) GetByIdExpanded(primitive.ObjectID) (*responses.MultibandaExpanded, error) {
@@ -59,6 +66,11 @@ func (s *stubMultibandaRepo) SetTestReportURL(_ primitive.ObjectID, url string) 
 func (s *stubMultibandaRepo) SetReportAttachments(_ primitive.ObjectID, _, _, _, _ string) error {
 	return nil
 }
+
+// stubNotifier counts the "report available" emails Generate asks for.
+type stubNotifier struct{ calls int }
+
+func (s *stubNotifier) NotifyReportGenerated(primitive.ObjectID, string) { s.calls++ }
 
 type stubDeviceRepo struct{}
 
@@ -161,8 +173,13 @@ func newReportServiceForTest(storageURL string) (*multibandaReportService, *stub
 		deviceRepository:     stubDeviceRepo{},
 		userRepository:       stubUserRepo{user: &responses.User{IsInternal: true, Company: companyID}},
 		storageService:       stubStorage{url: storageURL},
+		notifier:             &stubNotifier{},
 	}
 	return service, multibandaRepo, reportRepo
+}
+
+func notifierOf(service *multibandaReportService) *stubNotifier {
+	return service.notifier.(*stubNotifier)
 }
 
 // ---- tests ----
@@ -261,6 +278,88 @@ func TestGenerateAllowsUnderEvaluationAndComplete(t *testing.T) {
 				t.Fatalf("generate: %v", err)
 			}
 		})
+	}
+}
+
+// The first generation announces the report to the internal contacts;
+// regenerations are corrections and stay silent.
+func TestGenerateNotifiesOnlyOnFirstGeneration(t *testing.T) {
+	service, _, _ := newReportServiceForTest("https://s3/report.pdf")
+
+	if _, err := service.Generate(testMultibandaHex, buildGeneratableReport(), "user-1"); err != nil {
+		t.Fatalf("first generate: %v", err)
+	}
+	if got := notifierOf(service).calls; got != 1 {
+		t.Fatalf("expected one notification on the first generation, got %d", got)
+	}
+
+	if _, err := service.Generate(testMultibandaHex, buildGeneratableReport(), "user-1"); err != nil {
+		t.Fatalf("regenerate: %v", err)
+	}
+	if got := notifierOf(service).calls; got != 1 {
+		t.Errorf("regeneration sent another notification: %d in total", got)
+	}
+}
+
+// The report date is the first generation's timestamp and is stored once.
+func TestGenerateStoresReportDateOnlyOnFirstGeneration(t *testing.T) {
+	service, multibandaRepo, _ := newReportServiceForTest("https://s3/report.pdf")
+
+	first, err := service.Generate(testMultibandaHex, buildGeneratableReport(), "user-1")
+	if err != nil {
+		t.Fatalf("first generate: %v", err)
+	}
+	if len(multibandaRepo.reportDates) != 1 {
+		t.Fatalf("expected the report date to be stored once, got %d", len(multibandaRepo.reportDates))
+	}
+	if got := multibandaRepo.reportDates[0].UTC().Format(time.RFC3339); got != first.GeneratedAt {
+		t.Errorf("report date %s, want the generation time %s", got, first.GeneratedAt)
+	}
+
+	if _, err := service.Generate(testMultibandaHex, buildGeneratableReport(), "user-1"); err != nil {
+		t.Fatalf("regenerate: %v", err)
+	}
+	if len(multibandaRepo.reportDates) != 1 {
+		t.Errorf("regeneration stored the report date again: %d writes", len(multibandaRepo.reportDates))
+	}
+}
+
+// A draft saved after a generation keeps the generated status, so generating
+// again from it is still a regeneration.
+func TestGenerateDoesNotNotifyForAlreadyGeneratedReport(t *testing.T) {
+	service, _, reportRepo := newReportServiceForTest("https://s3/report.pdf")
+	reportRepo.report = &models.MultibandaReport{Status: enums.MultibandaReportStatusGenerated}
+
+	if _, err := service.Generate(testMultibandaHex, buildGeneratableReport(), "user-1"); err != nil {
+		t.Fatalf("generate: %v", err)
+	}
+	if got := notifierOf(service).calls; got != 0 {
+		t.Errorf("expected no notification, got %d", got)
+	}
+}
+
+func TestGenerateNotifiesFromDraft(t *testing.T) {
+	service, _, reportRepo := newReportServiceForTest("https://s3/report.pdf")
+	reportRepo.report = &models.MultibandaReport{Status: enums.MultibandaReportStatusDraft}
+
+	if _, err := service.Generate(testMultibandaHex, buildGeneratableReport(), "user-1"); err != nil {
+		t.Fatalf("generate: %v", err)
+	}
+	if got := notifierOf(service).calls; got != 1 {
+		t.Errorf("expected one notification, got %d", got)
+	}
+}
+
+// Nothing is announced when the report could not be linked to the process.
+func TestGenerateDoesNotNotifyOnFailure(t *testing.T) {
+	service, multibandaRepo, _ := newReportServiceForTest("https://s3/report.pdf")
+	multibandaRepo.linkErr = errNotLinked
+
+	if _, err := service.Generate(testMultibandaHex, buildGeneratableReport(), "user-1"); err == nil {
+		t.Fatal("expected an error when the process could not be linked")
+	}
+	if got := notifierOf(service).calls; got != 0 {
+		t.Errorf("expected no notification, got %d", got)
 	}
 }
 

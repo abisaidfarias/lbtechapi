@@ -87,6 +87,13 @@ func multibandaReflashURLForEmail(emailKind string, needReflash bool, commentsRe
 	return strings.TrimSpace(commentsReflash)
 }
 
+func multibandaEmailHeaderTitle(emailKind string) string {
+	if emailKind == utils.REPORT {
+		return "Multibanda Test Report Notification"
+	}
+	return "Multibanda Phase Notification"
+}
+
 func BuildMultibandaPhaseEmailData(
 	multibanda *request.MultibandaNotify,
 	brandName string,
@@ -112,6 +119,7 @@ func BuildMultibandaPhaseEmailData(
 	}
 
 	return MultibandaPhaseEmailData{
+		HeaderTitle:             multibandaEmailHeaderTitle(emailKind),
 		ClientName:              clientName,
 		MainMessage:             mainMessage,
 		NotificationDate:        FormatMultibandaEmailDate(now),

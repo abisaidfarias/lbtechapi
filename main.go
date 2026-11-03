@@ -164,6 +164,7 @@ var (
 	multibandaReportRepository repositories.IMultibandaReportRepository = repositories.NewMultibandaReportRepository()
 	multibandaReportService    services.IMultibandaReportService        = services.NewMultibandaReportService(
 		multibandaReportRepository, multibandaRepository, deviceRepository, userRepository, storageService,
+		multibandaService,
 	)
 	multibandaReportController controllers.IMultibandaReportController = controllers.NewMultibandaReportController(multibandaReportService)
 

@@ -1,6 +1,7 @@
 package functions
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -42,6 +43,46 @@ func TestMultibandaReflashURLForEmailOnlyOnCreate(t *testing.T) {
 	}
 	if got := multibandaReflashURLForEmail(utils.PHASE, notify.NeedReflash, notify.CommentsReflash); got != "" {
 		t.Fatalf("expected empty reflash url on phase email, got %q", got)
+	}
+}
+
+func TestRenderMultibandaReportEmailShowsHeaderAndDownload(t *testing.T) {
+	notify := &request.MultibandaNotify{
+		CompanyName:   "Client",
+		CurrentPhase:  enums.HomologationPhase_value["UNDER_EVALUATION"],
+		TestReportUrl: "https://example.com/report.pdf",
+	}
+	data := BuildMultibandaPhaseEmailData(notify, "Brand", "TM-1", "Model", "Android", 0,
+		"User", utils.MULTIBANDA_REPORT_MAIN_MESSAGE, false, "", utils.REPORT)
+
+	html, err := RenderMultibandaPhaseEmailHTML(data, templatePath(t, utils.TEMPLATE_MULTIBANDA_PHASE_PATH))
+	if err != nil {
+		t.Fatalf("render report email: %v", err)
+	}
+	body := string(html)
+	for _, want := range []string{
+		"Multibanda Test Report Notification",
+		utils.MULTIBANDA_REPORT_MAIN_MESSAGE,
+		"https://example.com/report.pdf",
+		"Download Test Report",
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("report email is missing %q", want)
+		}
+	}
+}
+
+// Phase emails keep their original header.
+func TestRenderMultibandaPhaseEmailKeepsPhaseHeader(t *testing.T) {
+	data := BuildMultibandaPhaseEmailData(&request.MultibandaNotify{}, "Brand", "TM-1", "Model", "Android", 0,
+		"User", utils.MULTIBANDA_UNDER_MAIN_MESSAGE, false, "", utils.PHASE)
+
+	html, err := RenderMultibandaPhaseEmailHTML(data, templatePath(t, utils.TEMPLATE_MULTIBANDA_PHASE_PATH))
+	if err != nil {
+		t.Fatalf("render phase email: %v", err)
+	}
+	if !strings.Contains(string(html), "Multibanda Phase Notification") {
+		t.Error("phase email lost its header")
 	}
 }
 
