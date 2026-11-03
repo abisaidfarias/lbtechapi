@@ -35,6 +35,9 @@ type MultibandaExpanded struct {
 	// empty when the report screen was never opened. Independent of
 	// TestReportUrl, which holds the manually uploaded report of the old flow.
 	ReportStatus            string     `bson:"report_status" json:"report_status"`
+	// ReportDate is when the automatic report was first generated (the moment
+	// the "report available" email goes out); null until then.
+	ReportDate              *time.Time `bson:"report_date" json:"report_date"`
 	MultibandCertificateUrl string     `bson:"multiband_certificate_url" json:"multiband_certificate_url"`
 	AdbInfoUrl              string     `bson:"adb_info_url" json:"adb_info_url"`
 	AdbInfoOriginalFileName string     `bson:"adb_info_original_file_name" json:"adb_info_original_file_name"`

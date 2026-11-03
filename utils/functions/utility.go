@@ -340,6 +340,7 @@ func SendNotificationsMoveEmail(toList []string, subject string, data TrackingMo
 // MultibandaPhaseEmailData is passed to the Multibanda phase notification HTML template.
 type MultibandaPhaseEmailData struct {
 	LogoDataURI             template.URL
+	HeaderTitle             string
 	ClientName              string
 	MainMessage             string
 	NotificationDate        string

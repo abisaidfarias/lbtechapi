@@ -26,6 +26,7 @@ type IMultibandaService interface {
 	PatchRequestDelete(string, *request.RequestDeletePatch, string) (*responses.DeleteProcessResult, error)
 	RejectRequestDelete(string, string) (*responses.DeleteProcessResult, error)
 	ExportMultibanda(string) (bytes.Buffer, error)
+	NotifyReportGenerated(primitive.ObjectID, string)
 }
 
 type multibandaService struct {
@@ -273,6 +274,21 @@ func (s *multibandaService) PhaseChange(id string, multibandaRequest *request.Mu
 	return nil
 }
 
+// NotifyReportGenerated tells the internal contacts that the test report can be
+// downloaded. The process is reloaded so the email carries the report URL that
+// Generate has just linked.
+func (s *multibandaService) NotifyReportGenerated(multibandaID primitive.ObjectID, userID string) {
+	go func() {
+		multibandaResponse, _ := s.multibandaRepository.GetByIdExpanded(multibandaID)
+		if multibandaResponse == nil {
+			return
+		}
+
+		multibandaNotify := mapping.MultibandaResponseToMultibandaNotify(*multibandaResponse)
+		s.MultibandaNotification(&multibandaNotify, multibandaResponse.Company.ID, utils.REPORT, userID)
+	}()
+}
+
 func (s *multibandaService) Delete(id string, userID string) (*responses.DeleteProcessResult, error) {
 	if err := s.requireProfileClaim(userID, enums.CanDeleteMultibanda); err != nil {
 		return nil, err
@@ -489,6 +505,10 @@ func (s *multibandaService) MultibandaNotification(
 			brand.Name,
 			device.CommercialModel,
 		)
+	case utils.REPORT:
+		subject = fmt.Sprintf("Subject: Test Report Available Multibanda %s %s",
+			brand.Name, device.CommercialModel)
+		mainMessage = utils.MULTIBANDA_REPORT_MAIN_MESSAGE
 	default:
 		return
 	}

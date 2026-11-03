@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -27,6 +28,7 @@ type IMultibandaRepository interface {
 	Delete(primitive.ObjectID) error
 	SetRequestDelete(primitive.ObjectID, bool) error
 	SetTestReportURL(primitive.ObjectID, string) error
+	SetReportDate(primitive.ObjectID, time.Time) error
 	SetReportAttachments(primitive.ObjectID, string, string, string, string) error
 }
 
@@ -213,6 +215,14 @@ func (r *multibandaRepository) SetTestReportURL(id primitive.ObjectID, url strin
 		return mongo.ErrNoDocuments
 	}
 	return nil
+}
+
+// SetReportDate stores the first generation date; it is a no-op when the date
+// is already set.
+func (r *multibandaRepository) SetReportDate(id primitive.ObjectID, date time.Time) error {
+	filter, update := queries.SetMultibandaReportDate(id, date)
+	_, err := multibandaCollection.UpdateOne(context.TODO(), filter, update)
+	return err
 }
 
 func (r *multibandaRepository) SetReportAttachments(
