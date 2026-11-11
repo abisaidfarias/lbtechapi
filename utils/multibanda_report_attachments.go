@@ -9,7 +9,7 @@ import (
 
 const (
 	MaxMultibandaAdbInfoBytes          = 2 * 1024 * 1024
-	MaxMultibandaBandValidationBytes   = 5 * 1024 * 1024
+	MaxMultibandaBandValidationBytes   = 20 * 1024 * 1024
 	MultibandaReportAttachmentAdbInfo  = "adb_info"
 	MultibandaReportAttachmentBandValidation = "band_validation"
 )
@@ -30,7 +30,7 @@ func ValidateMultibandaReportAttachmentMeta(kind, originalFileName string, size 
 	case MultibandaReportAttachmentAdbInfo:
 		return validateAttachmentFile(originalFileName, size, multibandaAdbInfoExtensions, MaxMultibandaAdbInfoBytes, "2 MB")
 	case MultibandaReportAttachmentBandValidation:
-		return validateAttachmentFile(originalFileName, size, multibandaBandValidationExtensions, MaxMultibandaBandValidationBytes, "5 MB")
+		return validateAttachmentFile(originalFileName, size, multibandaBandValidationExtensions, MaxMultibandaBandValidationBytes, "20 MB")
 	default:
 		return NewValidationError("invalid attachment kind")
 	}
