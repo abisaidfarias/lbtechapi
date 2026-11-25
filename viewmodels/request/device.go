@@ -24,7 +24,7 @@ type Device struct {
 	CommunicationWlan      bool     `json:"communication_wlan"`
 	CommunicationGps       bool     `json:"communication_gps"`
 	CommunicationNfc       bool     `json:"communication_nfc"`
-	CommunicationRadio     bool     `json:"communication_radio"`
+	CommunicationRadio     *bool    `json:"communication_radio"`
 	CommunicationUsb       string   `json:"communication_usb"`
 	CommunicationBluetooth bool     `json:"communication_blutooth"`
 	BatteryType            string   `json:"battery_type"`
@@ -40,16 +40,18 @@ type Device struct {
 	BandGsm                []string `json:"band_gsm"`
 	BandWcdma              []string `json:"band_wcdma"`
 	BandLte                []string `json:"band_lte"`
-	Band5g                 []string `json:"band_5g"`
+	Band5gNsa              []string `json:"band_5g_nsa"`
+	Band5gSa               []string `json:"band_5g_sa"`
 	CarrierAgg             []string `json:"carrier_agg"`
-	NetworkGsm             bool     `json:"network_gsm"`
-	NetworkWcdma           bool     `json:"network_wcdma"`
-	NetworkLte             bool     `json:"network_lte"`
-	NetworkVolte           bool     `json:"network_volte"`
-	NetworkVowifi          bool     `json:"network_vowifi"`
-	NetworkVilte           bool     `json:"network_vilte"`
-	Network5g              bool     `json:"network_5g"`
-	NetworkCarrierAgg      bool     `json:"network_carrier_agg"`
+	NetworkGsm             *bool    `json:"network_gsm"`
+	NetworkWcdma           *bool    `json:"network_wcdma"`
+	NetworkLte             *bool    `json:"network_lte"`
+	NetworkVolte           *bool    `json:"network_volte"`
+	NetworkVowifi          *bool    `json:"network_vowifi"`
+	NetworkVilte           *bool    `json:"network_vilte"`
+	Network5gNsa           *bool    `json:"network_5g_nsa"`
+	Network5gSa            *bool    `json:"network_5g_sa"`
+	NetworkCarrierAgg      *bool    `json:"network_carrier_agg"`
 	ImageUrl               string   `json:"image_url"`
 	SoftwareCode           string   `json:"software_code"`
 	HardwareCode           string   `json:"hardware_code"`
@@ -59,5 +61,4 @@ type Device struct {
 	DualSim                string   `json:"dual_sim"`
 	SimType                string   `json:"sim_type"`
 	Esim                   bool     `json:"e_sim"`
-	SarValue               *float64 `json:"sar_value,omitempty" binding:"omitempty,sarValue"`
-}
+	SarValue               *float64 `json:"sar_value,omitempty" binding:"omitempty,sarValue"`}

@@ -20,6 +20,11 @@ type ICompanyRepository interface {
 	Delete(primitive.ObjectID) error
 	GetById(string) (*responses.Company, error)
 	Count() (int64, error)
+	GetByClientID(clientID string, exclude primitive.ObjectID) (*responses.Company, error)
+	UsersCountByCompany() (map[primitive.ObjectID]int, error)
+	IssuedCertificatesByCompany() (map[primitive.ObjectID]int, error)
+	CountIssuedCertificates(primitive.ObjectID) (int64, error)
+	GetCompanyUsers(primitive.ObjectID) ([]responses.CompanyUser, error)
 }
 
 type companyRepository struct {

@@ -30,6 +30,9 @@ type IMultibandaRepository interface {
 	SetTestReportURL(primitive.ObjectID, string) error
 	SetReportDate(primitive.ObjectID, time.Time) error
 	SetReportAttachments(primitive.ObjectID, string, string, string, string) error
+	ApplySmrDecision(primitive.ObjectID, primitive.M, models.SmrValidationEntry) (bool, error)
+	SetSmrValidation(primitive.ObjectID, *models.SmrValidation) error
+	LastGeneratedReportForTechnicalModel(string, primitive.ObjectID) (*SmrSourceReport, error)
 }
 
 type multibandaRepository struct {

@@ -37,7 +37,7 @@ type multibandaReportService struct {
 // reportGeneratedNotifier sends the "test report available" email; the
 // multibanda service owns the notification recipients and template.
 type reportGeneratedNotifier interface {
-	NotifyReportGenerated(primitive.ObjectID, string)
+	NotifyReportGenerated(primitive.ObjectID, string, functions.MultibandaReportEmailDetails)
 }
 
 // Narrow local interfaces keep this service decoupled from the full repository
@@ -108,10 +108,20 @@ func (s *multibandaReportService) GetForm(multibandaID, userID string) (*respons
 		}
 	}
 
+	// FM Radio is not editable in the report: show and validate the locked
+	// value (the device's until the first generation).
+	if form.Saved != nil {
+		form.Saved.DeviceInfo.FMRadio = ctx.lockedFMRadio()
+	}
+	saved := mapping.MultibandaReportModelToSaveRequest(ctx.report)
+	if saved == nil {
+		saved = &request.MultibandaReportSave{}
+	}
+	saved.DeviceInfo.FMRadio = ctx.lockedFMRadio()
+
 	// Always present, even with nothing saved: the screen needs the full list
 	// of blockers to render at 0%.
-	form.Validation = utils.BuildMultibandaReportValidation(
-		mapping.MultibandaReportModelToSaveRequest(ctx.report), ctx.scope)
+	form.Validation = utils.BuildMultibandaReportValidation(saved, ctx.scope)
 
 	return form, nil
 }
@@ -127,6 +137,9 @@ func (s *multibandaReportService) SaveDraft(
 	if err != nil {
 		return nil, err
 	}
+	if req != nil {
+		req.DeviceInfo.FMRadio = ctx.lockedFMRadio()
+	}
 	if err := utils.ValidateMultibandaReportDraft(req, ctx.scope); err != nil {
 		return nil, err
 	}
@@ -134,7 +147,7 @@ func (s *multibandaReportService) SaveDraft(
 	// A report that already produced a PDF stays "generated" while it is
 	// edited; regeneration is what refreshes the stored document.
 	status := enums.MultibandaReportStatusDraft
-	if ctx.report != nil && ctx.report.Status == enums.MultibandaReportStatusGenerated {
+	if ctx.isGenerated() {
 		status = enums.MultibandaReportStatusGenerated
 	}
 
@@ -163,8 +176,25 @@ func (s *multibandaReportService) Generate(
 
 	// The report closes the testing stage, so it cannot be generated until the
 	// process reaches Under Evaluation. Complete stays allowed for regeneration.
+	if v := ctx.multibanda.SmrValidation; v != nil {
+		switch v.Status {
+		case models.SmrValidationPending:
+			return nil, utils.NewValidationError(functions.SmrErrReportPending)
+		case models.SmrValidationRejected:
+			return nil, utils.NewValidationError(functions.SmrErrRejectedClosed)
+		}
+	}
 	if ctx.multibanda.CurrentPhase < enums.HomologationPhase_value["UNDER_EVALUATION"] {
 		return nil, utils.NewValidationError("report can only be generated from under evaluation")
+	}
+
+	// FM Radio is taken from the device, so a device that does not declare it
+	// blocks the first generation. Issued reports keep their stored value.
+	if ctx.lockedFMRadio() == "" {
+		return nil, utils.NewValidationError(ReportFMRadioNotSetMessage)
+	}
+	if req != nil {
+		req.DeviceInfo.FMRadio = ctx.lockedFMRadio()
 	}
 
 	// Server-side completeness check, as the spec requires in addition to the
@@ -175,7 +205,7 @@ func (s *multibandaReportService) Generate(
 
 	// Only the first generation announces the report; regenerations are
 	// corrections and would flood the inbox.
-	firstGeneration := ctx.report == nil || ctx.report.Status != enums.MultibandaReportStatusGenerated
+	firstGeneration := !ctx.isGenerated()
 
 	report := mapping.MultibandaReportRequestToModel(
 		req, ctx.multibandaOID, ctx.multibanda.Type, enums.MultibandaReportStatusGenerated)
@@ -231,7 +261,10 @@ func (s *multibandaReportService) Generate(
 			log.Printf("multibanda report date (%s): %v", ctx.multibandaOID.Hex(), err)
 		}
 		if s.notifier != nil {
-			s.notifier.NotifyReportGenerated(ctx.multibandaOID, userID)
+			s.notifier.NotifyReportGenerated(ctx.multibandaOID, userID, functions.MultibandaReportEmailDetails{
+				FMRadio:   report.DeviceInfo.FMRadio,
+				StampCode: report.DeviceInfo.StampCode,
+			})
 		}
 	}
 
@@ -241,6 +274,10 @@ func (s *multibandaReportService) Generate(
 		GeneratedAt: generatedAt.UTC().Format(time.RFC3339),
 	}, nil
 }
+
+// ReportFMRadioNotSetMessage is the generation error when the device does not
+// declare FM Radio (communication_radio is null).
+const ReportFMRadioNotSetMessage = "FM Radio is not set for this device. Set it in Devices."
 
 // ---- Shared loading ----
 
@@ -301,9 +338,25 @@ func (s *multibandaReportService) loadContext(multibandaID, userID string) (*mul
 			SupportsGSM:       prefilled.SupportsGSM,
 			SupportsUMTS:      prefilled.SupportsUMTS,
 			SupportsLTE:       prefilled.SupportsLTE,
-			Supports5G:        prefilled.Supports5G,
+			Supports5GSA:      prefilled.Supports5GSA,
 		},
 	}, nil
+}
+
+// isGenerated reports whether the report already produced a PDF.
+func (c *multibandaReportContext) isGenerated() bool {
+	return c.report != nil && c.report.Status == enums.MultibandaReportStatusGenerated
+}
+
+// lockedFMRadio is the FM Radio value the report must hold, ignoring the
+// client: the device's value until the first generation, and the stored value
+// afterwards, so issued reports never change. A generated report that somehow
+// stored no value falls back to the device.
+func (c *multibandaReportContext) lockedFMRadio() string {
+	if c.isGenerated() && strings.TrimSpace(c.report.DeviceInfo.FMRadio) != "" {
+		return c.report.DeviceInfo.FMRadio
+	}
+	return c.prefilled.FMRadio
 }
 
 func buildReportPrefilled(multibanda *responses.MultibandaExpanded) responses.MultibandaReportPrefilled {
@@ -323,10 +376,15 @@ func buildReportPrefilled(multibanda *responses.MultibandaExpanded) responses.Mu
 		SARValue:        sar,
 		OperativeSystemType: functions.FormatMultibandaOsVersion(
 			multibanda.OsVersionView, multibanda.Device.PlatformOs, multibanda.OsVersion),
-		SupportsGSM:  multibanda.Device.NetworkGsm,
-		SupportsUMTS: multibanda.Device.NetworkWcdma,
-		SupportsLTE:  multibanda.Device.NetworkLte,
-		Supports5G:   multibanda.Device.Network5g,
+		FMRadio: enums.ReportFMRadioFromDevice(multibanda.Device.CommunicationRadio),
+		// Network flags are nullable; undeclared (nil) means "not supported"
+		// for SAE applicability, so those tests stay N/A.
+		SupportsGSM:  functions.IsTrue(multibanda.Device.NetworkGsm),
+		SupportsUMTS: functions.IsTrue(multibanda.Device.NetworkWcdma),
+		SupportsLTE:  functions.IsTrue(multibanda.Device.NetworkLte),
+		// Only 5G SA enables the NR SAE test; 5G NSA or an undeclared (nil)
+		// value leaves it N/A.
+		Supports5GSA: functions.IsTrue(multibanda.Device.Network5gSa),
 	}
 }
 

@@ -1,5 +1,63 @@
 basePath: /api/v1
 definitions:
+  enums.ReportCarrier:
+    properties:
+      mnc:
+        type: string
+      name:
+        type: string
+    type: object
+  enums.ReportStamp:
+    properties:
+      code:
+        type: string
+      description:
+        type: string
+      image_key:
+        type: string
+      label:
+        type: string
+    type: object
+  enums.ReportTechnology:
+    properties:
+      bands:
+        items:
+          type: string
+        type: array
+      code:
+        type: string
+      label:
+        type: string
+    type: object
+  enums.ReportTest:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  enums.SAETest:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      requires_technology:
+        type: string
+    type: object
+  models.MultibandaPhaseStates:
+    properties:
+      complete:
+        type: string
+      planning:
+        type: string
+      sample_reception:
+        type: string
+      testing:
+        type: string
+      under_evaluation:
+        type: string
+    type: object
   request.AuthCredentials:
     properties:
       email:
@@ -32,20 +90,24 @@ definitions:
         type: string
       address:
         type: string
-      email:
-        type: string
-      logo_url:
+      allow_smr_without_testing:
+        type: boolean
+      client_id:
         type: string
       name:
         type: string
-    required:
-    - address
-    - email
-    - name
+      razon_social:
+        type: string
+      rut:
+        type: string
     type: object
   request.Configuration:
     properties:
-      bands_5g:
+      bands_5g_nsa:
+        items:
+          type: string
+        type: array
+      bands_5g_sa:
         items:
           type: string
         type: array
@@ -88,7 +150,13 @@ definitions:
     type: object
   request.Country:
     properties:
-      band_5g:
+      active:
+        type: boolean
+      band_5g_nsa:
+        items:
+          type: string
+        type: array
+      band_5g_sa:
         items:
           type: string
         type: array
@@ -110,8 +178,6 @@ definitions:
         type: array
       name:
         type: string
-    required:
-    - name
     type: object
   request.DeliveryConfirmMoveReportItem:
     properties:
@@ -141,7 +207,11 @@ definitions:
     type: object
   request.Device:
     properties:
-      band_5g:
+      band_5g_nsa:
+        items:
+          type: string
+        type: array
+      band_5g_sa:
         items:
           type: string
         type: array
@@ -217,7 +287,9 @@ definitions:
         type: string
       memory_type:
         type: string
-      network_5g:
+      network_5g_nsa:
+        type: boolean
+      network_5g_sa:
         type: boolean
       network_carrier_agg:
         type: boolean
@@ -272,6 +344,29 @@ definitions:
     - commercial_model
     - technical_model
     - type
+    type: object
+  request.DeviceCatalogOrder:
+    properties:
+      ids:
+        items:
+          type: string
+        type: array
+    type: object
+  request.DeviceCatalogValueCreate:
+    properties:
+      unit:
+        type: string
+      value:
+        type: string
+    type: object
+  request.DeviceCatalogValueUpdate:
+    properties:
+      active:
+        type: boolean
+      unit:
+        type: string
+      value:
+        type: string
     type: object
   request.DeviceResume:
     properties:
@@ -474,11 +569,19 @@ definitions:
     type: object
   request.Multibanda:
     properties:
+      base_band_version:
+        type: string
       brand:
+        type: string
+      carrier:
         type: string
       comment:
         type: string
+      comments_reflash:
+        type: string
       company:
+        type: string
+      completed_date:
         type: string
       current_phase:
         type: integer
@@ -494,21 +597,40 @@ definitions:
         type: boolean
       multiband_certificate_url:
         type: string
+      need_reflash:
+        type: boolean
       os_version:
         type: string
       os_version_view:
         type: string
       planning_date:
         type: string
+      requires_testing:
+        description: |-
+          RequiresTesting: required (true/false) only for SMR + SAE multibanda
+          certificate when the company allows SMR without testing; null otherwise.
+        type: boolean
       sample_end_date:
         type: string
       sample_start_date:
         type: string
       software_version:
         type: string
+      status:
+        type: integer
+      subtel_certificate_number:
+        type: string
+      test_end_date:
+        type: string
       test_report_url:
         type: string
+      test_start_date:
+        type: string
       type:
+        type: string
+      under_end_date:
+        type: string
+      under_start_date:
         type: string
     required:
     - brand
@@ -520,10 +642,119 @@ definitions:
     - software_version
     - type
     type: object
+  request.MultibandaReportBandResult:
+    properties:
+      band:
+        type: string
+      comment:
+        type: string
+      result:
+        type: string
+      technology:
+        type: string
+    type: object
+  request.MultibandaReportDeviceInfo:
+    properties:
+      cbs_package:
+        type: string
+      fm_radio:
+        type: string
+      google_play_system_update:
+        type: string
+      imei:
+        type: string
+      preferred_network:
+        type: string
+      serial_number:
+        type: string
+      stamp_code:
+        type: string
+      test_date:
+        type: string
+    type: object
+  request.MultibandaReportEvidence:
+    properties:
+      evidence_type:
+        type: string
+      operator:
+        type: string
+      scenario:
+        type: string
+      url:
+        type: string
+    type: object
+  request.MultibandaReportSAEResult:
+    properties:
+      channel:
+        type: string
+      comment:
+        type: string
+      operator:
+        type: string
+      result:
+        type: string
+      scenario:
+        type: string
+      test_id:
+        type: string
+    type: object
+  request.MultibandaReportSave:
+    properties:
+      adb_info_original_file_name:
+        type: string
+      adb_info_url:
+        type: string
+      band_results:
+        items:
+          $ref: '#/definitions/request.MultibandaReportBandResult'
+        type: array
+      band_validation_original_file_name:
+        type: string
+      band_validation_url:
+        type: string
+      carriers_tested:
+        description: |-
+          CarriersTested are the carriers the engineer checked. SIMLOCK results are
+          only required for these.
+        items:
+          type: string
+        type: array
+      device_info:
+        $ref: '#/definitions/request.MultibandaReportDeviceInfo'
+      evidence:
+        description: 'Evidence carries all three screenshots: sw_version, pop_up,
+          cb_history.'
+        items:
+          $ref: '#/definitions/request.MultibandaReportEvidence'
+        type: array
+      fm_radio_comment:
+        type: string
+      fm_radio_result:
+        type: string
+      sae_results:
+        items:
+          $ref: '#/definitions/request.MultibandaReportSAEResult'
+        type: array
+      sae_scenario:
+        type: string
+      simlock_results:
+        items:
+          $ref: '#/definitions/request.MultibandaReportSimlockResult'
+        type: array
+    type: object
+  request.MultibandaReportSimlockResult:
+    properties:
+      carrier:
+        type: string
+      comment:
+        type: string
+      result:
+        type: string
+      test_id:
+        type: string
+    type: object
   request.MultibandaResume:
     properties:
-      certificate_number:
-        type: string
       comment:
         type: string
       completed_date:
@@ -550,6 +781,8 @@ definitions:
         type: string
       status:
         type: integer
+      subtel_certificate_number:
+        type: string
       test_end_date:
         type: string
       test_report_url:
@@ -629,6 +862,13 @@ definitions:
     - claims
     - name
     type: object
+  request.RequestDeletePatch:
+    properties:
+      request_delete:
+        type: boolean
+    required:
+    - request_delete
+    type: object
   request.SearchOption:
     properties:
       brands:
@@ -652,7 +892,15 @@ definitions:
     properties:
       client:
         type: string
+      comment:
+        type: string
+      completed_date:
+        type: string
       country:
+        type: string
+      current_phase:
+        type: integer
+      imei_file_url:
         type: string
       imei_quantity:
         type: integer
@@ -660,12 +908,85 @@ definitions:
         type: string
       oabi_certificate:
         type: string
+      oabi_certificate_number:
+        type: string
+      oabi_certificate_url:
+        type: string
+      planning_date:
+        type: string
+      reference_id:
+        type: string
+      registered_imei_count:
+        type: integer
       rework_number:
         type: string
+      status:
+        type: integer
+      subtel_certificate_number:
+        type: string
+      subtel_certificate_url:
+        type: string
+      under_revision_end_date:
+        type: string
+      under_revision_start_date:
+        type: string
+      validation:
+        type: string
+      validation_end_date:
+        type: string
+      validation_start_date:
+        type: string
     required:
-    - country
+    - imei_file_url
     - imei_quantity
     - multibanda_id
+    type: object
+  request.ShipmentControlBulkConfirm:
+    properties:
+      rows:
+        items:
+          $ref: '#/definitions/request.ShipmentControlBulkConfirmRow'
+        minItems: 1
+        type: array
+    required:
+    - rows
+    type: object
+  request.ShipmentControlBulkConfirmRow:
+    properties:
+      client:
+        type: string
+      imei_file_url:
+        type: string
+      imei_quantity:
+        type: integer
+      multibanda_id:
+        type: string
+      reference_id:
+        type: string
+      rework_number:
+        type: string
+      row_number:
+        type: integer
+      validation:
+        type: string
+    required:
+    - imei_file_url
+    - imei_quantity
+    - multibanda_id
+    - row_number
+    type: object
+  request.ShipmentControlCertificate:
+    properties:
+      imei_quantity:
+        minimum: 1
+        type: integer
+      registered_imei_count:
+        minimum: 1
+        type: integer
+      registro_oabi:
+        type: string
+    required:
+    - registro_oabi
     type: object
   request.ShipmentControlResume:
     properties:
@@ -679,6 +1000,8 @@ definitions:
         type: string
       current_phase:
         type: integer
+      imei_file_url:
+        type: string
       imei_quantity:
         type: integer
       oabi_certificate:
@@ -686,6 +1009,8 @@ definitions:
       oabi_certificate_number:
         type: string
       oabi_certificate_url:
+        type: string
+      reference_id:
         type: string
       registered_imei_count:
         type: integer
@@ -699,9 +1024,25 @@ definitions:
         type: string
       under_revision_start_date:
         type: string
+      validation:
+        type: string
       validation_end_date:
         type: string
       validation_start_date:
+        type: string
+    type: object
+  request.SmrValidationApprove:
+    properties:
+      comment:
+        type: string
+      fm_radio:
+        type: boolean
+      stamp_code:
+        type: string
+    type: object
+  request.SmrValidationReject:
+    properties:
+      comment:
         type: string
     type: object
   request.TestCase:
@@ -924,7 +1265,6 @@ definitions:
     - email
     - lastName
     - name
-    - password
     type: object
   request.UserResume:
     properties:
@@ -947,6 +1287,10 @@ definitions:
     properties:
       _id:
         type: string
+      brands:
+        items:
+          type: string
+        type: array
       company:
         type: string
       email:
@@ -995,16 +1339,83 @@ definitions:
         type: string
       address:
         type: string
-      email:
-        type: string
-      logo_url:
+      allow_smr_without_testing:
+        type: boolean
+      client_id:
         type: string
       name:
+        type: string
+      razon_social:
+        type: string
+      rut:
+        type: string
+    type: object
+  responses.CompanyClientIDAvailability:
+    properties:
+      available:
+        type: boolean
+      used_by:
+        type: string
+    type: object
+  responses.CompanyListItem:
+    properties:
+      _id:
+        type: string
+      address:
+        type: string
+      allow_smr_without_testing:
+        type: boolean
+      client_id:
+        type: string
+      client_id_locked:
+        description: 'ClientIDLocked: client_id can no longer change (certificates
+          issued).'
+        type: boolean
+      name:
+        type: string
+      oabi_certificates_issued:
+        description: |-
+          OabiCertificatesIssued counts this company's shipment controls with an
+          OABI certificate issued.
+        type: integer
+      oabi_missing:
+        description: |-
+          OabiMissing lists the missing fields among client_id, rut,
+          razon_social, address. Empty means complete.
+        items:
+          type: string
+        type: array
+      razon_social:
+        type: string
+      rut:
+        type: string
+      users_count:
+        description: UsersCount counts users whose company or clients include this
+          company.
+        type: integer
+    type: object
+  responses.CompanyUser:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      is_internal:
+        type: boolean
+      last_name:
+        type: string
+      name:
+        type: string
+      profile_name:
         type: string
     type: object
   responses.Configuration:
     properties:
-      bands5g:
+      bands5gNsa:
+        items:
+          type: string
+        type: array
+      bands5gSa:
         items:
           type: string
         type: array
@@ -1047,7 +1458,11 @@ definitions:
     type: object
   responses.Country:
     properties:
-      band_5g:
+      band_5g_nsa:
+        items:
+          type: string
+        type: array
+      band_5g_sa:
         items:
           type: string
         type: array
@@ -1072,6 +1487,55 @@ definitions:
       name:
         type: string
     type: object
+  responses.CountryListItem:
+    properties:
+      active:
+        description: Active is false only when explicitly deactivated.
+        type: boolean
+      band_5g_nsa:
+        items:
+          type: string
+        type: array
+      band_5g_sa:
+        items:
+          type: string
+        type: array
+      band_gsm:
+        items:
+          type: string
+        type: array
+      band_lte:
+        items:
+          type: string
+        type: array
+      band_wcdma:
+        items:
+          type: string
+        type: array
+      carrier_agg:
+        items:
+          type: string
+        type: array
+      default_for:
+        description: DefaultFor lists the modules fixed to this country.
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+      used_in:
+        description: |-
+          UsedIn lists the modules with records of this country:
+          "homologation", "tracking", "shipment_control".
+        items:
+          type: string
+        type: array
+      users_count:
+        description: UsersCount counts users whose countries list includes it.
+        type: integer
+    type: object
   responses.DashboardInfo:
     properties:
       company_name:
@@ -1091,7 +1555,11 @@ definitions:
     type: object
   responses.DashboardReport:
     properties:
-      band_5g:
+      band_5g_nsa:
+        items:
+          type: string
+        type: array
+      band_5g_sa:
         items:
           type: string
         type: array
@@ -1117,6 +1585,13 @@ definitions:
         type: array
       name:
         type: string
+    type: object
+  responses.DeleteProcessResult:
+    properties:
+      deleted:
+        type: boolean
+      request_delete:
+        type: boolean
     type: object
   responses.Detail:
     properties:
@@ -1147,7 +1622,11 @@ definitions:
     properties:
       _id:
         type: string
-      band_5g:
+      band_5g_nsa:
+        items:
+          type: string
+        type: array
+      band_5g_sa:
         items:
           type: string
         type: array
@@ -1223,7 +1702,9 @@ definitions:
         type: string
       memory_type:
         type: string
-      network_5g:
+      network_5g_nsa:
+        type: boolean
+      network_5g_sa:
         type: boolean
       network_carrier_agg:
         type: boolean
@@ -1272,6 +1753,36 @@ definitions:
       technical_model:
         type: string
       type:
+        type: string
+    type: object
+  responses.DeviceCatalog:
+    properties:
+      category:
+        type: string
+      group:
+        type: string
+      label:
+        type: string
+      values:
+        items:
+          $ref: '#/definitions/responses.DeviceCatalogValue'
+        type: array
+    type: object
+  responses.DeviceCatalogValue:
+    properties:
+      active:
+        type: boolean
+      id:
+        type: string
+      order:
+        type: integer
+      unit:
+        type: string
+      used_count:
+        description: UsedCount counts devices whose mapped field equals this value
+          exactly.
+        type: integer
+      value:
         type: string
     type: object
   responses.DeviceTracking:
@@ -1368,6 +1879,184 @@ definitions:
       link:
         type: string
     type: object
+  responses.ImeiAlreadyReady:
+    properties:
+      batch_code:
+        type: string
+      batch_id:
+        type: string
+      created_at:
+        type: string
+      imei:
+        type: string
+    type: object
+  responses.ImeiAlreadyRegistered:
+    properties:
+      batch_code:
+        type: string
+      batch_id:
+        type: string
+      imei:
+        type: string
+      registered_at:
+        type: string
+    type: object
+  responses.ImeiBatch:
+    properties:
+      code:
+        type: string
+      created_at:
+        type: string
+      created_by_name:
+        type: string
+      file_name:
+        type: string
+      id:
+        type: string
+      registered_at:
+        type: string
+      registered_by_name:
+        type: string
+      status:
+        type: string
+      total:
+        type: integer
+    type: object
+  responses.ImeiBatchPage:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/responses.ImeiBatch'
+        type: array
+      total:
+        type: integer
+    type: object
+  responses.ImeiBatchRecord:
+    properties:
+      created_at:
+        type: string
+      imei:
+        type: string
+      imei_count:
+        type: integer
+      registered_at:
+        type: string
+      serial:
+        type: string
+      status:
+        type: string
+    type: object
+  responses.ImeiBatchRecordPage:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/responses.ImeiBatchRecord'
+        type: array
+      total:
+        type: integer
+    type: object
+  responses.ImeiBatchRef:
+    properties:
+      code:
+        type: string
+      id:
+        type: string
+    type: object
+  responses.ImeiBatchUploadResult:
+    properties:
+      already_ready:
+        items:
+          $ref: '#/definitions/responses.ImeiAlreadyReady'
+        type: array
+      already_registered:
+        items:
+          $ref: '#/definitions/responses.ImeiAlreadyRegistered'
+        type: array
+      batch:
+        $ref: '#/definitions/responses.ImeiBatch'
+      duplicated_in_file:
+        items:
+          $ref: '#/definitions/responses.ImeiDuplicatedInFile'
+        type: array
+      invalid:
+        items:
+          $ref: '#/definitions/responses.ImeiInvalidRow'
+        type: array
+      summary:
+        $ref: '#/definitions/responses.ImeiBatchUploadSummary'
+    type: object
+  responses.ImeiBatchUploadSummary:
+    properties:
+      already_ready:
+        type: integer
+      already_registered:
+        type: integer
+      device_incomplete:
+        description: |-
+          DeviceIncomplete is the part of Invalid with reason device_incomplete:
+          valid new IMEIs not saved because their device could not be saved whole.
+        type: integer
+      duplicated_in_file:
+        type: integer
+      invalid:
+        type: integer
+      new:
+        type: integer
+      total_rows:
+        type: integer
+    type: object
+  responses.ImeiDeleteResult:
+    properties:
+      batch:
+        $ref: '#/definitions/responses.ImeiBatch'
+      batch_deleted:
+        type: boolean
+      deleted_imeis:
+        items:
+          type: string
+        type: array
+    type: object
+  responses.ImeiDuplicatedInFile:
+    properties:
+      imei:
+        type: string
+      rows:
+        items:
+          type: integer
+        type: array
+    type: object
+  responses.ImeiInvalidRow:
+    properties:
+      detail:
+        type: string
+      reason:
+        type: string
+      row:
+        type: integer
+      serial:
+        type: string
+      value:
+        type: string
+    type: object
+  responses.ImeiValidatorLookup:
+    properties:
+      batch:
+        $ref: '#/definitions/responses.ImeiBatchRef'
+      created_at:
+        type: string
+      found:
+        type: boolean
+      imei:
+        type: string
+      imei_count:
+        type: integer
+      registered_at:
+        type: string
+      serial:
+        type: string
+      status:
+        type: string
+    type: object
   responses.Location:
     properties:
       id:
@@ -1379,11 +2068,23 @@ definitions:
     properties:
       _id:
         type: string
+      adb_info_original_file_name:
+        type: string
+      adb_info_url:
+        type: string
+      band_validation_original_file_name:
+        type: string
+      band_validation_url:
+        type: string
+      base_band_version:
+        type: string
       brand:
         $ref: '#/definitions/responses.Brand'
-      certificate_number:
+      carrier:
         type: string
       comment:
+        type: string
+      comments_reflash:
         type: string
       company:
         $ref: '#/definitions/responses.Company'
@@ -1407,20 +2108,51 @@ definitions:
         type: boolean
       multiband_certificate_url:
         type: string
+      need_reflash:
+        type: boolean
       os_version:
         type: string
       os_version_view:
         type: string
+      phase_states:
+        allOf:
+        - $ref: '#/definitions/models.MultibandaPhaseStates'
+        description: 'PhaseStates: pending | done | skipped per phase.'
       planning_date:
         type: string
+      report_date:
+        description: |-
+          ReportDate is when the automatic report was first generated (the moment
+          the "report available" email goes out); null until then.
+        type: string
+      report_status:
+        description: |-
+          ReportStatus is the automatic report's state: "draft", "generated" or
+          empty when the report screen was never opened. Independent of
+          TestReportUrl, which holds the manually uploaded report of the old flow.
+        type: string
+      request_delete:
+        type: boolean
+      requester_name:
+        type: string
+      requires_testing:
+        description: 'RequiresTesting: null unless SMR without testing applies to
+          the request.'
+        type: boolean
       sample_end_date:
         type: string
       sample_start_date:
         type: string
+      smr_validation:
+        allOf:
+        - $ref: '#/definitions/responses.MultibandaSmrValidation'
+        description: 'SmrValidation: only for SMR without testing; null otherwise.'
       software_version:
         type: string
       status:
         type: integer
+      subtel_certificate_number:
+        type: string
       test_end_date:
         type: string
       test_report_url:
@@ -1432,6 +2164,343 @@ definitions:
       under_end_date:
         type: string
       under_start_date:
+        type: string
+    type: object
+  responses.MultibandaReportBandResult:
+    properties:
+      band:
+        type: string
+      comment:
+        type: string
+      result:
+        type: string
+      technology:
+        type: string
+    type: object
+  responses.MultibandaReportBlocker:
+    properties:
+      count:
+        type: integer
+      label:
+        type: string
+      section:
+        type: string
+    type: object
+  responses.MultibandaReportCatalogs:
+    properties:
+      band_result_options:
+        items:
+          type: string
+        type: array
+      evidence_types:
+        items:
+          $ref: '#/definitions/responses.MultibandaReportOption'
+        type: array
+      fm_radio_options:
+        items:
+          type: string
+        type: array
+      pass_fail_options:
+        items:
+          type: string
+        type: array
+      preferred_network_options:
+        items:
+          type: string
+        type: array
+      sae_channels:
+        items:
+          type: string
+        type: array
+      sae_operators:
+        items:
+          type: string
+        type: array
+      sae_result_options:
+        items:
+          type: string
+        type: array
+      sae_scenarios:
+        items:
+          $ref: '#/definitions/responses.MultibandaReportOption'
+        type: array
+      sae_tests:
+        items:
+          $ref: '#/definitions/enums.SAETest'
+        type: array
+      simlock_carriers:
+        items:
+          $ref: '#/definitions/enums.ReportCarrier'
+        type: array
+      simlock_tests:
+        items:
+          $ref: '#/definitions/enums.ReportTest'
+        type: array
+      stamps:
+        items:
+          $ref: '#/definitions/enums.ReportStamp'
+        type: array
+      technologies:
+        items:
+          $ref: '#/definitions/enums.ReportTechnology'
+        type: array
+    type: object
+  responses.MultibandaReportDeviceInfo:
+    properties:
+      cbs_package:
+        type: string
+      fm_radio:
+        type: string
+      google_play_system_update:
+        type: string
+      imei:
+        type: string
+      preferred_network:
+        type: string
+      serial_number:
+        type: string
+      stamp_code:
+        type: string
+      test_date:
+        type: string
+    type: object
+  responses.MultibandaReportEvidence:
+    properties:
+      evidence_type:
+        type: string
+      operator:
+        type: string
+      scenario:
+        type: string
+      url:
+        type: string
+    type: object
+  responses.MultibandaReportException:
+    properties:
+      comment:
+        type: string
+      context:
+        type: string
+      label:
+        type: string
+      missing_comment:
+        type: boolean
+      ref:
+        $ref: '#/definitions/responses.MultibandaReportExceptionRef'
+      result:
+        type: string
+    type: object
+  responses.MultibandaReportExceptionRef:
+    properties:
+      band:
+        type: string
+      block:
+        description: multiband | simlock | sae | fm_radio
+        type: string
+      carrier:
+        type: string
+      channel:
+        type: string
+      operator:
+        type: string
+      scenario:
+        type: string
+      technology:
+        type: string
+      test_id:
+        type: string
+    type: object
+  responses.MultibandaReportForm:
+    properties:
+      catalogs:
+        $ref: '#/definitions/responses.MultibandaReportCatalogs'
+      generated_at:
+        type: string
+      includes_multiband:
+        type: boolean
+      includes_simlock:
+        description: |-
+          Scope flags let the frontend show or hide whole blocks without
+          re-deriving the process-type rules.
+        type: boolean
+      multibanda_id:
+        type: string
+      multibanda_type:
+        type: string
+      prefilled:
+        $ref: '#/definitions/responses.MultibandaReportPrefilled'
+      report_url:
+        type: string
+      saved:
+        $ref: '#/definitions/responses.MultibandaReportSaved'
+      status:
+        type: string
+      validation:
+        allOf:
+        - $ref: '#/definitions/responses.MultibandaReportValidation'
+        description: |-
+          Validation drives the completion bar, the section sidebar, the blocker
+          panel and the exceptions list. It is computed server-side so the
+          frontend never has to re-derive what is mandatory.
+    type: object
+  responses.MultibandaReportGenerated:
+    properties:
+      file_name:
+        type: string
+      generated_at:
+        type: string
+      report_url:
+        type: string
+    type: object
+  responses.MultibandaReportOption:
+    properties:
+      label:
+        type: string
+      value:
+        type: string
+    type: object
+  responses.MultibandaReportPrefilled:
+    properties:
+      commercial_name:
+        type: string
+      fm_radio:
+        description: |-
+          FMRadio comes from device.communication_radio: "Supported",
+          "Not Supported", or "" when the device does not declare it.
+        type: string
+      hardware_version:
+        type: string
+      manufacturer:
+        type: string
+      operative_system_type:
+        type: string
+      sar_value:
+        type: string
+      software_version:
+        type: string
+      supports_5g_sa:
+        type: boolean
+      supports_gsm:
+        description: |-
+          Device technology support drives which SAE technology tests are
+          applicable; unsupported ones are forced to N/A.
+        type: boolean
+      supports_lte:
+        type: boolean
+      supports_umts:
+        type: boolean
+      technical_model:
+        type: string
+    type: object
+  responses.MultibandaReportSAEResult:
+    properties:
+      channel:
+        type: string
+      comment:
+        type: string
+      operator:
+        type: string
+      result:
+        type: string
+      scenario:
+        type: string
+      test_id:
+        type: string
+    type: object
+  responses.MultibandaReportSaved:
+    properties:
+      adb_info_original_file_name:
+        type: string
+      adb_info_url:
+        type: string
+      band_results:
+        items:
+          $ref: '#/definitions/responses.MultibandaReportBandResult'
+        type: array
+      band_validation_original_file_name:
+        type: string
+      band_validation_url:
+        type: string
+      carriers_tested:
+        items:
+          type: string
+        type: array
+      device_info:
+        $ref: '#/definitions/responses.MultibandaReportDeviceInfo'
+      evidence:
+        items:
+          $ref: '#/definitions/responses.MultibandaReportEvidence'
+        type: array
+      fm_radio_comment:
+        type: string
+      fm_radio_result:
+        type: string
+      sae_results:
+        items:
+          $ref: '#/definitions/responses.MultibandaReportSAEResult'
+        type: array
+      sae_scenario:
+        type: string
+      simlock_results:
+        items:
+          $ref: '#/definitions/responses.MultibandaReportSimlockResult'
+        type: array
+    type: object
+  responses.MultibandaReportSection:
+    properties:
+      completed:
+        type: integer
+      detail:
+        type: string
+      key:
+        type: string
+      label:
+        type: string
+      status:
+        description: complete | incomplete | conditional
+        type: string
+      total:
+        type: integer
+    type: object
+  responses.MultibandaReportSimlockResult:
+    properties:
+      carrier:
+        type: string
+      comment:
+        type: string
+      result:
+        type: string
+      test_id:
+        type: string
+    type: object
+  responses.MultibandaReportValidation:
+    properties:
+      blockers:
+        items:
+          $ref: '#/definitions/responses.MultibandaReportBlocker'
+        type: array
+      comments_missing:
+        type: integer
+      completion_percentage:
+        type: integer
+      exceptions:
+        items:
+          $ref: '#/definitions/responses.MultibandaReportException'
+        type: array
+      required_fields_left:
+        type: integer
+      sections:
+        items:
+          $ref: '#/definitions/responses.MultibandaReportSection'
+        type: array
+    type: object
+  responses.MultibandaSmrValidation:
+    properties:
+      decided_at:
+        type: string
+      decided_by_name:
+        type: string
+      status:
         type: string
     type: object
   responses.Notification:
@@ -1622,8 +2691,6 @@ definitions:
     type: object
   responses.ShipmentControlAvailableOption:
     properties:
-      certificate_number:
-        type: string
       hardware_version:
         type: string
       multibanda_id:
@@ -1634,6 +2701,8 @@ definitions:
         type: string
       software_version:
         type: string
+      subtel_certificate_number:
+        type: string
     type: object
   responses.ShipmentControlAvailableResponse:
     properties:
@@ -1643,6 +2712,117 @@ definitions:
         items:
           $ref: '#/definitions/responses.ShipmentControlAvailableDevice'
         type: array
+    type: object
+  responses.ShipmentControlBulkConfirmResponse:
+    properties:
+      results:
+        items:
+          $ref: '#/definitions/responses.ShipmentControlBulkConfirmResult'
+        type: array
+      summary:
+        $ref: '#/definitions/responses.ShipmentControlBulkConfirmSummary'
+    type: object
+  responses.ShipmentControlBulkConfirmResult:
+    properties:
+      errors:
+        items:
+          type: string
+        type: array
+      row_number:
+        type: integer
+      shipment_control_id:
+        type: string
+      software_version:
+        type: string
+      status:
+        type: string
+      technical_model:
+        type: string
+    type: object
+  responses.ShipmentControlBulkConfirmSummary:
+    properties:
+      created:
+        type: integer
+      failed:
+        type: integer
+    type: object
+  responses.ShipmentControlBulkValidateDevicePreview:
+    properties:
+      commercial_model:
+        type: string
+      hardware_version:
+        type: string
+    type: object
+  responses.ShipmentControlBulkValidateResponse:
+    properties:
+      rows:
+        items:
+          $ref: '#/definitions/responses.ShipmentControlBulkValidateRow'
+        type: array
+      summary:
+        $ref: '#/definitions/responses.ShipmentControlBulkValidateSummary'
+    type: object
+  responses.ShipmentControlBulkValidateRow:
+    properties:
+      client:
+        type: string
+      device:
+        $ref: '#/definitions/responses.ShipmentControlBulkValidateDevicePreview'
+      errors:
+        items:
+          type: string
+        type: array
+      imei_quantity:
+        type: integer
+      multibanda_id:
+        type: string
+      reference_id:
+        type: string
+      rework_number:
+        type: string
+      row_number:
+        type: integer
+      software_version:
+        type: string
+      status:
+        type: string
+      subtel_certificate_number:
+        type: string
+      technical_model:
+        type: string
+      validation:
+        type: string
+    type: object
+  responses.ShipmentControlBulkValidateSummary:
+    properties:
+      invalid:
+        type: integer
+      total:
+        type: integer
+      valid:
+        type: integer
+    type: object
+  responses.ShipmentControlCertificateAccepted:
+    properties:
+      shipment_id:
+        type: string
+      status:
+        type: string
+    type: object
+  responses.ShipmentControlCertificateStatus:
+    properties:
+      control_number:
+        type: string
+      error:
+        type: string
+      file_name:
+        type: string
+      generated_at:
+        type: string
+      status:
+        type: string
+      url:
+        type: string
     type: object
   responses.ShipmentControlCompanySummary:
     properties:
@@ -1663,6 +2843,8 @@ definitions:
       brand:
         type: string
       commercial_model:
+        type: string
+      platform_os:
         type: string
       technical_model:
         type: string
@@ -1687,6 +2869,8 @@ definitions:
         type: integer
       device:
         $ref: '#/definitions/responses.ShipmentControlDeviceSummary'
+      imei_file_url:
+        type: string
       imei_quantity:
         type: integer
       multibanda:
@@ -1699,12 +2883,23 @@ definitions:
         type: string
       planning_date:
         type: string
+      reference_id:
+        type: string
       registered_imei_count:
         type: integer
+      request_delete:
+        type: boolean
+      requester_name:
+        type: string
       rework_number:
         type: string
       status:
         type: integer
+      status_view:
+        description: |-
+          StatusView is "Approved" / "Rejected" for closed controls, otherwise
+          the status label ("Ongoing").
+        type: string
       subtel_certificate_number:
         type: string
       subtel_certificate_url:
@@ -1713,16 +2908,20 @@ definitions:
         type: string
       under_revision_start_date:
         type: string
+      validation:
+        type: string
       validation_end_date:
         type: string
       validation_start_date:
+        type: string
+      verdict:
+        description: 'Verdict of a closed control: "approved" | "rejected" ("" while
+          open).'
         type: string
     type: object
   responses.ShipmentControlMultibandaSummary:
     properties:
       _id:
-        type: string
-      certificate_number:
         type: string
       hardware_version:
         type: string
@@ -1731,6 +2930,71 @@ definitions:
       os_version_view:
         type: string
       software_version:
+        type: string
+      subtel_certificate_number:
+        type: string
+    type: object
+  responses.SmrLastReport:
+    properties:
+      id:
+        type: string
+      multibanda_id:
+        type: string
+      report_date:
+        type: string
+      stamp_code:
+        type: string
+      type:
+        type: string
+    type: object
+  responses.SmrValidation:
+    properties:
+      comment:
+        type: string
+      decided_at:
+        type: string
+      decided_by_name:
+        type: string
+      fm_radio:
+        description: FMRadio is the device's communication_radio (null when not set).
+        type: boolean
+      last_report:
+        $ref: '#/definitions/responses.SmrLastReport'
+      log:
+        items:
+          $ref: '#/definitions/responses.SmrValidationLogEntry'
+        type: array
+      stamp_code:
+        description: StampCode comes from last_report ("" when there is none).
+        type: string
+      stamps:
+        items:
+          $ref: '#/definitions/enums.ReportStamp'
+        type: array
+      status:
+        description: pending | approved | rejected
+        type: string
+    type: object
+  responses.SmrValidationLogEntry:
+    properties:
+      action:
+        description: approve | reject
+        type: string
+      at:
+        type: string
+      by_name:
+        type: string
+      comment:
+        type: string
+      fm_radio_final:
+        type: boolean
+      fm_radio_original:
+        type: boolean
+      source_report_id:
+        type: string
+      stamp_final:
+        type: string
+      stamp_original:
         type: string
     type: object
   responses.StackedSerieChart:
@@ -1927,8 +3191,19 @@ definitions:
       tracking_id:
         type: string
     type: object
+  responses.UploadFileResponse:
+    properties:
+      originalFileName:
+        type: string
+      storedFileName:
+        type: string
+      url:
+        type: string
+    type: object
   responses.User:
     properties:
+      accountStatus:
+        type: string
       brands:
         items:
           type: string
@@ -1952,6 +3227,8 @@ definitions:
       lastName:
         type: string
       name:
+        type: string
+      passwordSetAt:
         type: string
       phone:
         type: string
@@ -2100,7 +3377,7 @@ paths:
           description: Lista de compañías
           schema:
             items:
-              $ref: '#/definitions/responses.Company'
+              $ref: '#/definitions/responses.CompanyListItem'
             type: array
         "401":
           description: No autorizado
@@ -2261,6 +3538,67 @@ paths:
       summary: Actualizar compañía
       tags:
       - Companies
+  /company/{id}/users:
+    get:
+      description: Users whose company or clients include it, with their profile name.
+      parameters:
+      - description: Company ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.CompanyUser'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Users of a company
+      tags:
+      - Companies
+  /company/client-id-available:
+    get:
+      description: Live validation for the company form. exclude_id is the company
+        being edited.
+      parameters:
+      - description: Client ID
+        in: query
+        name: client_id
+        required: true
+        type: string
+      - description: Company being edited
+        in: query
+        name: exclude_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CompanyClientIDAvailability'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Check whether a Client ID is free
+      tags:
+      - Companies
   /configuration:
     get:
       consumes:
@@ -2353,7 +3691,7 @@ paths:
           description: Lista de países
           schema:
             items:
-              $ref: '#/definitions/responses.Country'
+              $ref: '#/definitions/responses.CountryListItem'
             type: array
         "401":
           description: No autorizado
@@ -2433,6 +3771,12 @@ paths:
       responses:
         "200":
           description: País eliminado exitosamente
+        "400":
+          description: 'En uso: desactivar en vez de eliminar'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "401":
           description: No autorizado
           schema:
@@ -2445,8 +3789,6 @@ paths:
             additionalProperties:
               type: string
             type: object
-        "409":
-          description: No se puede eliminar, existen homologaciones asociadas
         "500":
           description: Error interno del servidor
           schema:
@@ -2650,6 +3992,154 @@ paths:
       summary: Crear nuevo dispositivo
       tags:
       - Devices
+  /device-catalogs:
+    get:
+      description: Every catalog (device_type, rom, ram, memory_capability, usb) with
+        its values in order and how many devices use each value.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.DeviceCatalog'
+            type: array
+      security:
+      - Bearer: []
+      summary: Device catalogs
+      tags:
+      - DeviceCatalogs
+  /device-catalogs/{category}/order:
+    put:
+      consumes:
+      - application/json
+      description: ids must list every value of the category once; order becomes 0..n.
+      parameters:
+      - description: category
+        in: path
+        name: category
+        required: true
+        type: string
+      - description: ids in the new order
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/request.DeviceCatalogOrder'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.DeviceCatalogValue'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Reorder a catalog
+      tags:
+      - DeviceCatalogs
+  /device-catalogs/{category}/values:
+    post:
+      consumes:
+      - application/json
+      description: Added at the end of the order, active. Unique per category (case-insensitive).
+      parameters:
+      - description: device_type | rom | ram | memory_capability | usb
+        in: path
+        name: category
+        required: true
+        type: string
+      - description: value
+        in: body
+        name: value
+        required: true
+        schema:
+          $ref: '#/definitions/request.DeviceCatalogValueCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/responses.DeviceCatalogValue'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Add a catalog value
+      tags:
+      - DeviceCatalogs
+  /device-catalogs/values/{id}:
+    delete:
+      description: Only values used by no device; used ones must be deactivated.
+      parameters:
+      - description: value id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Delete an unused catalog value
+      tags:
+      - DeviceCatalogs
+    put:
+      consumes:
+      - application/json
+      description: value, unit and active are optional. Renaming does not rewrite
+        devices.
+      parameters:
+      - description: value id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: changes
+        in: body
+        name: value
+        required: true
+        schema:
+          $ref: '#/definitions/request.DeviceCatalogValueUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DeviceCatalogValue'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Update a catalog value
+      tags:
+      - DeviceCatalogs
   /device-tracking:
     get:
       consumes:
@@ -3242,6 +4732,74 @@ paths:
       summary: Exportar homologaciones a Excel
       tags:
       - Homologations
+  /export/multibanda:
+    get:
+      description: Exporta todos los registros Multibanda visibles para el usuario
+        a un archivo Excel
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: Archivo Excel
+          schema:
+            type: file
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Sin permiso
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Exportar registros Multibanda a Excel
+      tags:
+      - Multibanda
+  /export/shipment-control:
+    get:
+      description: Exporta todos los controles de embarque visibles para el usuario
+        a un archivo Excel
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: Archivo Excel
+          schema:
+            type: file
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Sin permiso
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Exportar Shipment Control a Excel
+      tags:
+      - ShipmentControl
   /homologation:
     get:
       consumes:
@@ -3799,6 +5357,286 @@ paths:
       summary: Obtener pruebas fallidas
       tags:
       - Homologations
+  /imei-validation/validator/batches:
+    get:
+      description: Newest first. search matches the batch code or a batch holding
+        an IMEI starting with those digits.
+      parameters:
+      - description: ready | registered
+        in: query
+        name: status
+        type: string
+      - description: batch code or IMEI
+        in: query
+        name: search
+        type: string
+      - description: page (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: page size (default 20, max 200)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ImeiBatchPage'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: 'IMEI Validator: list batches'
+      tags:
+      - ImeiValidator
+    post:
+      consumes:
+      - multipart/form-data
+      description: Parses a .csv (; or ,) or .xlsx with IMEI;S/N;quantity and no header.
+        Validates IMEI (15 digits + Luhn), S/N, quantity and the rows per S/N, and
+        stores only complete devices whose IMEIs are all new, as "ready" in a new
+        batch (batch is null when nothing is new).
+      parameters:
+      - description: .csv or .xlsx file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/responses.ImeiBatchUploadResult'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: 'IMEI Validator: upload a batch'
+      tags:
+      - ImeiValidator
+  /imei-validation/validator/batches/{id}:
+    delete:
+      description: Only batches with status "ready".
+      parameters:
+      - description: batch id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: 'IMEI Validator: delete a batch and its IMEIs'
+      tags:
+      - ImeiValidator
+  /imei-validation/validator/batches/{id}/imeis:
+    get:
+      parameters:
+      - description: batch id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: IMEI (prefix)
+        in: query
+        name: search
+        type: string
+      - description: page (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: page size (default 20, max 200)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ImeiBatchRecordPage'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: 'IMEI Validator: IMEIs of a batch'
+      tags:
+      - ImeiValidator
+  /imei-validation/validator/batches/{id}/imeis/{imei}:
+    delete:
+      description: Only "ready" IMEIs. Deletes the whole device (every IMEI with the
+        same S/N in the batch, listed in deleted_imeis) and the batch when it ends
+        up empty (batch_deleted=true).
+      parameters:
+      - description: batch id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: IMEI
+        in: path
+        name: imei
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ImeiDeleteResult'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: 'IMEI Validator: delete an IMEI from a batch'
+      tags:
+      - ImeiValidator
+  /imei-validation/validator/batches/{id}/oabi-file:
+    get:
+      description: 'CSV for OABI: IMEI;S/N;quantity, no header, CRLF, IMEIs of a device
+        together. File name "<batch code>-OABI.csv".'
+      parameters:
+      - description: batch id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - text/csv
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: 'IMEI Validator: file ready for OABI'
+      tags:
+      - ImeiValidator
+  /imei-validation/validator/batches/{id}/register:
+    post:
+      description: Marks the batch and all its IMEIs as registered. Idempotent.
+      parameters:
+      - description: batch id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ImeiBatch'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: 'IMEI Validator: mark a batch as registered in OABI'
+      tags:
+      - ImeiValidator
+  /imei-validation/validator/imeis/{imei}:
+    get:
+      parameters:
+      - description: IMEI
+        in: path
+        name: imei
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ImeiValidatorLookup'
+      security:
+      - Bearer: []
+      summary: 'IMEI Validator: look up one IMEI'
+      tags:
+      - ImeiValidator
+  /imei-validation/validator/template:
+    get:
+      description: 'Example CSV in OABI format (IMEI;S/N;quantity, no header, CRLF):
+        one Dual SIM and one Single SIM device with fake IMEIs. Internal users only.'
+      produces:
+      - text/csv
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: 'IMEI Validator: upload template'
+      tags:
+      - ImeiValidator
   /kpi/time/{start}/{end}:
     get:
       consumes:
@@ -3980,7 +5818,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Lista de registros Multibanda
+          description: Lista de registros Multibanda (incluye request_delete)
           schema:
             items:
               $ref: '#/definitions/responses.MultibandaExpanded'
@@ -4057,6 +5895,114 @@ paths:
       summary: Crear nuevo registro Multibanda
       tags:
       - Multibanda
+  /multibanda/{id}:
+    delete:
+      description: Solo usuario interno. Elimina el registro de forma definitiva.
+      parameters:
+      - description: ID del registro Multibanda
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Resultado de la eliminación
+          schema:
+            $ref: '#/definitions/responses.DeleteProcessResult'
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Sin permiso
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: No encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Eliminar registro Multibanda
+      tags:
+      - Multibanda
+    put:
+      consumes:
+      - application/json
+      description: Actualiza todos los campos editables del registro Multibanda. Solo
+        usuarios internos.
+      parameters:
+      - description: ID del registro Multibanda
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Datos actualizados del registro Multibanda
+        in: body
+        name: multibanda
+        required: true
+        schema:
+          $ref: '#/definitions/request.Multibanda'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Registro actualizado exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Solo usuarios internos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Registro Multibanda no encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Actualizar registro Multibanda
+      tags:
+      - Multibanda
   /multibanda/{id}/phase:
     put:
       consumes:
@@ -4114,6 +6060,461 @@ paths:
       summary: Cambiar fase de Multibanda
       tags:
       - Multibanda
+  /multibanda/{id}/reject-delete:
+    patch:
+      description: 'Usuario interno: cancela una solicitud de borrado pendiente (request_delete
+        pasa a false).'
+      parameters:
+      - description: ID del registro Multibanda
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Resultado
+          schema:
+            $ref: '#/definitions/responses.DeleteProcessResult'
+        "400":
+          description: Sin solicitud pendiente o ID inválido
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Solo usuarios internos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Rechazar solicitud de eliminación Multibanda
+      tags:
+      - Multibanda
+  /multibanda/{id}/report:
+    get:
+      description: Devuelve los datos precargados del dispositivo, el borrador guardado
+        (si existe), el alcance según el tipo de proceso y los catálogos necesarios
+        para renderizar las matrices de resultados.
+      parameters:
+      - description: ID del proceso Multi-banda
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MultibandaReportForm'
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Sin acceso al proceso
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Obtener el formulario del reporte automático Multi-banda
+      tags:
+      - MultibandaReport
+  /multibanda/{id}/report/attachments/{kind}:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Sube ADB INFO o Band Validation Results con validación de tipo/tamaño
+        y nombre determinístico en S3.
+      parameters:
+      - description: ID del proceso Multi-banda
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: adb_info o band_validation
+        in: path
+        name: kind
+        required: true
+        type: string
+      - description: Archivo
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MultibandaReportForm'
+        "400":
+          description: Archivo inválido
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Sin acceso
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Subir adjunto TEST ENTRY del reporte Multi-banda
+      tags:
+      - MultibandaReport
+  /multibanda/{id}/report/draft:
+    put:
+      consumes:
+      - application/json
+      description: Guarda el reporte de forma incremental sin exigir que esté completo,
+        para que el ingeniero pueda retomarlo después.
+      parameters:
+      - description: ID del proceso Multi-banda
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Datos del reporte
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.MultibandaReportSave'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MultibandaReportForm'
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Sin acceso al proceso
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Guardar borrador del reporte automático Multi-banda
+      tags:
+      - MultibandaReport
+  /multibanda/{id}/report/generate:
+    post:
+      consumes:
+      - application/json
+      description: Valida que todos los campos y evidencias obligatorios estén completos,
+        genera el PDF y lo almacena en el proceso, reemplazando el PDF generado anteriormente.
+      parameters:
+      - description: ID del proceso Multi-banda
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Datos del reporte
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.MultibandaReportSave'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MultibandaReportGenerated'
+        "400":
+          description: Faltan campos o evidencias obligatorias
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Sin acceso al proceso
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Generar el PDF del reporte automático Multi-banda
+      tags:
+      - MultibandaReport
+  /multibanda/{id}/request-delete:
+    patch:
+      consumes:
+      - application/json
+      description: 'Externo: solicitar borrado con request_delete true.'
+      parameters:
+      - description: ID del registro Multibanda
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: request_delete true
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.RequestDeletePatch'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Resultado
+          schema:
+            $ref: '#/definitions/responses.DeleteProcessResult'
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Sin permiso
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Actualizar solicitud de eliminación Multibanda
+      tags:
+      - Multibanda
+  /multibanda/{id}/smr-validation:
+    get:
+      description: Status, the last generated report of a request with the same device
+        technical model, FM Radio of the device, stamp, stamps catalog and audit log.
+        Internal users only.
+      parameters:
+      - description: multibanda id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.SmrValidation'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: 'SMR without testing: validation data'
+      tags:
+      - Multibanda
+  /multibanda/{id}/smr-validation/approve:
+    post:
+      consumes:
+      - application/json
+      description: Confirms FM Radio and the stamp; the request moves to Under evaluation.
+        A comment is required when an existing FM Radio or stamp is corrected.
+      parameters:
+      - description: multibanda id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: decision
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.SmrValidationApprove'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.SmrValidation'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: 'SMR without testing: approve'
+      tags:
+      - Multibanda
+  /multibanda/{id}/smr-validation/reject:
+    post:
+      consumes:
+      - application/json
+      description: Closes the request (phase Complete, status Rejected). comment is
+        required.
+      parameters:
+      - description: multibanda id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: reason
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.SmrValidationReject'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.SmrValidation'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: 'SMR without testing: reject'
+      tags:
+      - Multibanda
+  /multibanda/report/stamps/{code}/image:
+    get:
+      description: Devuelve la imagen del sello indicado para que el selector de sellos
+        pueda mostrarlo. Las imágenes están embebidas en el binario y el Content-Type
+        refleja el formato real del archivo.
+      parameters:
+      - description: Código del sello (ver catálogo del formulario)
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - image/png
+      - image/jpeg
+      responses:
+        "200":
+          description: Imagen del sello
+          schema:
+            type: file
+        "404":
+          description: Sello no encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Obtener la imagen de un sello del catálogo
+      tags:
+      - MultibandaReport
   /notification:
     post:
       consumes:
@@ -4667,7 +7068,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Lista de controles de embarque
+          description: Lista de controles de embarque (incluye request_delete)
           schema:
             items:
               $ref: '#/definitions/responses.ShipmentControlExpanded'
@@ -4698,8 +7099,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Crea un control de embarque en fase Planning. Solo requiere multibanda_id
-        e imei_quantity; planning_date se asigna en UTC en el servidor.
+      description: 'Crea un control de embarque en fase Planning. Usuario externo:
+        country se asigna automáticamente a Chile. Usuario interno: country es requerido.'
       parameters:
       - description: Datos del control de embarque
         in: body
@@ -4743,6 +7144,206 @@ paths:
       security:
       - Bearer: []
       summary: Crear Shipment Control
+      tags:
+      - ShipmentControl
+  /shipment-control/{id}:
+    delete:
+      description: Solo usuario interno. Elimina el registro de forma definitiva.
+      parameters:
+      - description: ID del Shipment Control
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Resultado de la eliminación
+          schema:
+            $ref: '#/definitions/responses.DeleteProcessResult'
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Sin permiso
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Eliminar Shipment Control
+      tags:
+      - ShipmentControl
+    put:
+      consumes:
+      - application/json
+      description: Actualiza todos los campos editables del control de embarque. Solo
+        usuarios internos.
+      parameters:
+      - description: ID del Shipment Control
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Datos actualizados del control de embarque
+        in: body
+        name: shipmentControl
+        required: true
+        schema:
+          $ref: '#/definitions/request.ShipmentControl'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Control actualizado exitosamente
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Solo usuarios internos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Control no encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Actualizar Shipment Control
+      tags:
+      - ShipmentControl
+  /shipment-control/{id}/certificate:
+    post:
+      consumes:
+      - application/json
+      description: Encola la generación async del PDF cuando el shipment control está
+        en fase Under Revision (current_phase = 2).
+      parameters:
+      - description: ID del shipment control
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Registro OABI y cantidad de IMEIs registrados
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.ShipmentControlCertificate'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Generación en curso
+          schema:
+            $ref: '#/definitions/responses.ShipmentControlCertificateAccepted'
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Sin permiso
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Generación ya en curso
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Encolar generación de certificado OABI
+      tags:
+      - ShipmentControl
+  /shipment-control/{id}/certificate/status:
+    get:
+      parameters:
+      - description: ID del shipment control
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ShipmentControlCertificateStatus'
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Sin permiso
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: No encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Estado de generación del certificado OABI
       tags:
       - ShipmentControl
   /shipment-control/{id}/phase:
@@ -4796,6 +7397,105 @@ paths:
       summary: Cambiar fase de Shipment Control
       tags:
       - ShipmentControl
+  /shipment-control/{id}/reject-delete:
+    patch:
+      description: 'Usuario interno: cancela una solicitud de borrado pendiente (request_delete
+        pasa a false).'
+      parameters:
+      - description: ID del Shipment Control
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Resultado
+          schema:
+            $ref: '#/definitions/responses.DeleteProcessResult'
+        "400":
+          description: Sin solicitud pendiente o ID inválido
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Solo usuarios internos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Rechazar solicitud de eliminación Shipment Control
+      tags:
+      - ShipmentControl
+  /shipment-control/{id}/request-delete:
+    patch:
+      consumes:
+      - application/json
+      description: 'Externo: solicitar borrado con request_delete true.'
+      parameters:
+      - description: ID del Shipment Control
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: request_delete true
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.RequestDeletePatch'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Resultado
+          schema:
+            $ref: '#/definitions/responses.DeleteProcessResult'
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Sin permiso
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Actualizar solicitud de eliminación Shipment Control
+      tags:
+      - ShipmentControl
   /shipment-control/available-multibandas:
     get:
       consumes:
@@ -4843,6 +7543,114 @@ paths:
       summary: Multibandas disponibles para Shipment Control
       tags:
       - ShipmentControl
+  /shipment-control/bulk/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Crea shipment controls a partir de filas validadas con imei_file_url
+      parameters:
+      - description: Company ID (requerido para usuarios internos)
+        in: query
+        name: company
+        type: string
+      - description: Country ID (requerido para usuarios internos)
+        in: query
+        name: country
+        type: string
+      - description: Filas a confirmar
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.ShipmentControlBulkConfirm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Resultado por fila
+          schema:
+            $ref: '#/definitions/responses.ShipmentControlBulkConfirmResponse'
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Sin permiso
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Confirmar carga masiva de Shipment Control
+      tags:
+      - ShipmentControl
+  /shipment-control/bulk/validate:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Valida un CSV de precarga, resuelve multibanda y certificado Subtel
+        por fila
+      parameters:
+      - description: Company ID (requerido para usuarios internos)
+        in: query
+        name: company
+        type: string
+      - description: Archivo CSV
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Resultado de validación por fila
+          schema:
+            $ref: '#/definitions/responses.ShipmentControlBulkValidateResponse'
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: No autorizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Sin permiso
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Validar carga masiva de Shipment Control
+      tags:
+      - ShipmentControl
   /sign-in:
     post:
       consumes:
@@ -4870,6 +7678,12 @@ paths:
             type: object
         "401":
           description: Credenciales incorrectas
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Contraseña pendiente de configuración
           schema:
             additionalProperties:
               type: string
@@ -5545,9 +8359,10 @@ paths:
     post:
       consumes:
       - multipart/form-data
-      description: Sube un archivo al storage
+      description: Sube un archivo al storage (máximo 50 MB). La key en S3 es única;
+        la respuesta incluye el nombre original del archivo.
       parameters:
-      - description: Archivo a subir
+      - description: Archivo a subir (máx. 50 MB)
         in: formData
         name: file
         required: true
@@ -5556,11 +8371,9 @@ paths:
       - application/json
       responses:
         "201":
-          description: URL del archivo subido
+          description: Archivo subido
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/responses.UploadFileResponse'
         "400":
           description: Archivo inválido
           schema:
@@ -5654,6 +8467,48 @@ paths:
       security:
       - Bearer: []
       summary: Crear nuevo usuario
+      tags:
+      - Users
+  /users/{id}/resend-invitation:
+    post:
+      description: Sends a new password-invite link to a user who has not set their
+        password yet
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "429":
+          description: Too Many Requests
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Resend user invitation email
       tags:
       - Users
 schemes:

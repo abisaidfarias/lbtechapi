@@ -2,6 +2,7 @@ package functions
 
 import (
 	"fmt"
+	"html/template"
 	"strconv"
 	"strings"
 	"time"
@@ -12,13 +13,13 @@ import (
 )
 
 const (
-	shipmentControlEmailCreate                  = "Create"
-	shipmentControlEmailValidationStart         = "ValidationStart"
-	shipmentControlEmailValidationEnd           = "ValidationEnd"
-	shipmentControlEmailComplete                = "Complete"
-	shipmentControlEmailRequestDeleteInternal   = "RequestDeleteInternal"
-	shipmentControlEmailRequestDeleteClient     = "RequestDeleteClient"
-	shipmentControlEmailDeleted                 = "Deleted"
+	shipmentControlEmailCreate                = "Create"
+	shipmentControlEmailValidationStart       = "ValidationStart"
+	shipmentControlEmailValidationEnd         = "ValidationEnd"
+	shipmentControlEmailComplete              = "Complete"
+	shipmentControlEmailRequestDeleteInternal = "RequestDeleteInternal"
+	shipmentControlEmailRequestDeleteClient   = "RequestDeleteClient"
+	shipmentControlEmailDeleted               = "Deleted"
 )
 
 // Exported email kinds for delete notifications.
@@ -124,12 +125,25 @@ func shipmentControlEmailSubjectIdent(brand, commercialModel, softwareVersion st
 	return fmt.Sprintf("%s %s SW version %s", strings.TrimSpace(brand), strings.TrimSpace(commercialModel), sw)
 }
 
+// GetShipmentControlNotificationMessageAndSubject returns the main message and
+// subject. verdict only matters for the closing email, which reads Approved or
+// Rejected instead of Completed.
 func GetShipmentControlNotificationMessageAndSubject(
 	emailKind string,
 	brand string,
 	commercialModel string,
 	softwareVersion string,
+	verdict string,
 ) (string, string) {
+	if emailKind == shipmentControlEmailComplete {
+		ident := shipmentControlEmailSubjectIdent(brand, commercialModel, softwareVersion)
+		if verdict == enums.ShipmentControlVerdictRejected {
+			return utils.SHIPMENT_CONTROL_REJECTED_MAIN_MESSAGE,
+				fmt.Sprintf("Subject: Control Shipment Rejected – %s", ident)
+		}
+		return utils.SHIPMENT_CONTROL_APPROVED_MAIN_MESSAGE,
+			fmt.Sprintf("Subject: Control Shipment Approved – %s", ident)
+	}
 	ident := shipmentControlEmailSubjectIdent(brand, commercialModel, softwareVersion)
 
 	switch emailKind {
@@ -246,6 +260,16 @@ func imeiFileURLForEmail(emailKind, imeiFileURL string) string {
 	return strings.TrimSpace(imeiFileURL)
 }
 
+// excelFileURLForEmail links the "Excel file" button to the control's IMEI
+// Excel. The create email already shows it as "Download IMEI file", so it is
+// left out there to avoid a duplicate button.
+func excelFileURLForEmail(emailKind, imeiFileURL string) string {
+	if emailKind == shipmentControlEmailCreate {
+		return ""
+	}
+	return strings.TrimSpace(imeiFileURL)
+}
+
 func BuildShipmentControlPhaseEmailData(
 	notify *request.ShipmentControlNotify,
 	brandName string,
@@ -264,11 +288,12 @@ func BuildShipmentControlPhaseEmailData(
 
 	showImei := emailKind == shipmentControlEmailValidationStart || emailKind == shipmentControlEmailComplete
 	imeiSubmitted := "—"
-	if emailKind == shipmentControlEmailComplete && notify.RegisteredImeiCount > 0 {
+	if emailKind == shipmentControlEmailComplete {
+		// A rejection registers 0 IMEI, which is a real value here.
 		imeiSubmitted = strconv.Itoa(notify.RegisteredImeiCount)
 	}
 
-	return ShipmentControlPhaseEmailData{
+	data := ShipmentControlPhaseEmailData{
 		ClientName:                  dearName,
 		MainMessage:                 mainMessage,
 		NotificationDate:            FormatShipmentControlEmailDate(now),
@@ -298,10 +323,49 @@ func BuildShipmentControlPhaseEmailData(
 		ShowCompletedFields:         emailKind == shipmentControlEmailComplete,
 		OabiCertificate:             emptyAsDash(notify.OabiCertificate),
 		Comments:                    formatEmailCommentMultiline(emptyAsDash(notify.Comment)),
-		ExcelFileURL:                strings.TrimSpace(notify.SubtelCertificateUrl),
+		ExcelFileURL:                excelFileURLForEmail(emailKind, notify.ImeiFileUrl),
 		ImeiFileURL:                 imeiFileURLForEmail(emailKind, notify.ImeiFileUrl),
 		MultibandCertificateURL:     strings.TrimSpace(notify.MultibandCertificateUrl),
 		OabiCertificateURL:          strings.TrimSpace(notify.OabiCertificateUrl),
 		Year:                        now.Year(),
+	}
+	if emailKind == shipmentControlEmailComplete {
+		applyShipmentControlVerdictEmail(&data, notify)
+	}
+	return data
+}
+
+const shipmentControlBannerBaseStyle = "padding:14px 16px; font-size:15px; font-weight:bold; line-height:1.5; "
+
+// applyShipmentControlVerdictEmail adds the verdict banner to the closing
+// email: green when fully approved, amber when partially approved and red
+// when rejected (no OABI certificate, request closed).
+func applyShipmentControlVerdictEmail(data *ShipmentControlPhaseEmailData, notify *request.ShipmentControlNotify) {
+	registered, requested := notify.RegisteredImeiCount, notify.ImeiQuantity
+	reason := strings.TrimSpace(notify.Comment)
+
+	switch {
+	case notify.Verdict == enums.ShipmentControlVerdictRejected:
+		data.CurrentPhase = enums.ShipmentControlStatusViewRejected
+		data.VerdictBanner = fmt.Sprintf(
+			"REJECTED — %d of %d IMEI registered. No OABI certificate was issued.", registered, requested)
+		data.VerdictBannerStyle = template.CSS(shipmentControlBannerBaseStyle +
+			"background-color:#fef2f2; color:#991b1b; border:1px solid #fca5a5; border-left:6px solid #dc2626;")
+		data.VerdictReason = reason
+		data.ShowClosedNotice = true
+		data.OabiCertificate = "Not issued"
+		data.OabiCertificateURL = ""
+	case IsShipmentControlPartial(notify.Verdict, registered, requested):
+		data.CurrentPhase = enums.ShipmentControlStatusViewApprovedPartial
+		data.VerdictBanner = fmt.Sprintf(
+			"APPROVED — partial registration: %d of %d IMEI registered", registered, requested)
+		data.VerdictBannerStyle = template.CSS(shipmentControlBannerBaseStyle +
+			"background-color:#fffbeb; color:#92400e; border:1px solid #fcd34d; border-left:6px solid #f59e0b;")
+		data.VerdictReason = reason
+	default:
+		data.CurrentPhase = enums.ShipmentControlStatusViewApproved
+		data.VerdictBanner = fmt.Sprintf("APPROVED — %d of %d IMEI registered", registered, requested)
+		data.VerdictBannerStyle = template.CSS(shipmentControlBannerBaseStyle +
+			"background-color:#ecfdf5; color:#065f46; border:1px solid #6ee7b7; border-left:6px solid #10b981;")
 	}
 }

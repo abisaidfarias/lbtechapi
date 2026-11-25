@@ -329,6 +329,7 @@ func UpdateShipmentControl(shipmentControl *models.ShipmentControl, oid primitiv
 			{Key: "oabi_certificate_url", Value: shipmentControl.OabiCertificateUrl},
 			{Key: "oabi_certificate_number", Value: shipmentControl.OabiCertificateNumber},
 			{Key: "comment", Value: shipmentControl.Comment},
+			{Key: "verdict", Value: shipmentControl.Verdict},
 		}},
 	}
 	return filter, update
@@ -352,6 +353,7 @@ func UpdateShipmentControlPhaseChange(shipmentControl *models.ShipmentControl, o
 		{Key: "oabi_certificate_url", Value: shipmentControl.OabiCertificateUrl},
 		{Key: "oabi_certificate_number", Value: shipmentControl.OabiCertificateNumber},
 		{Key: "comment", Value: shipmentControl.Comment},
+		{Key: "verdict", Value: shipmentControl.Verdict},
 	}
 	appendShipmentControlDateField(&setFields, "validation_start_date", shipmentControl.ValidationStartDate)
 	appendShipmentControlDateField(&setFields, "validation_end_date", shipmentControl.ValidationEndDate)

@@ -72,6 +72,97 @@ func TestRenderMultibandaReportEmailShowsHeaderAndDownload(t *testing.T) {
 	}
 }
 
+func renderReportEmailWith(t *testing.T, details MultibandaReportEmailDetails) string {
+	t.Helper()
+	data := BuildMultibandaPhaseEmailData(&request.MultibandaNotify{CompanyName: "Client"},
+		"Brand", "TM-1", "Model", "Android", 0, "User", utils.MULTIBANDA_REPORT_MAIN_MESSAGE, false, "", utils.REPORT)
+	ApplyMultibandaReportEmailDetails(&data, details)
+	html, err := RenderMultibandaPhaseEmailHTML(data, templatePath(t, utils.TEMPLATE_MULTIBANDA_PHASE_PATH))
+	if err != nil {
+		t.Fatalf("render report email: %v", err)
+	}
+	return string(html)
+}
+
+func TestRenderMultibandaReportEmailShowsFMRadioAndStampLabel(t *testing.T) {
+	body := renderReportEmailWith(t, MultibandaReportEmailDetails{
+		FMRadio:   enums.ReportFMRadioSupported,
+		StampCode: "5g_and_below",
+	})
+	for _, want := range []string{
+		"<strong>FM Radio</strong>", ">Supported<",
+		"<strong>Stamp Type</strong>", "Approved — all bands (5G)",
+		">5G</span>", ">SAE</span>",
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("report email is missing %q", want)
+		}
+	}
+	if strings.Contains(body, "5g_and_below") {
+		t.Error("report email shows the stamp code instead of its label")
+	}
+}
+
+func TestRenderMultibandaReportEmailDashesMissingValues(t *testing.T) {
+	body := renderReportEmailWith(t, MultibandaReportEmailDetails{})
+	for _, want := range []string{
+		`<td style="padding:10px;"><strong>FM Radio</strong></td>
+                  <td style="padding:10px;">—</td>`,
+		`<td style="padding:10px;">—</td>
+                </tr>`,
+	} {
+		if !strings.Contains(strings.ReplaceAll(body, "\r\n", "\n"), want) {
+			t.Errorf("report email is missing the dash cell %q", want)
+		}
+	}
+	if strings.Contains(body, "<span") {
+		t.Error("no stamp chips expected without a stamp")
+	}
+}
+
+func TestMultibandaStampChipsMarksUnsupportedBands(t *testing.T) {
+	chips := MultibandaStampChips("2g_4g")
+	got := map[string]bool{}
+	var labels []string
+	for _, c := range chips {
+		got[c.Label] = c.Supported
+		labels = append(labels, c.Label)
+	}
+	if strings.Join(labels, " ") != "2G 3G 4G SAE" {
+		t.Fatalf("chips = %v", labels)
+	}
+	if !got["2G"] || got["3G"] || !got["4G"] || !got["SAE"] {
+		t.Fatalf("supported flags = %v", got)
+	}
+}
+
+func TestMultibandaEmailGreetingFallsBackToCompany(t *testing.T) {
+	data := BuildMultibandaPhaseEmailData(&request.MultibandaNotify{CompanyName: "  "}, "Brand", "TM-1", "Model",
+		"Android", 0, "User", utils.MULTIBANDA_UNDER_MAIN_MESSAGE, false, "", utils.PHASE)
+	if data.ClientName != "Company" {
+		t.Fatalf("greeting fallback = %q, want Company", data.ClientName)
+	}
+}
+
+func TestExcelMultibandaFirstHeaderIsCompany(t *testing.T) {
+	if got := enums.ExcelMultibandaHeaders["A1"]; got != "Company" {
+		t.Fatalf("multibanda export A1 = %q, want Company", got)
+	}
+}
+
+// Only the report email carries the FM Radio / Stamp Type rows.
+func TestRenderMultibandaPhaseEmailOmitsReportDetails(t *testing.T) {
+	data := BuildMultibandaPhaseEmailData(&request.MultibandaNotify{}, "Brand", "TM-1", "Model", "Android", 0,
+		"User", utils.MULTIBANDA_UNDER_MAIN_MESSAGE, false, "", utils.PHASE)
+	html, err := RenderMultibandaPhaseEmailHTML(data, templatePath(t, utils.TEMPLATE_MULTIBANDA_PHASE_PATH))
+	if err != nil {
+		t.Fatalf("render phase email: %v", err)
+	}
+	if strings.Contains(string(html), "Stamp Type") {
+		t.Error("phase email shows report details")
+	}
+}
+
 // Phase emails keep their original header.
 func TestRenderMultibandaPhaseEmailKeepsPhaseHeader(t *testing.T) {
 	data := BuildMultibandaPhaseEmailData(&request.MultibandaNotify{}, "Brand", "TM-1", "Model", "Android", 0,
@@ -103,7 +194,7 @@ func TestApplyMultibandaPhaseDateRulesSetsUnderStartFromTestEndOnUnderEvaluation
 
 	multibanda := &models.Multibanda{
 		CurrentPhase: enums.HomologationPhase_value["UNDER_EVALUATION"],
-		TestEndDate:  testEnd,
+		TestEndDate:  &testEnd,
 	}
 
 	ApplyMultibandaPhaseDateRules(multibanda, nil)
@@ -138,12 +229,12 @@ func TestApplyMultibandaPhaseDateRulesSkipsOtherPhases(t *testing.T) {
 
 	multibanda := &models.Multibanda{
 		CurrentPhase: enums.HomologationPhase_value["TEST"],
-		TestEndDate:  testEnd,
+		TestEndDate:  &testEnd,
 	}
 
 	ApplyMultibandaPhaseDateRules(multibanda, nil)
 
-	if !multibanda.UnderStartDate.IsZero() {
+	if multibanda.UnderStartDate != nil {
 		t.Fatalf("expected empty under_start_date, got %v", multibanda.UnderStartDate)
 	}
 }

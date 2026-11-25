@@ -172,7 +172,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/responses.Company"
+                                "$ref": "#/definitions/responses.CompanyListItem"
                             }
                         }
                     },
@@ -257,6 +257,55 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/company/client-id-available": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Live validation for the company form. exclude_id is the company being edited.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Companies"
+                ],
+                "summary": "Check whether a Client ID is free",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Client ID",
+                        "name": "client_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Company being edited",
+                        "name": "exclude_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CompanyClientIDAvailability"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -417,6 +466,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/company/{id}/users": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Users whose company or clients include it, with their profile name.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Companies"
+                ],
+                "summary": "Users of a company",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Company ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.CompanyUser"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/configuration": {
             "get": {
                 "security": [
@@ -566,7 +661,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/responses.Country"
+                                "$ref": "#/definitions/responses.CountryListItem"
                             }
                         }
                     },
@@ -778,6 +873,15 @@ const docTemplate = `{
                     "200": {
                         "description": "País eliminado exitosamente"
                     },
+                    "400": {
+                        "description": "En uso: desactivar en vez de eliminar",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
                     "401": {
                         "description": "No autorizado",
                         "schema": {
@@ -795,9 +899,6 @@ const docTemplate = `{
                                 "type": "string"
                             }
                         }
-                    },
-                    "409": {
-                        "description": "No se puede eliminar, existen homologaciones asociadas"
                     },
                     "500": {
                         "description": "Error interno del servidor",
@@ -1015,6 +1116,237 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/device-catalogs": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Every catalog (device_type, rom, ram, memory_capability, usb) with its values in order and how many devices use each value.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DeviceCatalogs"
+                ],
+                "summary": "Device catalogs",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.DeviceCatalog"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/device-catalogs/values/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "value, unit and active are optional. Renaming does not rewrite devices.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DeviceCatalogs"
+                ],
+                "summary": "Update a catalog value",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "value id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "changes",
+                        "name": "value",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.DeviceCatalogValueUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DeviceCatalogValue"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Only values used by no device; used ones must be deactivated.",
+                "tags": [
+                    "DeviceCatalogs"
+                ],
+                "summary": "Delete an unused catalog value",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "value id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/device-catalogs/{category}/order": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "ids must list every value of the category once; order becomes 0..n.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DeviceCatalogs"
+                ],
+                "summary": "Reorder a catalog",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "category",
+                        "name": "category",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "ids in the new order",
+                        "name": "order",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.DeviceCatalogOrder"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.DeviceCatalogValue"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/device-catalogs/{category}/values": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Added at the end of the order, active. Unique per category (case-insensitive).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DeviceCatalogs"
+                ],
+                "summary": "Add a catalog value",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "device_type | rom | ram | memory_capability | usb",
+                        "name": "category",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "value",
+                        "name": "value",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.DeviceCatalogValueCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DeviceCatalogValue"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1945,6 +2277,110 @@ const docTemplate = `{
                 }
             }
         },
+        "/export/multibanda": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Exporta todos los registros Multibanda visibles para el usuario a un archivo Excel",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "Multibanda"
+                ],
+                "summary": "Exportar registros Multibanda a Excel",
+                "responses": {
+                    "200": {
+                        "description": "Archivo Excel",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/export/shipment-control": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Exporta todos los controles de embarque visibles para el usuario a un archivo Excel",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "ShipmentControl"
+                ],
+                "summary": "Exportar Shipment Control a Excel",
+                "responses": {
+                    "200": {
+                        "description": "Archivo Excel",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/homologation": {
             "get": {
                 "security": [
@@ -2809,6 +3245,437 @@ const docTemplate = `{
                 }
             }
         },
+        "/imei-validation/validator/batches": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Newest first. search matches the batch code or a batch holding an IMEI starting with those digits.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ImeiValidator"
+                ],
+                "summary": "IMEI Validator: list batches",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ready | registered",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "batch code or IMEI",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page (default 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page size (default 20, max 200)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ImeiBatchPage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Parses a .csv (; or ,) or .xlsx with IMEI;S/N;quantity and no header. Validates IMEI (15 digits + Luhn), S/N, quantity and the rows per S/N, and stores only complete devices whose IMEIs are all new, as \"ready\" in a new batch (batch is null when nothing is new).",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ImeiValidator"
+                ],
+                "summary": "IMEI Validator: upload a batch",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": ".csv or .xlsx file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ImeiBatchUploadResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/imei-validation/validator/batches/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Only batches with status \"ready\".",
+                "tags": [
+                    "ImeiValidator"
+                ],
+                "summary": "IMEI Validator: delete a batch and its IMEIs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "batch id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/imei-validation/validator/batches/{id}/imeis": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ImeiValidator"
+                ],
+                "summary": "IMEI Validator: IMEIs of a batch",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "batch id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "IMEI (prefix)",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page (default 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page size (default 20, max 200)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ImeiBatchRecordPage"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/imei-validation/validator/batches/{id}/imeis/{imei}": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Only \"ready\" IMEIs. Deletes the whole device (every IMEI with the same S/N in the batch, listed in deleted_imeis) and the batch when it ends up empty (batch_deleted=true).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ImeiValidator"
+                ],
+                "summary": "IMEI Validator: delete an IMEI from a batch",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "batch id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "IMEI",
+                        "name": "imei",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ImeiDeleteResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/imei-validation/validator/batches/{id}/oabi-file": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "CSV for OABI: IMEI;S/N;quantity, no header, CRLF, IMEIs of a device together. File name \"\u003cbatch code\u003e-OABI.csv\".",
+                "produces": [
+                    "text/csv"
+                ],
+                "tags": [
+                    "ImeiValidator"
+                ],
+                "summary": "IMEI Validator: file ready for OABI",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "batch id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/imei-validation/validator/batches/{id}/register": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Marks the batch and all its IMEIs as registered. Idempotent.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ImeiValidator"
+                ],
+                "summary": "IMEI Validator: mark a batch as registered in OABI",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "batch id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ImeiBatch"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/imei-validation/validator/imeis/{imei}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ImeiValidator"
+                ],
+                "summary": "IMEI Validator: look up one IMEI",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "IMEI",
+                        "name": "imei",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ImeiValidatorLookup"
+                        }
+                    }
+                }
+            }
+        },
+        "/imei-validation/validator/template": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Example CSV in OABI format (IMEI;S/N;quantity, no header, CRLF): one Dual SIM and one Single SIM device with fake IMEIs. Internal users only.",
+                "produces": [
+                    "text/csv"
+                ],
+                "tags": [
+                    "ImeiValidator"
+                ],
+                "summary": "IMEI Validator: upload template",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/kpi/time/{start}/{end}": {
             "get": {
                 "security": [
@@ -3096,7 +3963,7 @@ const docTemplate = `{
                 "summary": "Listar registros Multibanda",
                 "responses": {
                     "200": {
-                        "description": "Lista de registros Multibanda",
+                        "description": "Lista de registros Multibanda (incluye request_delete)",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -3210,6 +4077,215 @@ const docTemplate = `{
                 }
             }
         },
+        "/multibanda/report/stamps/{code}/image": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Devuelve la imagen del sello indicado para que el selector de sellos pueda mostrarlo. Las imágenes están embebidas en el binario y el Content-Type refleja el formato real del archivo.",
+                "produces": [
+                    "image/png",
+                    "image/jpeg"
+                ],
+                "tags": [
+                    "MultibandaReport"
+                ],
+                "summary": "Obtener la imagen de un sello del catálogo",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Código del sello (ver catálogo del formulario)",
+                        "name": "code",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Imagen del sello",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "404": {
+                        "description": "Sello no encontrado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/multibanda/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Actualiza todos los campos editables del registro Multibanda. Solo usuarios internos.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Multibanda"
+                ],
+                "summary": "Actualizar registro Multibanda",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del registro Multibanda",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Datos actualizados del registro Multibanda",
+                        "name": "multibanda",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.Multibanda"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Registro actualizado exitosamente"
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Solo usuarios internos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Registro Multibanda no encontrado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Solo usuario interno. Elimina el registro de forma definitiva.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Multibanda"
+                ],
+                "summary": "Eliminar registro Multibanda",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del registro Multibanda",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Resultado de la eliminación",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DeleteProcessResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No encontrado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/multibanda/{id}/phase": {
             "put": {
                 "security": [
@@ -3288,6 +4364,650 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/multibanda/{id}/reject-delete": {
+            "patch": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Usuario interno: cancela una solicitud de borrado pendiente (request_delete pasa a false).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Multibanda"
+                ],
+                "summary": "Rechazar solicitud de eliminación Multibanda",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del registro Multibanda",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Resultado",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DeleteProcessResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Sin solicitud pendiente o ID inválido",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Solo usuarios internos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/multibanda/{id}/report": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Devuelve los datos precargados del dispositivo, el borrador guardado (si existe), el alcance según el tipo de proceso y los catálogos necesarios para renderizar las matrices de resultados.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MultibandaReport"
+                ],
+                "summary": "Obtener el formulario del reporte automático Multi-banda",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del proceso Multi-banda",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MultibandaReportForm"
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin acceso al proceso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/multibanda/{id}/report/attachments/{kind}": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Sube ADB INFO o Band Validation Results con validación de tipo/tamaño y nombre determinístico en S3.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MultibandaReport"
+                ],
+                "summary": "Subir adjunto TEST ENTRY del reporte Multi-banda",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del proceso Multi-banda",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "adb_info o band_validation",
+                        "name": "kind",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Archivo",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MultibandaReportForm"
+                        }
+                    },
+                    "400": {
+                        "description": "Archivo inválido",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin acceso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/multibanda/{id}/report/draft": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Guarda el reporte de forma incremental sin exigir que esté completo, para que el ingeniero pueda retomarlo después.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MultibandaReport"
+                ],
+                "summary": "Guardar borrador del reporte automático Multi-banda",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del proceso Multi-banda",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Datos del reporte",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.MultibandaReportSave"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MultibandaReportForm"
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin acceso al proceso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/multibanda/{id}/report/generate": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Valida que todos los campos y evidencias obligatorios estén completos, genera el PDF y lo almacena en el proceso, reemplazando el PDF generado anteriormente.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MultibandaReport"
+                ],
+                "summary": "Generar el PDF del reporte automático Multi-banda",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del proceso Multi-banda",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Datos del reporte",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.MultibandaReportSave"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MultibandaReportGenerated"
+                        }
+                    },
+                    "400": {
+                        "description": "Faltan campos o evidencias obligatorias",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin acceso al proceso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/multibanda/{id}/request-delete": {
+            "patch": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Externo: solicitar borrado con request_delete true.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Multibanda"
+                ],
+                "summary": "Actualizar solicitud de eliminación Multibanda",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del registro Multibanda",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "request_delete true",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.RequestDeletePatch"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Resultado",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DeleteProcessResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/multibanda/{id}/smr-validation": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Status, the last generated report of a request with the same device technical model, FM Radio of the device, stamp, stamps catalog and audit log. Internal users only.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Multibanda"
+                ],
+                "summary": "SMR without testing: validation data",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "multibanda id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.SmrValidation"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/multibanda/{id}/smr-validation/approve": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Confirms FM Radio and the stamp; the request moves to Under evaluation. A comment is required when an existing FM Radio or stamp is corrected.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Multibanda"
+                ],
+                "summary": "SMR without testing: approve",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "multibanda id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "decision",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.SmrValidationApprove"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.SmrValidation"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/multibanda/{id}/smr-validation/reject": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Closes the request (phase Complete, status Rejected). comment is required.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Multibanda"
+                ],
+                "summary": "SMR without testing: reject",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "multibanda id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "reason",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.SmrValidationReject"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.SmrValidation"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -4160,7 +5880,7 @@ const docTemplate = `{
                 "summary": "Listar controles de embarque",
                 "responses": {
                     "200": {
-                        "description": "Lista de controles de embarque",
+                        "description": "Lista de controles de embarque (incluye request_delete)",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -4203,7 +5923,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Crea un control de embarque en fase Planning. Solo requiere multibanda_id e imei_quantity; planning_date se asigna en UTC en el servidor.",
+                "description": "Crea un control de embarque en fase Planning. Usuario externo: country se asigna automáticamente a Chile. Usuario interno: country es requerido.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4346,6 +6066,479 @@ const docTemplate = `{
                 }
             }
         },
+        "/shipment-control/bulk/confirm": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Crea shipment controls a partir de filas validadas con imei_file_url",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ShipmentControl"
+                ],
+                "summary": "Confirmar carga masiva de Shipment Control",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Company ID (requerido para usuarios internos)",
+                        "name": "company",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Country ID (requerido para usuarios internos)",
+                        "name": "country",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Filas a confirmar",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.ShipmentControlBulkConfirm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Resultado por fila",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ShipmentControlBulkConfirmResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/shipment-control/bulk/validate": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Valida un CSV de precarga, resuelve multibanda y certificado Subtel por fila",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ShipmentControl"
+                ],
+                "summary": "Validar carga masiva de Shipment Control",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Company ID (requerido para usuarios internos)",
+                        "name": "company",
+                        "in": "query"
+                    },
+                    {
+                        "type": "file",
+                        "description": "Archivo CSV",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Resultado de validación por fila",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ShipmentControlBulkValidateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/shipment-control/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Actualiza todos los campos editables del control de embarque. Solo usuarios internos.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ShipmentControl"
+                ],
+                "summary": "Actualizar Shipment Control",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del Shipment Control",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Datos actualizados del control de embarque",
+                        "name": "shipmentControl",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.ShipmentControl"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Control actualizado exitosamente"
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Solo usuarios internos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Control no encontrado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Solo usuario interno. Elimina el registro de forma definitiva.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ShipmentControl"
+                ],
+                "summary": "Eliminar Shipment Control",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del Shipment Control",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Resultado de la eliminación",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DeleteProcessResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/shipment-control/{id}/certificate": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Encola la generación async del PDF cuando el shipment control está en fase Under Revision (current_phase = 2).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ShipmentControl"
+                ],
+                "summary": "Encolar generación de certificado OABI",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del shipment control",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Registro OABI y cantidad de IMEIs registrados",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.ShipmentControlCertificate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Generación en curso",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ShipmentControlCertificateAccepted"
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Generación ya en curso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/shipment-control/{id}/certificate/status": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ShipmentControl"
+                ],
+                "summary": "Estado de generación del certificado OABI",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del shipment control",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ShipmentControlCertificateStatus"
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No encontrado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/shipment-control/{id}/phase": {
             "put": {
                 "security": [
@@ -4385,6 +6578,158 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "Fase actualizada exitosamente"
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/shipment-control/{id}/reject-delete": {
+            "patch": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Usuario interno: cancela una solicitud de borrado pendiente (request_delete pasa a false).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ShipmentControl"
+                ],
+                "summary": "Rechazar solicitud de eliminación Shipment Control",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del Shipment Control",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Resultado",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DeleteProcessResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Sin solicitud pendiente o ID inválido",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Solo usuarios internos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/shipment-control/{id}/request-delete": {
+            "patch": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Externo: solicitar borrado con request_delete true.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ShipmentControl"
+                ],
+                "summary": "Actualizar solicitud de eliminación Shipment Control",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del Shipment Control",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "request_delete true",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.RequestDeletePatch"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Resultado",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DeleteProcessResult"
+                        }
                     },
                     "400": {
                         "description": "Datos inválidos",
@@ -4467,6 +6812,15 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Credenciales incorrectas",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Contraseña pendiente de configuración",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -5511,7 +7865,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Sube un archivo al storage",
+                "description": "Sube un archivo al storage (máximo 50 MB). La key en S3 es única; la respuesta incluye el nombre original del archivo.",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -5525,7 +7879,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "file",
-                        "description": "Archivo a subir",
+                        "description": "Archivo a subir (máx. 50 MB)",
                         "name": "file",
                         "in": "formData",
                         "required": true
@@ -5533,12 +7887,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "URL del archivo subido",
+                        "description": "Archivo subido",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/responses.UploadFileResponse"
                         }
                     },
                     "400": {
@@ -5683,9 +8034,163 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/users/{id}/resend-invitation": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Sends a new password-invite link to a user who has not set their password yet",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Resend user invitation email",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too Many Requests",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "enums.ReportCarrier": {
+            "type": "object",
+            "properties": {
+                "mnc": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "enums.ReportStamp": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "image_key": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                }
+            }
+        },
+        "enums.ReportTechnology": {
+            "type": "object",
+            "properties": {
+                "bands": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "code": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                }
+            }
+        },
+        "enums.ReportTest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "enums.SAETest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "requires_technology": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.MultibandaPhaseStates": {
+            "type": "object",
+            "properties": {
+                "complete": {
+                    "type": "string"
+                },
+                "planning": {
+                    "type": "string"
+                },
+                "sample_reception": {
+                    "type": "string"
+                },
+                "testing": {
+                    "type": "string"
+                },
+                "under_evaluation": {
+                    "type": "string"
+                }
+            }
+        },
         "request.AuthCredentials": {
             "type": "object",
             "required": [
@@ -5728,11 +8233,6 @@ const docTemplate = `{
         },
         "request.Company": {
             "type": "object",
-            "required": [
-                "address",
-                "email",
-                "name"
-            ],
             "properties": {
                 "_id": {
                     "type": "string"
@@ -5740,13 +8240,19 @@ const docTemplate = `{
                 "address": {
                     "type": "string"
                 },
-                "email": {
-                    "type": "string"
+                "allow_smr_without_testing": {
+                    "type": "boolean"
                 },
-                "logo_url": {
+                "client_id": {
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "razon_social": {
+                    "type": "string"
+                },
+                "rut": {
                     "type": "string"
                 }
             }
@@ -5754,7 +8260,13 @@ const docTemplate = `{
         "request.Configuration": {
             "type": "object",
             "properties": {
-                "bands_5g": {
+                "bands_5g_nsa": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "bands_5g_sa": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -5818,11 +8330,17 @@ const docTemplate = `{
         },
         "request.Country": {
             "type": "object",
-            "required": [
-                "name"
-            ],
             "properties": {
-                "band_5g": {
+                "active": {
+                    "type": "boolean"
+                },
+                "band_5g_nsa": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "band_5g_sa": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -5904,7 +8422,13 @@ const docTemplate = `{
                 "type"
             ],
             "properties": {
-                "band_5g": {
+                "band_5g_nsa": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "band_5g_sa": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -6018,7 +8542,10 @@ const docTemplate = `{
                 "memory_type": {
                     "type": "string"
                 },
-                "network_5g": {
+                "network_5g_nsa": {
+                    "type": "boolean"
+                },
+                "network_5g_sa": {
                     "type": "boolean"
                 },
                 "network_carrier_agg": {
@@ -6091,6 +8618,42 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.DeviceCatalogOrder": {
+            "type": "object",
+            "properties": {
+                "ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "request.DeviceCatalogValueCreate": {
+            "type": "object",
+            "properties": {
+                "unit": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.DeviceCatalogValueUpdate": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "unit": {
+                    "type": "string"
+                },
+                "value": {
                     "type": "string"
                 }
             }
@@ -6407,13 +8970,25 @@ const docTemplate = `{
                 "type"
             ],
             "properties": {
+                "base_band_version": {
+                    "type": "string"
+                },
                 "brand": {
+                    "type": "string"
+                },
+                "carrier": {
                     "type": "string"
                 },
                 "comment": {
                     "type": "string"
                 },
+                "comments_reflash": {
+                    "type": "string"
+                },
                 "company": {
+                    "type": "string"
+                },
+                "completed_date": {
                     "type": "string"
                 },
                 "current_phase": {
@@ -6437,6 +9012,9 @@ const docTemplate = `{
                 "multiband_certificate_url": {
                     "type": "string"
                 },
+                "need_reflash": {
+                    "type": "boolean"
+                },
                 "os_version": {
                     "type": "string"
                 },
@@ -6445,6 +9023,10 @@ const docTemplate = `{
                 },
                 "planning_date": {
                     "type": "string"
+                },
+                "requires_testing": {
+                    "description": "RequiresTesting: required (true/false) only for SMR + SAE multibanda\ncertificate when the company allows SMR without testing; null otherwise.",
+                    "type": "boolean"
                 },
                 "sample_end_date": {
                     "type": "string"
@@ -6455,10 +9037,192 @@ const docTemplate = `{
                 "software_version": {
                     "type": "string"
                 },
+                "status": {
+                    "type": "integer"
+                },
+                "subtel_certificate_number": {
+                    "type": "string"
+                },
+                "test_end_date": {
+                    "type": "string"
+                },
                 "test_report_url": {
                     "type": "string"
                 },
+                "test_start_date": {
+                    "type": "string"
+                },
                 "type": {
+                    "type": "string"
+                },
+                "under_end_date": {
+                    "type": "string"
+                },
+                "under_start_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.MultibandaReportBandResult": {
+            "type": "object",
+            "properties": {
+                "band": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "string"
+                },
+                "technology": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.MultibandaReportDeviceInfo": {
+            "type": "object",
+            "properties": {
+                "cbs_package": {
+                    "type": "string"
+                },
+                "fm_radio": {
+                    "type": "string"
+                },
+                "google_play_system_update": {
+                    "type": "string"
+                },
+                "imei": {
+                    "type": "string"
+                },
+                "preferred_network": {
+                    "type": "string"
+                },
+                "serial_number": {
+                    "type": "string"
+                },
+                "stamp_code": {
+                    "type": "string"
+                },
+                "test_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.MultibandaReportEvidence": {
+            "type": "object",
+            "properties": {
+                "evidence_type": {
+                    "type": "string"
+                },
+                "operator": {
+                    "type": "string"
+                },
+                "scenario": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.MultibandaReportSAEResult": {
+            "type": "object",
+            "properties": {
+                "channel": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "operator": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "string"
+                },
+                "scenario": {
+                    "type": "string"
+                },
+                "test_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.MultibandaReportSave": {
+            "type": "object",
+            "properties": {
+                "adb_info_original_file_name": {
+                    "type": "string"
+                },
+                "adb_info_url": {
+                    "type": "string"
+                },
+                "band_results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/request.MultibandaReportBandResult"
+                    }
+                },
+                "band_validation_original_file_name": {
+                    "type": "string"
+                },
+                "band_validation_url": {
+                    "type": "string"
+                },
+                "carriers_tested": {
+                    "description": "CarriersTested are the carriers the engineer checked. SIMLOCK results are\nonly required for these.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "device_info": {
+                    "$ref": "#/definitions/request.MultibandaReportDeviceInfo"
+                },
+                "evidence": {
+                    "description": "Evidence carries all three screenshots: sw_version, pop_up, cb_history.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/request.MultibandaReportEvidence"
+                    }
+                },
+                "fm_radio_comment": {
+                    "type": "string"
+                },
+                "fm_radio_result": {
+                    "type": "string"
+                },
+                "sae_results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/request.MultibandaReportSAEResult"
+                    }
+                },
+                "sae_scenario": {
+                    "type": "string"
+                },
+                "simlock_results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/request.MultibandaReportSimlockResult"
+                    }
+                }
+            }
+        },
+        "request.MultibandaReportSimlockResult": {
+            "type": "object",
+            "properties": {
+                "carrier": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "string"
+                },
+                "test_id": {
                     "type": "string"
                 }
             }
@@ -6466,9 +9230,6 @@ const docTemplate = `{
         "request.MultibandaResume": {
             "type": "object",
             "properties": {
-                "certificate_number": {
-                    "type": "string"
-                },
                 "comment": {
                     "type": "string"
                 },
@@ -6507,6 +9268,9 @@ const docTemplate = `{
                 },
                 "status": {
                     "type": "integer"
+                },
+                "subtel_certificate_number": {
+                    "type": "string"
                 },
                 "test_end_date": {
                     "type": "string"
@@ -6629,6 +9393,17 @@ const docTemplate = `{
                 }
             }
         },
+        "request.RequestDeletePatch": {
+            "type": "object",
+            "required": [
+                "request_delete"
+            ],
+            "properties": {
+                "request_delete": {
+                    "type": "boolean"
+                }
+            }
+        },
         "request.SearchOption": {
             "type": "object",
             "properties": {
@@ -6661,7 +9436,7 @@ const docTemplate = `{
         "request.ShipmentControl": {
             "type": "object",
             "required": [
-                "country",
+                "imei_file_url",
                 "imei_quantity",
                 "multibanda_id"
             ],
@@ -6669,7 +9444,19 @@ const docTemplate = `{
                 "client": {
                     "type": "string"
                 },
+                "comment": {
+                    "type": "string"
+                },
+                "completed_date": {
+                    "type": "string"
+                },
                 "country": {
+                    "type": "string"
+                },
+                "current_phase": {
+                    "type": "integer"
+                },
+                "imei_file_url": {
                     "type": "string"
                 },
                 "imei_quantity": {
@@ -6681,7 +9468,115 @@ const docTemplate = `{
                 "oabi_certificate": {
                     "type": "string"
                 },
+                "oabi_certificate_number": {
+                    "type": "string"
+                },
+                "oabi_certificate_url": {
+                    "type": "string"
+                },
+                "planning_date": {
+                    "type": "string"
+                },
+                "reference_id": {
+                    "type": "string"
+                },
+                "registered_imei_count": {
+                    "type": "integer"
+                },
                 "rework_number": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "subtel_certificate_number": {
+                    "type": "string"
+                },
+                "subtel_certificate_url": {
+                    "type": "string"
+                },
+                "under_revision_end_date": {
+                    "type": "string"
+                },
+                "under_revision_start_date": {
+                    "type": "string"
+                },
+                "validation": {
+                    "type": "string"
+                },
+                "validation_end_date": {
+                    "type": "string"
+                },
+                "validation_start_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.ShipmentControlBulkConfirm": {
+            "type": "object",
+            "required": [
+                "rows"
+            ],
+            "properties": {
+                "rows": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/request.ShipmentControlBulkConfirmRow"
+                    }
+                }
+            }
+        },
+        "request.ShipmentControlBulkConfirmRow": {
+            "type": "object",
+            "required": [
+                "imei_file_url",
+                "imei_quantity",
+                "multibanda_id",
+                "row_number"
+            ],
+            "properties": {
+                "client": {
+                    "type": "string"
+                },
+                "imei_file_url": {
+                    "type": "string"
+                },
+                "imei_quantity": {
+                    "type": "integer"
+                },
+                "multibanda_id": {
+                    "type": "string"
+                },
+                "reference_id": {
+                    "type": "string"
+                },
+                "rework_number": {
+                    "type": "string"
+                },
+                "row_number": {
+                    "type": "integer"
+                },
+                "validation": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.ShipmentControlCertificate": {
+            "type": "object",
+            "required": [
+                "registro_oabi"
+            ],
+            "properties": {
+                "imei_quantity": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "registered_imei_count": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "registro_oabi": {
                     "type": "string"
                 }
             }
@@ -6704,6 +9599,9 @@ const docTemplate = `{
                 "current_phase": {
                     "type": "integer"
                 },
+                "imei_file_url": {
+                    "type": "string"
+                },
                 "imei_quantity": {
                     "type": "integer"
                 },
@@ -6714,6 +9612,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "oabi_certificate_url": {
+                    "type": "string"
+                },
+                "reference_id": {
                     "type": "string"
                 },
                 "registered_imei_count": {
@@ -6734,10 +9635,35 @@ const docTemplate = `{
                 "under_revision_start_date": {
                     "type": "string"
                 },
+                "validation": {
+                    "type": "string"
+                },
                 "validation_end_date": {
                     "type": "string"
                 },
                 "validation_start_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.SmrValidationApprove": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "fm_radio": {
+                    "type": "boolean"
+                },
+                "stamp_code": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.SmrValidationReject": {
+            "type": "object",
+            "properties": {
+                "comment": {
                     "type": "string"
                 }
             }
@@ -7019,8 +9945,7 @@ const docTemplate = `{
             "required": [
                 "email",
                 "lastName",
-                "name",
-                "password"
+                "name"
             ],
             "properties": {
                 "brands": {
@@ -7102,6 +10027,12 @@ const docTemplate = `{
                 "_id": {
                     "type": "string"
                 },
+                "brands": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "company": {
                     "type": "string"
                 },
@@ -7176,13 +10107,98 @@ const docTemplate = `{
                 "address": {
                     "type": "string"
                 },
-                "email": {
-                    "type": "string"
+                "allow_smr_without_testing": {
+                    "type": "boolean"
                 },
-                "logo_url": {
+                "client_id": {
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "razon_social": {
+                    "type": "string"
+                },
+                "rut": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.CompanyClientIDAvailability": {
+            "type": "object",
+            "properties": {
+                "available": {
+                    "type": "boolean"
+                },
+                "used_by": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.CompanyListItem": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "allow_smr_without_testing": {
+                    "type": "boolean"
+                },
+                "client_id": {
+                    "type": "string"
+                },
+                "client_id_locked": {
+                    "description": "ClientIDLocked: client_id can no longer change (certificates issued).",
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "oabi_certificates_issued": {
+                    "description": "OabiCertificatesIssued counts this company's shipment controls with an\nOABI certificate issued.",
+                    "type": "integer"
+                },
+                "oabi_missing": {
+                    "description": "OabiMissing lists the missing fields among client_id, rut,\nrazon_social, address. Empty means complete.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "razon_social": {
+                    "type": "string"
+                },
+                "rut": {
+                    "type": "string"
+                },
+                "users_count": {
+                    "description": "UsersCount counts users whose company or clients include this company.",
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.CompanyUser": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_internal": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "profile_name": {
                     "type": "string"
                 }
             }
@@ -7190,7 +10206,13 @@ const docTemplate = `{
         "responses.Configuration": {
             "type": "object",
             "properties": {
-                "bands5g": {
+                "bands5gNsa": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "bands5gSa": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -7255,7 +10277,13 @@ const docTemplate = `{
         "responses.Country": {
             "type": "object",
             "properties": {
-                "band_5g": {
+                "band_5g_nsa": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "band_5g_sa": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -7293,6 +10321,75 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.CountryListItem": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "description": "Active is false only when explicitly deactivated.",
+                    "type": "boolean"
+                },
+                "band_5g_nsa": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "band_5g_sa": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "band_gsm": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "band_lte": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "band_wcdma": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "carrier_agg": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "default_for": {
+                    "description": "DefaultFor lists the modules fixed to this country.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "used_in": {
+                    "description": "UsedIn lists the modules with records of this country:\n\"homologation\", \"tracking\", \"shipment_control\".",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "users_count": {
+                    "description": "UsersCount counts users whose countries list includes it.",
+                    "type": "integer"
+                }
+            }
+        },
         "responses.DashboardInfo": {
             "type": "object",
             "properties": {
@@ -7322,7 +10419,13 @@ const docTemplate = `{
         "responses.DashboardReport": {
             "type": "object",
             "properties": {
-                "band_5g": {
+                "band_5g_nsa": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "band_5g_sa": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -7360,6 +10463,17 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "responses.DeleteProcessResult": {
+            "type": "object",
+            "properties": {
+                "deleted": {
+                    "type": "boolean"
+                },
+                "request_delete": {
+                    "type": "boolean"
                 }
             }
         },
@@ -7407,7 +10521,13 @@ const docTemplate = `{
                 "_id": {
                     "type": "string"
                 },
-                "band_5g": {
+                "band_5g_nsa": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "band_5g_sa": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -7521,7 +10641,10 @@ const docTemplate = `{
                 "memory_type": {
                     "type": "string"
                 },
-                "network_5g": {
+                "network_5g_nsa": {
+                    "type": "boolean"
+                },
+                "network_5g_sa": {
                     "type": "boolean"
                 },
                 "network_carrier_agg": {
@@ -7594,6 +10717,50 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.DeviceCatalog": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "group": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "values": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.DeviceCatalogValue"
+                    }
+                }
+            }
+        },
+        "responses.DeviceCatalogValue": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "order": {
+                    "type": "integer"
+                },
+                "unit": {
+                    "type": "string"
+                },
+                "used_count": {
+                    "description": "UsedCount counts devices whose mapped field equals this value exactly.",
+                    "type": "integer"
+                },
+                "value": {
                     "type": "string"
                 }
             }
@@ -7741,6 +10908,276 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.ImeiAlreadyReady": {
+            "type": "object",
+            "properties": {
+                "batch_code": {
+                    "type": "string"
+                },
+                "batch_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "imei": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ImeiAlreadyRegistered": {
+            "type": "object",
+            "properties": {
+                "batch_code": {
+                    "type": "string"
+                },
+                "batch_id": {
+                    "type": "string"
+                },
+                "imei": {
+                    "type": "string"
+                },
+                "registered_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ImeiBatch": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by_name": {
+                    "type": "string"
+                },
+                "file_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "registered_at": {
+                    "type": "string"
+                },
+                "registered_by_name": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.ImeiBatchPage": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.ImeiBatch"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.ImeiBatchRecord": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "imei": {
+                    "type": "string"
+                },
+                "imei_count": {
+                    "type": "integer"
+                },
+                "registered_at": {
+                    "type": "string"
+                },
+                "serial": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ImeiBatchRecordPage": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.ImeiBatchRecord"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.ImeiBatchRef": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ImeiBatchUploadResult": {
+            "type": "object",
+            "properties": {
+                "already_ready": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.ImeiAlreadyReady"
+                    }
+                },
+                "already_registered": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.ImeiAlreadyRegistered"
+                    }
+                },
+                "batch": {
+                    "$ref": "#/definitions/responses.ImeiBatch"
+                },
+                "duplicated_in_file": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.ImeiDuplicatedInFile"
+                    }
+                },
+                "invalid": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.ImeiInvalidRow"
+                    }
+                },
+                "summary": {
+                    "$ref": "#/definitions/responses.ImeiBatchUploadSummary"
+                }
+            }
+        },
+        "responses.ImeiBatchUploadSummary": {
+            "type": "object",
+            "properties": {
+                "already_ready": {
+                    "type": "integer"
+                },
+                "already_registered": {
+                    "type": "integer"
+                },
+                "device_incomplete": {
+                    "description": "DeviceIncomplete is the part of Invalid with reason device_incomplete:\nvalid new IMEIs not saved because their device could not be saved whole.",
+                    "type": "integer"
+                },
+                "duplicated_in_file": {
+                    "type": "integer"
+                },
+                "invalid": {
+                    "type": "integer"
+                },
+                "new": {
+                    "type": "integer"
+                },
+                "total_rows": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.ImeiDeleteResult": {
+            "type": "object",
+            "properties": {
+                "batch": {
+                    "$ref": "#/definitions/responses.ImeiBatch"
+                },
+                "batch_deleted": {
+                    "type": "boolean"
+                },
+                "deleted_imeis": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "responses.ImeiDuplicatedInFile": {
+            "type": "object",
+            "properties": {
+                "imei": {
+                    "type": "string"
+                },
+                "rows": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "responses.ImeiInvalidRow": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "row": {
+                    "type": "integer"
+                },
+                "serial": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ImeiValidatorLookup": {
+            "type": "object",
+            "properties": {
+                "batch": {
+                    "$ref": "#/definitions/responses.ImeiBatchRef"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "found": {
+                    "type": "boolean"
+                },
+                "imei": {
+                    "type": "string"
+                },
+                "imei_count": {
+                    "type": "integer"
+                },
+                "registered_at": {
+                    "type": "string"
+                },
+                "serial": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.Location": {
             "type": "object",
             "properties": {
@@ -7758,13 +11195,31 @@ const docTemplate = `{
                 "_id": {
                     "type": "string"
                 },
+                "adb_info_original_file_name": {
+                    "type": "string"
+                },
+                "adb_info_url": {
+                    "type": "string"
+                },
+                "band_validation_original_file_name": {
+                    "type": "string"
+                },
+                "band_validation_url": {
+                    "type": "string"
+                },
+                "base_band_version": {
+                    "type": "string"
+                },
                 "brand": {
                     "$ref": "#/definitions/responses.Brand"
                 },
-                "certificate_number": {
+                "carrier": {
                     "type": "string"
                 },
                 "comment": {
+                    "type": "string"
+                },
+                "comments_reflash": {
                     "type": "string"
                 },
                 "company": {
@@ -7800,14 +11255,43 @@ const docTemplate = `{
                 "multiband_certificate_url": {
                     "type": "string"
                 },
+                "need_reflash": {
+                    "type": "boolean"
+                },
                 "os_version": {
                     "type": "string"
                 },
                 "os_version_view": {
                     "type": "string"
                 },
+                "phase_states": {
+                    "description": "PhaseStates: pending | done | skipped per phase.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.MultibandaPhaseStates"
+                        }
+                    ]
+                },
                 "planning_date": {
                     "type": "string"
+                },
+                "report_date": {
+                    "description": "ReportDate is when the automatic report was first generated (the moment\nthe \"report available\" email goes out); null until then.",
+                    "type": "string"
+                },
+                "report_status": {
+                    "description": "ReportStatus is the automatic report's state: \"draft\", \"generated\" or\nempty when the report screen was never opened. Independent of\nTestReportUrl, which holds the manually uploaded report of the old flow.",
+                    "type": "string"
+                },
+                "request_delete": {
+                    "type": "boolean"
+                },
+                "requester_name": {
+                    "type": "string"
+                },
+                "requires_testing": {
+                    "description": "RequiresTesting: null unless SMR without testing applies to the request.",
+                    "type": "boolean"
                 },
                 "sample_end_date": {
                     "type": "string"
@@ -7815,11 +11299,22 @@ const docTemplate = `{
                 "sample_start_date": {
                     "type": "string"
                 },
+                "smr_validation": {
+                    "description": "SmrValidation: only for SMR without testing; null otherwise.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/responses.MultibandaSmrValidation"
+                        }
+                    ]
+                },
                 "software_version": {
                     "type": "string"
                 },
                 "status": {
                     "type": "integer"
+                },
+                "subtel_certificate_number": {
+                    "type": "string"
                 },
                 "test_end_date": {
                     "type": "string"
@@ -7837,6 +11332,506 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "under_start_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.MultibandaReportBandResult": {
+            "type": "object",
+            "properties": {
+                "band": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "string"
+                },
+                "technology": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.MultibandaReportBlocker": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "section": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.MultibandaReportCatalogs": {
+            "type": "object",
+            "properties": {
+                "band_result_options": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "evidence_types": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.MultibandaReportOption"
+                    }
+                },
+                "fm_radio_options": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "pass_fail_options": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "preferred_network_options": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "sae_channels": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "sae_operators": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "sae_result_options": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "sae_scenarios": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.MultibandaReportOption"
+                    }
+                },
+                "sae_tests": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/enums.SAETest"
+                    }
+                },
+                "simlock_carriers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/enums.ReportCarrier"
+                    }
+                },
+                "simlock_tests": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/enums.ReportTest"
+                    }
+                },
+                "stamps": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/enums.ReportStamp"
+                    }
+                },
+                "technologies": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/enums.ReportTechnology"
+                    }
+                }
+            }
+        },
+        "responses.MultibandaReportDeviceInfo": {
+            "type": "object",
+            "properties": {
+                "cbs_package": {
+                    "type": "string"
+                },
+                "fm_radio": {
+                    "type": "string"
+                },
+                "google_play_system_update": {
+                    "type": "string"
+                },
+                "imei": {
+                    "type": "string"
+                },
+                "preferred_network": {
+                    "type": "string"
+                },
+                "serial_number": {
+                    "type": "string"
+                },
+                "stamp_code": {
+                    "type": "string"
+                },
+                "test_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.MultibandaReportEvidence": {
+            "type": "object",
+            "properties": {
+                "evidence_type": {
+                    "type": "string"
+                },
+                "operator": {
+                    "type": "string"
+                },
+                "scenario": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.MultibandaReportException": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "context": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "missing_comment": {
+                    "type": "boolean"
+                },
+                "ref": {
+                    "$ref": "#/definitions/responses.MultibandaReportExceptionRef"
+                },
+                "result": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.MultibandaReportExceptionRef": {
+            "type": "object",
+            "properties": {
+                "band": {
+                    "type": "string"
+                },
+                "block": {
+                    "description": "multiband | simlock | sae | fm_radio",
+                    "type": "string"
+                },
+                "carrier": {
+                    "type": "string"
+                },
+                "channel": {
+                    "type": "string"
+                },
+                "operator": {
+                    "type": "string"
+                },
+                "scenario": {
+                    "type": "string"
+                },
+                "technology": {
+                    "type": "string"
+                },
+                "test_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.MultibandaReportForm": {
+            "type": "object",
+            "properties": {
+                "catalogs": {
+                    "$ref": "#/definitions/responses.MultibandaReportCatalogs"
+                },
+                "generated_at": {
+                    "type": "string"
+                },
+                "includes_multiband": {
+                    "type": "boolean"
+                },
+                "includes_simlock": {
+                    "description": "Scope flags let the frontend show or hide whole blocks without\nre-deriving the process-type rules.",
+                    "type": "boolean"
+                },
+                "multibanda_id": {
+                    "type": "string"
+                },
+                "multibanda_type": {
+                    "type": "string"
+                },
+                "prefilled": {
+                    "$ref": "#/definitions/responses.MultibandaReportPrefilled"
+                },
+                "report_url": {
+                    "type": "string"
+                },
+                "saved": {
+                    "$ref": "#/definitions/responses.MultibandaReportSaved"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "validation": {
+                    "description": "Validation drives the completion bar, the section sidebar, the blocker\npanel and the exceptions list. It is computed server-side so the\nfrontend never has to re-derive what is mandatory.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/responses.MultibandaReportValidation"
+                        }
+                    ]
+                }
+            }
+        },
+        "responses.MultibandaReportGenerated": {
+            "type": "object",
+            "properties": {
+                "file_name": {
+                    "type": "string"
+                },
+                "generated_at": {
+                    "type": "string"
+                },
+                "report_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.MultibandaReportOption": {
+            "type": "object",
+            "properties": {
+                "label": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.MultibandaReportPrefilled": {
+            "type": "object",
+            "properties": {
+                "commercial_name": {
+                    "type": "string"
+                },
+                "fm_radio": {
+                    "description": "FMRadio comes from device.communication_radio: \"Supported\",\n\"Not Supported\", or \"\" when the device does not declare it.",
+                    "type": "string"
+                },
+                "hardware_version": {
+                    "type": "string"
+                },
+                "manufacturer": {
+                    "type": "string"
+                },
+                "operative_system_type": {
+                    "type": "string"
+                },
+                "sar_value": {
+                    "type": "string"
+                },
+                "software_version": {
+                    "type": "string"
+                },
+                "supports_5g_sa": {
+                    "type": "boolean"
+                },
+                "supports_gsm": {
+                    "description": "Device technology support drives which SAE technology tests are\napplicable; unsupported ones are forced to N/A.",
+                    "type": "boolean"
+                },
+                "supports_lte": {
+                    "type": "boolean"
+                },
+                "supports_umts": {
+                    "type": "boolean"
+                },
+                "technical_model": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.MultibandaReportSAEResult": {
+            "type": "object",
+            "properties": {
+                "channel": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "operator": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "string"
+                },
+                "scenario": {
+                    "type": "string"
+                },
+                "test_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.MultibandaReportSaved": {
+            "type": "object",
+            "properties": {
+                "adb_info_original_file_name": {
+                    "type": "string"
+                },
+                "adb_info_url": {
+                    "type": "string"
+                },
+                "band_results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.MultibandaReportBandResult"
+                    }
+                },
+                "band_validation_original_file_name": {
+                    "type": "string"
+                },
+                "band_validation_url": {
+                    "type": "string"
+                },
+                "carriers_tested": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "device_info": {
+                    "$ref": "#/definitions/responses.MultibandaReportDeviceInfo"
+                },
+                "evidence": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.MultibandaReportEvidence"
+                    }
+                },
+                "fm_radio_comment": {
+                    "type": "string"
+                },
+                "fm_radio_result": {
+                    "type": "string"
+                },
+                "sae_results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.MultibandaReportSAEResult"
+                    }
+                },
+                "sae_scenario": {
+                    "type": "string"
+                },
+                "simlock_results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.MultibandaReportSimlockResult"
+                    }
+                }
+            }
+        },
+        "responses.MultibandaReportSection": {
+            "type": "object",
+            "properties": {
+                "completed": {
+                    "type": "integer"
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "status": {
+                    "description": "complete | incomplete | conditional",
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.MultibandaReportSimlockResult": {
+            "type": "object",
+            "properties": {
+                "carrier": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "string"
+                },
+                "test_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.MultibandaReportValidation": {
+            "type": "object",
+            "properties": {
+                "blockers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.MultibandaReportBlocker"
+                    }
+                },
+                "comments_missing": {
+                    "type": "integer"
+                },
+                "completion_percentage": {
+                    "type": "integer"
+                },
+                "exceptions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.MultibandaReportException"
+                    }
+                },
+                "required_fields_left": {
+                    "type": "integer"
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.MultibandaReportSection"
+                    }
+                }
+            }
+        },
+        "responses.MultibandaSmrValidation": {
+            "type": "object",
+            "properties": {
+                "decided_at": {
+                    "type": "string"
+                },
+                "decided_by_name": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 }
             }
@@ -8129,9 +12124,6 @@ const docTemplate = `{
         "responses.ShipmentControlAvailableOption": {
             "type": "object",
             "properties": {
-                "certificate_number": {
-                    "type": "string"
-                },
                 "hardware_version": {
                     "type": "string"
                 },
@@ -8145,6 +12137,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "software_version": {
+                    "type": "string"
+                },
+                "subtel_certificate_number": {
                     "type": "string"
                 }
             }
@@ -8160,6 +12155,177 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/responses.ShipmentControlAvailableDevice"
                     }
+                }
+            }
+        },
+        "responses.ShipmentControlBulkConfirmResponse": {
+            "type": "object",
+            "properties": {
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.ShipmentControlBulkConfirmResult"
+                    }
+                },
+                "summary": {
+                    "$ref": "#/definitions/responses.ShipmentControlBulkConfirmSummary"
+                }
+            }
+        },
+        "responses.ShipmentControlBulkConfirmResult": {
+            "type": "object",
+            "properties": {
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "row_number": {
+                    "type": "integer"
+                },
+                "shipment_control_id": {
+                    "type": "string"
+                },
+                "software_version": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "technical_model": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ShipmentControlBulkConfirmSummary": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "type": "integer"
+                },
+                "failed": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.ShipmentControlBulkValidateDevicePreview": {
+            "type": "object",
+            "properties": {
+                "commercial_model": {
+                    "type": "string"
+                },
+                "hardware_version": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ShipmentControlBulkValidateResponse": {
+            "type": "object",
+            "properties": {
+                "rows": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.ShipmentControlBulkValidateRow"
+                    }
+                },
+                "summary": {
+                    "$ref": "#/definitions/responses.ShipmentControlBulkValidateSummary"
+                }
+            }
+        },
+        "responses.ShipmentControlBulkValidateRow": {
+            "type": "object",
+            "properties": {
+                "client": {
+                    "type": "string"
+                },
+                "device": {
+                    "$ref": "#/definitions/responses.ShipmentControlBulkValidateDevicePreview"
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "imei_quantity": {
+                    "type": "integer"
+                },
+                "multibanda_id": {
+                    "type": "string"
+                },
+                "reference_id": {
+                    "type": "string"
+                },
+                "rework_number": {
+                    "type": "string"
+                },
+                "row_number": {
+                    "type": "integer"
+                },
+                "software_version": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "subtel_certificate_number": {
+                    "type": "string"
+                },
+                "technical_model": {
+                    "type": "string"
+                },
+                "validation": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ShipmentControlBulkValidateSummary": {
+            "type": "object",
+            "properties": {
+                "invalid": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "valid": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.ShipmentControlCertificateAccepted": {
+            "type": "object",
+            "properties": {
+                "shipment_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ShipmentControlCertificateStatus": {
+            "type": "object",
+            "properties": {
+                "control_number": {
+                    "type": "string"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "file_name": {
+                    "type": "string"
+                },
+                "generated_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
                 }
             }
         },
@@ -8192,6 +12358,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "commercial_model": {
+                    "type": "string"
+                },
+                "platform_os": {
                     "type": "string"
                 },
                 "technical_model": {
@@ -8229,6 +12398,9 @@ const docTemplate = `{
                 "device": {
                     "$ref": "#/definitions/responses.ShipmentControlDeviceSummary"
                 },
+                "imei_file_url": {
+                    "type": "string"
+                },
                 "imei_quantity": {
                     "type": "integer"
                 },
@@ -8247,14 +12419,27 @@ const docTemplate = `{
                 "planning_date": {
                     "type": "string"
                 },
+                "reference_id": {
+                    "type": "string"
+                },
                 "registered_imei_count": {
                     "type": "integer"
+                },
+                "request_delete": {
+                    "type": "boolean"
+                },
+                "requester_name": {
+                    "type": "string"
                 },
                 "rework_number": {
                     "type": "string"
                 },
                 "status": {
                     "type": "integer"
+                },
+                "status_view": {
+                    "description": "StatusView is \"Approved\" / \"Rejected\" for closed controls, otherwise\nthe status label (\"Ongoing\").",
+                    "type": "string"
                 },
                 "subtel_certificate_number": {
                     "type": "string"
@@ -8268,10 +12453,17 @@ const docTemplate = `{
                 "under_revision_start_date": {
                     "type": "string"
                 },
+                "validation": {
+                    "type": "string"
+                },
                 "validation_end_date": {
                     "type": "string"
                 },
                 "validation_start_date": {
+                    "type": "string"
+                },
+                "verdict": {
+                    "description": "Verdict of a closed control: \"approved\" | \"rejected\" (\"\" while open).",
                     "type": "string"
                 }
             }
@@ -8280,9 +12472,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "_id": {
-                    "type": "string"
-                },
-                "certificate_number": {
                     "type": "string"
                 },
                 "hardware_version": {
@@ -8295,6 +12484,103 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "software_version": {
+                    "type": "string"
+                },
+                "subtel_certificate_number": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.SmrLastReport": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "multibanda_id": {
+                    "type": "string"
+                },
+                "report_date": {
+                    "type": "string"
+                },
+                "stamp_code": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.SmrValidation": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "decided_at": {
+                    "type": "string"
+                },
+                "decided_by_name": {
+                    "type": "string"
+                },
+                "fm_radio": {
+                    "description": "FMRadio is the device's communication_radio (null when not set).",
+                    "type": "boolean"
+                },
+                "last_report": {
+                    "$ref": "#/definitions/responses.SmrLastReport"
+                },
+                "log": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.SmrValidationLogEntry"
+                    }
+                },
+                "stamp_code": {
+                    "description": "StampCode comes from last_report (\"\" when there is none).",
+                    "type": "string"
+                },
+                "stamps": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/enums.ReportStamp"
+                    }
+                },
+                "status": {
+                    "description": "pending | approved | rejected",
+                    "type": "string"
+                }
+            }
+        },
+        "responses.SmrValidationLogEntry": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "description": "approve | reject",
+                    "type": "string"
+                },
+                "at": {
+                    "type": "string"
+                },
+                "by_name": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "fm_radio_final": {
+                    "type": "boolean"
+                },
+                "fm_radio_original": {
+                    "type": "boolean"
+                },
+                "source_report_id": {
+                    "type": "string"
+                },
+                "stamp_final": {
+                    "type": "string"
+                },
+                "stamp_original": {
                     "type": "string"
                 }
             }
@@ -8591,9 +12877,26 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.UploadFileResponse": {
+            "type": "object",
+            "properties": {
+                "originalFileName": {
+                    "type": "string"
+                },
+                "storedFileName": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.User": {
             "type": "object",
             "properties": {
+                "accountStatus": {
+                    "type": "string"
+                },
                 "brands": {
                     "type": "array",
                     "items": {
@@ -8628,6 +12931,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "passwordSetAt": {
                     "type": "string"
                 },
                 "phone": {

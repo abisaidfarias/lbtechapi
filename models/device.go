@@ -5,6 +5,9 @@ import (
 )
 
 // Profile model
+//
+// The legacy network_5g field stays in Mongo but is intentionally not mapped:
+// UpdateDevice uses $set with this struct, so omitting it preserves it.
 type Device struct {
 	ID                     primitive.ObjectID `bson:"_id,omitempty"`
 	Type                   string             `bson:"type,omitempty"`
@@ -29,7 +32,7 @@ type Device struct {
 	CommunicationWlan      bool               `bson:"communication_wlan"`
 	CommunicationGps       bool               `bson:"communication_gps"`
 	CommunicationNfc       bool               `bson:"communication_nfc"`
-	CommunicationRadio     bool               `bson:"communication_radio"`
+	CommunicationRadio     *bool              `bson:"communication_radio"`
 	CommunicationUsb       string             `bson:"communication_usb"`
 	CommunicationBluetooth bool               `bson:"communication_blutooth"`
 	BatteryType            string             `bson:"battery_type"`
@@ -45,16 +48,18 @@ type Device struct {
 	BandGsm                []string           `bson:"band_gsm"`
 	BandWcdma              []string           `bson:"band_wcdma"`
 	BandLte                []string           `bson:"band_lte"`
-	Band5g                 []string           `bson:"band_5g"`
+	Band5gNsa              []string           `bson:"band_5g_nsa"`
+	Band5gSa               []string           `bson:"band_5g_sa"`
 	CarrierAgg             []string           `bson:"carrier_agg"`
-	NetworkGsm             bool               `bson:"network_gsm"`
-	NetworkWcdma           bool               `bson:"network_wcdma"`
-	NetworkLte             bool               `bson:"network_lte"`
-	NetworkVolte           bool               `bson:"network_volte"`
-	NetworkVowifi          bool               `bson:"network_vowifi"`
-	NetworkVilte           bool               `bson:"network_vilte"`
-	Network5g              bool               `bson:"network_5g"`
-	NetworkCarrierAgg      bool               `bson:"network_carrier_agg"`
+	NetworkGsm             *bool              `bson:"network_gsm"`
+	NetworkWcdma           *bool              `bson:"network_wcdma"`
+	NetworkLte             *bool              `bson:"network_lte"`
+	NetworkVolte           *bool              `bson:"network_volte"`
+	NetworkVowifi          *bool              `bson:"network_vowifi"`
+	NetworkVilte           *bool              `bson:"network_vilte"`
+	Network5gNsa           *bool              `bson:"network_5g_nsa"`
+	Network5gSa            *bool              `bson:"network_5g_sa"`
+	NetworkCarrierAgg      *bool              `bson:"network_carrier_agg"`
 	ImageUrl               string             `bson:"image_url"`
 	SoftwareCode           string             `bson:"software_code"`
 	HardwareCode           string             `bson:"hardware_code"`
@@ -64,5 +69,4 @@ type Device struct {
 	DualSim                string             `bson:"dual_sim"`
 	SimType                string             `bson:"sim_type"`
 	Esim                   bool               `bson:"e_sim"`
-	SarValue               float64            `bson:"sar_value,omitempty"`
-}
+	SarValue               float64            `bson:"sar_value,omitempty"`}

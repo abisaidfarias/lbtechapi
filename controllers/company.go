@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/abisaidfarias/lbtechapi/services"
+	apputils "github.com/abisaidfarias/lbtechapi/utils"
 	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/gin-gonic/gin"
@@ -15,6 +16,59 @@ type ICompanyController interface {
 	Get() gin.HandlerFunc
 	Delete() gin.HandlerFunc
 	Update() gin.HandlerFunc
+	ClientIDAvailable() gin.HandlerFunc
+	GetUsers() gin.HandlerFunc
+}
+
+// ClientIDAvailable godoc
+// @Summary Check whether a Client ID is free
+// @Description Live validation for the company form. exclude_id is the company being edited.
+// @Tags Companies
+// @Produce json
+// @Security Bearer
+// @Param client_id query string true "Client ID"
+// @Param exclude_id query string false "Company being edited"
+// @Success 200 {object} responses.CompanyClientIDAvailability
+// @Failure 400 {object} map[string]string
+// @Router /company/client-id-available [get]
+func (c *companyController) ClientIDAvailable() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		result, err := c.companyService.ClientIDAvailable(ctx.Query("client_id"), ctx.Query("exclude_id"))
+		if err != nil {
+			if apputils.IsValidationError(err) {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+			handleErrorResponse(ctx, err)
+			return
+		}
+		ctx.JSON(http.StatusOK, result)
+	}
+}
+
+// GetUsers godoc
+// @Summary Users of a company
+// @Description Users whose company or clients include it, with their profile name.
+// @Tags Companies
+// @Produce json
+// @Security Bearer
+// @Param id path string true "Company ID"
+// @Success 200 {array} responses.CompanyUser
+// @Failure 400 {object} map[string]string
+// @Router /company/{id}/users [get]
+func (c *companyController) GetUsers() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		users, err := c.companyService.GetUsers(ctx.Param("id"))
+		if err != nil {
+			if apputils.IsValidationError(err) {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+			handleErrorResponse(ctx, err)
+			return
+		}
+		ctx.JSON(http.StatusOK, users)
+	}
 }
 
 // AuthController implementation of the interface
@@ -59,6 +113,10 @@ func (c *companyController) Create() gin.HandlerFunc {
 		err = c.companyService.Create(&company)
 
 		if err != nil {
+			if apputils.IsValidationError(err) {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
 			if utils.ErrorDuplicatedData(err) {
 				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicated.Error()})
 				return
@@ -79,7 +137,7 @@ func (c *companyController) Create() gin.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Success 200 {array} responses.Company "Lista de compañías"
+// @Success 200 {array} responses.CompanyListItem "Lista de compañías"
 // @Failure 401 {object} map[string]string "No autorizado"
 // @Failure 500 {object} map[string]string "Error interno del servidor"
 // @Router /company [get]
@@ -163,6 +221,10 @@ func (c *companyController) Update() gin.HandlerFunc {
 		err = c.companyService.Update(id, &company)
 
 		if err != nil {
+			if apputils.IsValidationError(err) {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
 			if utils.ErrorDuplicatedData(err) {
 				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicated.Error()})
 				return

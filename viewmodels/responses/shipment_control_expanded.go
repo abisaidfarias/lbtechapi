@@ -119,6 +119,11 @@ type ShipmentControlExpanded struct {
 	OabiCertificateNumber   string                          `bson:"oabi_certificate_number" json:"oabi_certificate_number"`
 
 	Comment                 string                          `bson:"comment" json:"comment"`
+	// Verdict of a closed control: "approved" | "rejected" ("" while open).
+	Verdict string `bson:"verdict" json:"verdict"`
+	// StatusView is "Approved" / "Rejected" for closed controls, otherwise
+	// the status label ("Ongoing").
+	StatusView string `bson:"-" json:"status_view"`
 
 	RequestDelete           bool                            `bson:"request_delete" json:"request_delete"`
 

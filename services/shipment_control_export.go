@@ -36,6 +36,12 @@ func exportShipmentControlFile(items []*responses.ShipmentControlExpanded) (byte
 		if label, ok := enums.ShipmentControlStatusLabels[sc.Status]; ok {
 			statusLabel = label
 		}
+		// Closed controls show their verdict: Approved, Approved (partial) or
+		// Rejected. sc.Verdict is already effective (historical closed = approved).
+		if sc.Verdict != "" {
+			statusLabel = functions.ShipmentControlExportStatus(
+				sc.Verdict, sc.Status, sc.RegisteredImeiCount, sc.ImeiQuantity)
+		}
 		osVersion := sc.Multibanda.OsVersionView
 		if osVersion == "" {
 			osVersion = sc.Multibanda.OsVersion
@@ -74,6 +80,7 @@ func exportShipmentControlFile(items []*responses.ShipmentControlExpanded) (byte
 		setCell(22, sc.ReworkNumber)
 		setCell(23, sc.OabiCertificateNumber)
 		setCell(24, sc.Comment)
+		setCell(25, fmt.Sprintf("%d / %d", sc.RegisteredImeiCount, sc.ImeiQuantity))
 	}
 
 	var b bytes.Buffer

@@ -15,7 +15,7 @@ func scopeNoUMTS() utils.MultibandaReportScope {
 	return utils.MultibandaReportScope{
 		MultibandaType:    enums.MultibandaTypeMR,
 		IncludesSimlock: true, IncludesMultiband: true,
-		SupportsGSM: true, SupportsUMTS: false, SupportsLTE: true, Supports5G: true,
+		SupportsGSM: true, SupportsUMTS: false, SupportsLTE: true, Supports5GSA: true,
 	}
 }
 
@@ -223,7 +223,7 @@ func TestValidationOnEmptyReport(t *testing.T) {
 func TestValidationExcludesNonApplicableSections(t *testing.T) {
 	scope := utils.MultibandaReportScope{
 		IncludesSimlock: false, IncludesMultiband: false,
-		SupportsGSM: true, SupportsUMTS: true, SupportsLTE: true, Supports5G: true,
+		SupportsGSM: true, SupportsUMTS: true, SupportsLTE: true, Supports5GSA: true,
 	}
 	v := utils.BuildMultibandaReportValidation(buildPartialReport(), scope)
 

@@ -81,6 +81,7 @@ func TestGetShipmentControlNotificationSubjectIncludesSoftwareVersion(t *testing
 		"XIAOMI",
 		"Redmi Note 15 5G",
 		"OS2.0.210.0.VMRMIXM",
+		"",
 	)
 	if subject == "" {
 		t.Fatal("expected subject")
@@ -153,6 +154,31 @@ func TestBuildShipmentControlPhaseEmailDataIncludesImeiFileURLOnlyOnCreate(t *te
 	)
 	if phaseData.ImeiFileURL != "" {
 		t.Fatalf("expected empty imei file url on phase email, got %q", phaseData.ImeiFileURL)
+	}
+}
+
+func TestBuildShipmentControlPhaseEmailDataExcelFileLinksImeiExcelNotCertificate(t *testing.T) {
+	notify := &request.ShipmentControlNotify{
+		ImeiFileUrl:             "https://example.com/imei.xlsx",
+		SubtelCertificateUrl:    "https://example.com/multiband-cert.pdf",
+		MultibandCertificateUrl: "https://example.com/multiband-cert.pdf",
+	}
+
+	completeData := BuildShipmentControlPhaseEmailData(
+		notify, "XIAOMI", "TM", "CM", "Android", "User", "msg", shipmentControlEmailComplete,
+	)
+	if completeData.ExcelFileURL != notify.ImeiFileUrl {
+		t.Fatalf("excel file: got %q, want the IMEI excel %q", completeData.ExcelFileURL, notify.ImeiFileUrl)
+	}
+	if completeData.MultibandCertificateURL != notify.MultibandCertificateUrl {
+		t.Fatalf("multiband certificate: got %q", completeData.MultibandCertificateURL)
+	}
+
+	createData := BuildShipmentControlPhaseEmailData(
+		notify, "XIAOMI", "TM", "CM", "Android", "User", "msg", shipmentControlEmailCreate,
+	)
+	if createData.ExcelFileURL != "" {
+		t.Fatalf("expected no excel file button on create (IMEI file already shown), got %q", createData.ExcelFileURL)
 	}
 }
 

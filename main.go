@@ -12,6 +12,7 @@ import (
 	"github.com/abisaidfarias/lbtechapi/repositories"
 	"github.com/abisaidfarias/lbtechapi/services"
 	"github.com/abisaidfarias/lbtechapi/utils"
+	"github.com/abisaidfarias/lbtechapi/utils/functions"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -146,7 +147,10 @@ var (
 	testPlanController controllers.ITestPlanController  = controllers.NewTestPlanController(testPlanService)
 
 	configurationRepository repositories.IConfigurationRepository = repositories.NewConfigurationRepository()
-	configurationService    services.IConfigurationService        = services.NewConfigurationService(configurationRepository)
+	deviceCatalogRepository repositories.IDeviceCatalogRepository = repositories.NewDeviceCatalogRepository()
+	deviceCatalogService    services.IDeviceCatalogService        = services.NewDeviceCatalogService(deviceCatalogRepository)
+	deviceCatalogController controllers.IDeviceCatalogController  = controllers.NewDeviceCatalogController(deviceCatalogService)
+	configurationService    services.IConfigurationService        = services.NewConfigurationService(configurationRepository, deviceCatalogService)
 	configurationController controllers.IConfigurationController  = controllers.NewConfigurationController(configurationService)
 
 	personRepository repositories.IPersonRepository = repositories.NewPersonRepository()
@@ -161,6 +165,9 @@ var (
 	multibandaService    services.IMultibandaService        = services.NewMultibandaService(multibandaRepository, userRepository, companyRepository, deviceRepository, brandRepository)
 	multibandaController controllers.IMultibandaController  = controllers.NewMultibandaController(multibandaService)
 
+	smrValidationService    services.ISmrValidationService       = services.NewSmrValidationService(multibandaRepository, deviceRepository, userRepository, multibandaService)
+	smrValidationController controllers.ISmrValidationController = controllers.NewSmrValidationController(smrValidationService)
+
 	multibandaReportRepository repositories.IMultibandaReportRepository = repositories.NewMultibandaReportRepository()
 	multibandaReportService    services.IMultibandaReportService        = services.NewMultibandaReportService(
 		multibandaReportRepository, multibandaRepository, deviceRepository, userRepository, storageService,
@@ -174,6 +181,10 @@ var (
 		imeiValidationRepository, userRepository, imeiInfoClient,
 	)
 	imeiValidationController controllers.IImeiValidationController = controllers.NewImeiValidationController(imeiValidationService)
+
+	imeiValidatorRepository repositories.IImeiValidatorRepository = repositories.NewImeiValidatorRepository()
+	imeiValidatorService    services.IImeiValidatorService        = services.NewImeiValidatorService(imeiValidatorRepository, userRepository)
+	imeiValidatorController controllers.IImeiValidatorController  = controllers.NewImeiValidatorController(imeiValidatorService)
 
 	shipmentControlRepository repositories.IShipmentControlRepository = repositories.NewShipmentControlRepository(multibandaRepository)
 	shipmentControlService    services.IShipmentControlService
@@ -201,6 +212,9 @@ var (
 // @description Type "Bearer" followed by a space and JWT token.
 
 func main() {
+	if functions.EmailDryRun() {
+		log.Printf("⚠️  EMAIL_DRY_RUN enabled: no email is sent; they are written to %s", functions.EmailDryRunDir())
+	}
 	server := gin.Default()
 	server.MaxMultipartMemory = utils.MaxUploadFileSize
 	server.Use(middlewares.CORSMiddleware())
@@ -319,6 +333,8 @@ func main() {
 		{
 			company.POST("", companyController.Create())
 			company.GET("", companyController.Get())
+			company.GET("client-id-available", companyController.ClientIDAvailable())
+			company.GET(":id/users", companyController.GetUsers())
 			company.PUT(":id", companyController.Update())
 			company.DELETE(":id", companyController.Delete())
 		}
@@ -388,6 +404,14 @@ func main() {
 			deviceTracking.POST("advanced-search", deviceTrackingController.AdvancedSearch())
 			deviceTracking.GET("search-options", deviceTrackingController.AdvancedSearchOptions())
 		}
+		deviceCatalogs := v1.Group("/device-catalogs")
+		{
+			deviceCatalogs.GET("", deviceCatalogController.List())
+			deviceCatalogs.POST(":category/values", deviceCatalogController.CreateValue())
+			deviceCatalogs.PUT("values/:id", deviceCatalogController.UpdateValue())
+			deviceCatalogs.PUT(":category/order", deviceCatalogController.SetOrder())
+			deviceCatalogs.DELETE("values/:id", deviceCatalogController.DeleteValue())
+		}
 		configuration := v1.Group("/configuration")
 		{
 			configuration.POST("", configurationController.Create())
@@ -410,6 +434,17 @@ func main() {
 			imeiValidation.POST("/lookup", imeiValidationController.Lookup())
 			imeiValidation.GET("/queries", imeiValidationController.ListHistory())
 			imeiValidation.GET("/queries/export", imeiValidationController.ExportHistory())
+
+			validator := imeiValidation.Group("/validator")
+			validator.GET("/template", imeiValidatorController.Template())
+			validator.POST("/batches", imeiValidatorController.UploadBatch())
+			validator.GET("/batches", imeiValidatorController.ListBatches())
+			validator.GET("/batches/:id/imeis", imeiValidatorController.ListBatchIMEIs())
+			validator.POST("/batches/:id/register", imeiValidatorController.RegisterBatch())
+			validator.DELETE("/batches/:id/imeis/:imei", imeiValidatorController.DeleteIMEI())
+			validator.DELETE("/batches/:id", imeiValidatorController.DeleteBatch())
+			validator.GET("/batches/:id/oabi-file", imeiValidatorController.OabiFile())
+			validator.GET("/imeis/:imei", imeiValidatorController.LookupIMEI())
 		}
 		multibanda := v1.Group("/multibanda")
 		{
@@ -417,6 +452,9 @@ func main() {
 			multibanda.GET("", multibandaController.Get())
 			multibanda.PUT(":id", multibandaController.Update())
 			multibanda.PUT(":id/phase", multibandaController.PhaseChange())
+			multibanda.GET(":id/smr-validation", smrValidationController.Get())
+			multibanda.POST(":id/smr-validation/approve", smrValidationController.Approve())
+			multibanda.POST(":id/smr-validation/reject", smrValidationController.Reject())
 			multibanda.GET("report/stamps/:code/image", multibandaReportController.GetStampImage())
 			multibanda.GET(":id/report", multibandaReportController.GetForm())
 			multibanda.PUT(":id/report/draft", multibandaReportController.SaveDraft())

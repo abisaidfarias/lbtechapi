@@ -68,6 +68,10 @@ type ShipmentControl struct {
 
 	Comment                 string             `bson:"comment"`
 
+	// Verdict is set when the control is closed (phase 3): "approved" or
+	// "rejected". Empty on open controls and on historical closed ones.
+	Verdict                 string             `bson:"verdict,omitempty"`
+
 	RequestDelete           bool               `bson:"request_delete"`
 
 	CreatedDate             time.Time          `bson:"created_date"`

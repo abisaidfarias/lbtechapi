@@ -7,6 +7,7 @@ import (
 	"github.com/abisaidfarias/lbtechapi/models"
 	"github.com/abisaidfarias/lbtechapi/utils"
 	"github.com/abisaidfarias/lbtechapi/utils/enums"
+	"github.com/abisaidfarias/lbtechapi/utils/functions"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -68,9 +69,15 @@ func (s *stubMultibandaRepo) SetReportAttachments(_ primitive.ObjectID, _, _, _,
 }
 
 // stubNotifier counts the "report available" emails Generate asks for.
-type stubNotifier struct{ calls int }
+type stubNotifier struct {
+	calls   int
+	details functions.MultibandaReportEmailDetails
+}
 
-func (s *stubNotifier) NotifyReportGenerated(primitive.ObjectID, string) { s.calls++ }
+func (s *stubNotifier) NotifyReportGenerated(_ primitive.ObjectID, _ string, d functions.MultibandaReportEmailDetails) {
+	s.calls++
+	s.details = d
+}
 
 type stubDeviceRepo struct{}
 
@@ -158,11 +165,14 @@ func buildGeneratableReport() *request.MultibandaReportSave {
 func newReportServiceForTest(storageURL string) (*multibandaReportService, *stubMultibandaRepo, *stubReportRepo) {
 	companyID := primitive.NewObjectID()
 
+	noRadio := false
 	multibandaRepo := &stubMultibandaRepo{
 		multibanda: &responses.MultibandaExpanded{
 			Type:         enums.MultibandaTypeSMR,
 			Company:      responses.Company{ID: companyID},
 			CurrentPhase: enums.HomologationPhase_value["UNDER_EVALUATION"],
+			// FM Radio is taken from the device; generation needs it declared.
+			Device: responses.Device{CommunicationRadio: &noRadio},
 		},
 	}
 	reportRepo := &stubReportRepo{}

@@ -112,6 +112,15 @@
                   <td style="padding:10px;">{{ .SARValue }}</td>
                 </tr>
 
+                {{ if .ShowReportDetails }}
+                <tr>
+                  <td style="padding:10px;"><strong>FM Radio</strong></td>
+                  <td style="padding:10px;">{{ .FMRadio }}</td>
+                  <td style="padding:10px;"><strong>Stamp Type</strong></td>
+                  <td style="padding:10px;">{{ range .StampChips }}<span style="{{ .Style }}">{{ .Label }}</span>{{ end }}{{ if .StampChips }}<br />{{ end }}{{ .StampLabel }}</td>
+                </tr>
+                {{ end }}
+
                 {{ if .Finished }}
                 <tr>
                   <td style="padding:10px;"><strong>Decision</strong></td>
@@ -169,7 +178,11 @@
             <td style="padding:0 32px 32px 32px;">
               <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                 <tr>
+                  {{ if .ActionURL }}
+                  {{emailButton .ActionURL .ActionLabel "#8DB319"}}
+                  {{ else }}
                   {{emailButton "https://lbonetrack.com/" "View in Platform" "#8DB319"}}
+                  {{ end }}
                   {{ if .TestReportURL }}
                   {{emailButton .TestReportURL "Download Test Report" "#0b1736"}}
                   {{ end }}

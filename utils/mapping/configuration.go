@@ -17,6 +17,7 @@ func ConfigurationRequestToConfiguration(configuration *request.Configuration) (
 		WcdmaBands:         configuration.WcdmaBands,
 		LteBands:           configuration.LteBands,
 		CaCombos:           configuration.CaCombos,
-		Bands5g:            configuration.Bands5g,
+		Bands5gNsa:         configuration.Bands5gNsa,
+		Bands5gSa:          configuration.Bands5gSa,
 	}, nil
 }

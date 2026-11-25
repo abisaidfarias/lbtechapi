@@ -17,7 +17,7 @@ type MultibandaReportScope struct {
 	SupportsGSM       bool
 	SupportsUMTS      bool
 	SupportsLTE       bool
-	Supports5G        bool
+	Supports5GSA      bool
 }
 
 // ValidateMultibandaReportDraft applies the light checks that hold even for an

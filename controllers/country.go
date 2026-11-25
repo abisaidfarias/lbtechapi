@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/abisaidfarias/lbtechapi/services"
+	apputils "github.com/abisaidfarias/lbtechapi/utils"
 	utils "github.com/abisaidfarias/lbtechapi/utils/errors"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/gin-gonic/gin"
@@ -59,6 +60,10 @@ func (c *countryController) Create() gin.HandlerFunc {
 		err = c.countryService.Create(&country)
 
 		if err != nil {
+			if apputils.IsValidationError(err) {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
 			if utils.ErrorDuplicatedData(err) {
 				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicated.Error()})
 				return
@@ -79,7 +84,7 @@ func (c *countryController) Create() gin.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Success 200 {array} responses.Country "Lista de países"
+// @Success 200 {array} responses.CountryListItem "Lista de países"
 // @Failure 401 {object} map[string]string "No autorizado"
 // @Failure 500 {object} map[string]string "Error interno del servidor"
 // @Router /country [get]
@@ -109,7 +114,7 @@ func (c *countryController) Get() gin.HandlerFunc {
 // @Success 200 "País eliminado exitosamente"
 // @Failure 401 {object} map[string]string "No autorizado"
 // @Failure 404 {object} map[string]string "País no encontrado"
-// @Failure 409 "No se puede eliminar, existen homologaciones asociadas"
+// @Failure 400 {object} map[string]string "En uso: desactivar en vez de eliminar"
 // @Failure 500 {object} map[string]string "Error interno del servidor"
 // @Router /country/{id} [delete]
 func (c *countryController) Delete() gin.HandlerFunc {
@@ -117,13 +122,12 @@ func (c *countryController) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var id string = ctx.Param("id")
 
-		hasHomologations, err := c.countryService.Delete(id)
-		if err != nil {
+		if err := c.countryService.Delete(id); err != nil {
+			if apputils.IsValidationError(err) {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
 			handleErrorResponse(ctx, err)
-			return
-		}
-		if hasHomologations {
-			ctx.Status(http.StatusConflict)
 			return
 		}
 		ctx.Status(http.StatusOK)
@@ -164,6 +168,10 @@ func (c *countryController) Update() gin.HandlerFunc {
 		err = c.countryService.Update(id, &country)
 
 		if err != nil {
+			if apputils.IsValidationError(err) {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
 			if utils.ErrorDuplicatedData(err) {
 				ctx.JSON(http.StatusConflict, gin.H{"error": utils.ErrorDuplicated.Error()})
 				return

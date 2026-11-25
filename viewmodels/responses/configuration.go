@@ -11,5 +11,6 @@ type Configuration struct {
 	WcdmaBands         []string `bson:"wcdma_bands"`
 	LteBands           []string `bson:"lte_bands"`
 	CaCombos           []string `bson:"ca_combos"`
-	Bands5g            []string `bson:"bands_5g"`
+	Bands5gNsa         []string `bson:"bands_5g_nsa"`
+	Bands5gSa          []string `bson:"bands_5g_sa"`
 }

@@ -18,7 +18,7 @@ func initialScope() utils.MultibandaReportScope {
 		SupportsGSM:       true,
 		SupportsUMTS:      true,
 		SupportsLTE:       true,
-		Supports5G:        true,
+		Supports5GSA:      true,
 	}
 }
 

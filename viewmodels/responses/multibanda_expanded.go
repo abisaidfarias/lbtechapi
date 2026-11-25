@@ -3,6 +3,7 @@ package responses
 import (
 	"time"
 
+	"github.com/abisaidfarias/lbtechapi/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -51,4 +52,21 @@ type MultibandaExpanded struct {
 	IsInternalProject       bool       `bson:"is_internal_project" json:"is_internal_project"`
 	CreatedDate             *time.Time `bson:"created_date" json:"created_date"`
 	RequesterName           string     `bson:"requester_name" json:"requester_name"`
+
+	// RequiresTesting: null unless SMR without testing applies to the request.
+	RequiresTesting *bool `bson:"requires_testing" json:"requires_testing"`
+	// PhaseStates: pending | done | skipped per phase.
+	PhaseStates *models.MultibandaPhaseStates `bson:"phase_states" json:"phase_states"`
+	// SmrValidation: only for SMR without testing; null otherwise.
+	SmrValidation *MultibandaSmrValidation `bson:"smr_validation" json:"smr_validation"`
+}
+
+// MultibandaSmrValidation is the stored SMR validation. The list exposes
+// status and the decision; comment and log come from GET smr-validation.
+type MultibandaSmrValidation struct {
+	Status        string                      `bson:"status" json:"status"`
+	DecidedAt     *time.Time                  `bson:"decided_at" json:"decided_at"`
+	DecidedByName string                      `bson:"decided_by_name" json:"decided_by_name"`
+	Comment       string                      `bson:"comment" json:"-"`
+	Log           []models.SmrValidationEntry `bson:"log" json:"-"`
 }

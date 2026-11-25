@@ -75,6 +75,11 @@ func (s *shipmentControlService) GenerateCertificate(
 		return nil, fmt.Errorf("%w", utils.ErrorForbidden)
 	}
 
+	// Rejected controls never get a certificate.
+	if err := functions.EnsureShipmentControlNotRejected(shipment); err != nil {
+		return nil, err
+	}
+
 	if shipment.CurrentPhase != enums.ShipmentControlPhaseUnderRevision {
 		return nil, utils.NewValidationError("certificate only available in Under Revision phase")
 	}

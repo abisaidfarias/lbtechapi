@@ -27,7 +27,7 @@ type Device struct {
 	CommunicationWlan      bool               `bson:"communication_wlan" json:"communication_wlan"`
 	CommunicationGps       bool               `bson:"communication_gps" json:"communication_gps"`
 	CommunicationNfc       bool               `bson:"communication_nfc" json:"communication_nfc"`
-	CommunicationRadio     bool               `bson:"communication_radio" json:"communication_radio"`
+	CommunicationRadio     *bool              `bson:"communication_radio" json:"communication_radio"`
 	CommunicationUsb       string             `bson:"communication_usb" json:"communication_usb"`
 	CommunicationBluetooth bool               `bson:"communication_blutooth" json:"communication_blutooth"`
 	BatteryType            string             `bson:"battery_type" json:"battery_type"`
@@ -43,16 +43,18 @@ type Device struct {
 	BandGsm                []string           `bson:"band_gsm" json:"band_gsm"`
 	BandWcdma              []string           `bson:"band_wcdma" json:"band_wcdma"`
 	BandLte                []string           `bson:"band_lte" json:"band_lte"`
-	Band5g                 []string           `bson:"band_5g" json:"band_5g"`
+	Band5gNsa              []string           `bson:"band_5g_nsa" json:"band_5g_nsa"`
+	Band5gSa               []string           `bson:"band_5g_sa" json:"band_5g_sa"`
 	CarrierAgg             []string           `bson:"carrier_agg" json:"carrier_agg"`
-	NetworkGsm             bool               `bson:"network_gsm" json:"network_gsm"`
-	NetworkWcdma           bool               `bson:"network_wcdma" json:"network_wcdma"`
-	NetworkLte             bool               `bson:"network_lte" json:"network_lte"`
-	NetworkVolte           bool               `bson:"network_volte" json:"network_volte"`
-	NetworkVowifi          bool               `bson:"network_vowifi" json:"network_vowifi"`
-	NetworkVilte           bool               `bson:"network_vilte" json:"network_vilte"`
-	Network5g              bool               `bson:"network_5g" json:"network_5g"`
-	NetworkCarrierAgg      bool               `bson:"network_carrier_agg" json:"network_carrier_agg"`
+	NetworkGsm             *bool              `bson:"network_gsm" json:"network_gsm"`
+	NetworkWcdma           *bool              `bson:"network_wcdma" json:"network_wcdma"`
+	NetworkLte             *bool              `bson:"network_lte" json:"network_lte"`
+	NetworkVolte           *bool              `bson:"network_volte" json:"network_volte"`
+	NetworkVowifi          *bool              `bson:"network_vowifi" json:"network_vowifi"`
+	NetworkVilte           *bool              `bson:"network_vilte" json:"network_vilte"`
+	Network5gNsa           *bool              `bson:"network_5g_nsa" json:"network_5g_nsa"`
+	Network5gSa            *bool              `bson:"network_5g_sa" json:"network_5g_sa"`
+	NetworkCarrierAgg      *bool              `bson:"network_carrier_agg" json:"network_carrier_agg"`
 	ImageUrl               string             `bson:"image_url" json:"image_url"`
 	SoftwareCode           string             `bson:"software_code" json:"software_code"`
 	HardwareCode           string             `bson:"hardware_code" json:"hardware_code"`
@@ -60,7 +62,6 @@ type Device struct {
 	LoggingCode            string             `bson:"logging_code" json:"logging_code"`
 	SimSupported           string             `bson:"sim_supported" json:"sim_supported"`
 	DualSim                string             `bson:"dual_sim" json:"dual_sim"`
-	SimType                string  `bson:"sim_type" json:"sim_type"`
-	Esim                   bool    `bson:"e_sim" json:"e_sim"`
-	SarValue               float64 `bson:"sar_value,omitempty" json:"sar_value,omitempty"`
-}
+	SimType                string             `bson:"sim_type" json:"sim_type"`
+	Esim                   bool               `bson:"e_sim" json:"e_sim"`
+	SarValue               float64            `bson:"sar_value,omitempty" json:"sar_value,omitempty"`}

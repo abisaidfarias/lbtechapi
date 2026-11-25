@@ -23,6 +23,7 @@ type IDeviceRepository interface {
 	ExistsByCommercialModelExcludingID(primitive.ObjectID, string) (bool, error)
 	Update(string, *models.Device) error
 	Delete(primitive.ObjectID) error
+	SetCommunicationRadio(primitive.ObjectID, bool) error
 }
 
 type deviceRepository struct {

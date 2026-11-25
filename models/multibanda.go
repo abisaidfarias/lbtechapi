@@ -23,11 +23,11 @@ type Multibanda struct {
 	PlanningDate      time.Time          `bson:"planning_date"`
 	SampleStartDate   *time.Time         `bson:"sample_start_date,omitempty"`
 	SampleEndDate     *time.Time         `bson:"sample_end_date,omitempty"`
-	TestStartDate     time.Time          `bson:"test_start_date"`
-	TestEndDate       time.Time          `bson:"test_end_date"`
-	UnderStartDate    time.Time          `bson:"under_start_date"`
-	UnderEndDate      time.Time          `bson:"under_end_date"`
-	CompletedDate     time.Time          `bson:"completed_date"`
+	TestStartDate     *time.Time          `bson:"test_start_date"`
+	TestEndDate       *time.Time          `bson:"test_end_date"`
+	UnderStartDate    *time.Time          `bson:"under_start_date"`
+	UnderEndDate      *time.Time          `bson:"under_end_date"`
+	CompletedDate     *time.Time          `bson:"completed_date"`
 	Status                  int                `bson:"status"`
 	DashBoardPhase        int                `bson:"dashboard_phase"`
 	TestReportUrl         string             `bson:"test_report_url,omitempty"`
@@ -44,5 +44,13 @@ type Multibanda struct {
 	RequestDelete         bool               `bson:"request_delete"`
 	IsInternalProject     bool               `bson:"is_internal_project"`
 	CreatedDate       time.Time          `bson:"created_date"`
+
+	// RequiresTesting is only set for SMR + SAE multibanda certificate when
+	// the company allows SMR without testing; nil otherwise.
+	RequiresTesting *bool `bson:"requires_testing,omitempty"`
+	// PhaseStates is computed by the server from current_phase.
+	PhaseStates *MultibandaPhaseStates `bson:"phase_states,omitempty"`
+	// SmrValidation exists only for SMR without testing (requires_testing=false).
+	SmrValidation *SmrValidation `bson:"smr_validation,omitempty"`
 	CreatedBy         primitive.ObjectID `bson:"created_by,omitempty"`
 }

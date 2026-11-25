@@ -119,7 +119,7 @@ var ExcelFailsHeaders = map[string]string{
 }
 
 var ExcelMultibandaHeaders = map[string]string{
-	"A1":  "Client",
+	"A1":  "Company",
 	"B1":  "Brand",
 	"C1":  "Commercial Model",
 	"D1":  "Technical Model",
@@ -170,6 +170,7 @@ var ExcelShipmentControlHeaders = map[string]string{
 	"V1":  "Rework Number",
 	"W1":  "OABI Certificate Number",
 	"X1":  "Comment",
+	"Y1":  "Registered / Requested",
 }
 var TestFailureSeverity_key = map[int]string{
 	0: "High",

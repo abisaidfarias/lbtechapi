@@ -20,6 +20,23 @@ func NormalizeOptionalCalendarDateUTC(value *time.Time) *time.Time {
 	return &normalized
 }
 
+// OptionalTimeForBSON stores nil or a zero time as null and any other value
+// unchanged (no calendar normalization).
+func OptionalTimeForBSON(value *time.Time) interface{} {
+	if value == nil || value.IsZero() {
+		return nil
+	}
+	return *value
+}
+
+// TimePtrOrNil returns nil for a zero time, a pointer to it otherwise.
+func TimePtrOrNil(value time.Time) *time.Time {
+	if value.IsZero() {
+		return nil
+	}
+	return &value
+}
+
 func OptionalDateForBSON(value *time.Time) interface{} {
 	if value == nil || value.IsZero() {
 		return nil

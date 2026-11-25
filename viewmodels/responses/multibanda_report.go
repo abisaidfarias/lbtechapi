@@ -94,13 +94,16 @@ type MultibandaReportPrefilled struct {
 	SoftwareVersion     string `json:"software_version"`
 	SARValue            string `json:"sar_value"`
 	OperativeSystemType string `json:"operative_system_type"`
+	// FMRadio comes from device.communication_radio: "Supported",
+	// "Not Supported", or "" when the device does not declare it.
+	FMRadio string `json:"fm_radio"`
 
 	// Device technology support drives which SAE technology tests are
 	// applicable; unsupported ones are forced to N/A.
 	SupportsGSM  bool `json:"supports_gsm"`
 	SupportsUMTS bool `json:"supports_umts"`
 	SupportsLTE  bool `json:"supports_lte"`
-	Supports5G   bool `json:"supports_5g"`
+	Supports5GSA bool `json:"supports_5g_sa"`
 }
 
 type MultibandaReportSaved struct {

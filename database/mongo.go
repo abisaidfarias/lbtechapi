@@ -7,6 +7,7 @@ import (
 
 	"github.com/abisaidfarias/lbtechapi/config"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/mgo.v2/bson"
@@ -165,6 +166,20 @@ func initDB() *mongo.Database {
 	database.Collection("multibandas").Indexes().CreateOne(context.Background(), indexMultibandaCompanyDeviceSoftwareOs)
 	database.Collection("shipment_controls").Indexes().CreateOne(context.Background(), indexShipmentControlMultibanda)
 	database.Collection("shipment_controls").Indexes().CreateOne(context.Background(), indexShipmentControlCompanyCreated)
+	// IMEI Validator: every IMEI is stored once.
+	database.Collection("imei_records").Indexes().CreateMany(context.Background(), []mongo.IndexModel{
+		{Keys: bson.M{"imei": 1}, Options: options.Index().SetUnique(true).SetName("uniq_imei_records_imei")},
+		{Keys: primitive.D{{Key: "batch_id", Value: 1}, {Key: "_id", Value: 1}}, Options: options.Index().SetName("imei_records_batch")},
+	})
+	// Device catalogs: a value is unique per category (case-insensitive key).
+	database.Collection("device_catalog_values").Indexes().CreateMany(context.Background(), []mongo.IndexModel{
+		{Keys: primitive.D{{Key: "category", Value: 1}, {Key: "value_key", Value: 1}}, Options: options.Index().SetUnique(true).SetName("uniq_device_catalog_category_value")},
+		{Keys: primitive.D{{Key: "category", Value: 1}, {Key: "order", Value: 1}}, Options: options.Index().SetName("device_catalog_category_order")},
+	})
+	database.Collection("imei_batches").Indexes().CreateMany(context.Background(), []mongo.IndexModel{
+		{Keys: primitive.D{{Key: "created_at", Value: -1}, {Key: "_id", Value: -1}}, Options: options.Index().SetName("imei_batches_created")},
+		{Keys: bson.M{"code": 1}, Options: options.Index().SetUnique(true).SetName("uniq_imei_batches_code")},
+	})
 	indexPasswordTokenHash := mongo.IndexModel{
 		Keys: bson.M{
 			"token_hash": 1,

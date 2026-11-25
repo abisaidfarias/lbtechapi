@@ -196,6 +196,7 @@ func (r *shipmentControlRepository) list(pipeline mongo.Pipeline) ([]*responses.
 		}
 
 		mapping.SanitizeShipmentControlExpandedDates(&item)
+		functions.EnrichShipmentControlVerdict(&item)
 
 		items = append(items, &item)
 

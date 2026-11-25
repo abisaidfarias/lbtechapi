@@ -324,6 +324,10 @@ func (s *shipmentControlService) Update(id string, req *request.ShipmentControl,
 
 	}
 
+	if err := functions.EnsureShipmentControlNotRejected(existing); err != nil {
+		return err
+	}
+
 	multibandaID, err := primitive.ObjectIDFromHex(req.MultibandaID)
 
 	if err != nil {
@@ -411,6 +415,9 @@ func (s *shipmentControlService) Update(id string, req *request.ShipmentControl,
 	)
 	mapping.PreserveShipmentControlSubtelCertificate(shipmentControl, existing, multibanda)
 	mapping.PreserveShipmentControlReferenceAndValidation(shipmentControl, existing)
+	if err := functions.ApplyShipmentControlVerdict(shipmentControl); err != nil {
+		return err
+	}
 
 	return s.shipmentControlRepository.Update(id, shipmentControl)
 
@@ -552,6 +559,10 @@ func (s *shipmentControlService) PhaseChange(id string, req *request.ShipmentCon
 
 	}
 
+	if err := functions.EnsureShipmentControlNotRejected(existing); err != nil {
+		return err
+	}
+
 
 
 	if !functions.UserHasClientAccess(user, existing.Company) {
@@ -597,6 +608,11 @@ func (s *shipmentControlService) PhaseChange(id string, req *request.ShipmentCon
 
 	functions.ApplyShipmentControlStatusRules(shipmentControl, existing)
 	functions.ApplyShipmentControlPhaseDateRules(shipmentControl, existing)
+	// The verdict is computed here, after the phase rules decided whether the
+	// control closes, and never taken from the client.
+	if err := functions.ApplyShipmentControlVerdict(shipmentControl); err != nil {
+		return err
+	}
 
 	if err := s.shipmentControlRepository.PhaseChange(id, shipmentControl); err != nil {
 		return err
@@ -832,6 +848,7 @@ func (s *shipmentControlService) ShipmentControlNotification(
 		multibanda.Brand.Name,
 		multibanda.Device.CommercialModel,
 		notify.SoftwareVersion,
+		notify.Verdict,
 	)
 	if subject == "" {
 		return

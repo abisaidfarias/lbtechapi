@@ -182,6 +182,10 @@ func CompareHashAndPassword(hashedPassword string, incomingPassword []byte) bool
 	return err == nil
 }
 func SendNotifications(toList []string, body bytes.Buffer) {
+	if EmailDryRun() {
+		recordDryRunEmail(toList, subjectFromMessage(body.Bytes()), body.Bytes())
+		return
+	}
 
 	from := config.GetValue("EMAIL_FROM")
 	password := config.GetValue("EMAIL_PASSWORD")
@@ -295,6 +299,12 @@ func sendBrandedHTMLEmail(toList []string, subject string, html []byte, logoPNG 
 		return err
 	}
 
+	if EmailDryRun() {
+		// Write the HTML (not the MIME message) so the file opens in a browser.
+		recordDryRunEmail(toList, subjectValue, html)
+		return nil
+	}
+
 	auth := LoginAuth(smtpUser, password)
 	return smtp.SendMail(smtpHost+":"+smtpPort, auth, from, toList, msg.Bytes())
 }
@@ -339,22 +349,28 @@ func SendNotificationsMoveEmail(toList []string, subject string, data TrackingMo
 
 // MultibandaPhaseEmailData is passed to the Multibanda phase notification HTML template.
 type MultibandaPhaseEmailData struct {
-	LogoDataURI             template.URL
-	HeaderTitle             string
-	ClientName              string
-	MainMessage             string
-	NotificationDate        string
-	CurrentPhase            string
-	ProjectType             string
-	ProcessType             string
-	EvaluationTypes         string
-	Brand                   string
-	TechnicalModel          string
-	CommercialModel         string
-	SoftwareVersion         string
-	HardwareVersion         string
-	OsVersion               string
-	SARValue                string
+	LogoDataURI      template.URL
+	HeaderTitle      string
+	ClientName       string
+	MainMessage      string
+	NotificationDate string
+	CurrentPhase     string
+	ProjectType      string
+	ProcessType      string
+	EvaluationTypes  string
+	Brand            string
+	TechnicalModel   string
+	CommercialModel  string
+	SoftwareVersion  string
+	HardwareVersion  string
+	OsVersion        string
+	SARValue         string
+	// Report details: only filled (and rendered) for the "Test Report
+	// Available" email, from the stored report so they match the PDF.
+	ShowReportDetails       bool
+	FMRadio                 string
+	StampLabel              string
+	StampChips              []MultibandaStampChip
 	UpdatedBy               string
 	PlanningDate            string
 	SampleStartDate         string
@@ -369,7 +385,10 @@ type MultibandaPhaseEmailData struct {
 	TestReportURL           string
 	MultibandCertificateURL string
 	ReflashURL              string
-	Year                    int
+	// ActionURL/ActionLabel add a button to the request (SMR validation).
+	ActionURL   string
+	ActionLabel string
+	Year        int
 }
 
 func RenderMultibandaPhaseEmailHTML(data MultibandaPhaseEmailData, templatePath string) ([]byte, error) {
@@ -436,7 +455,13 @@ type ShipmentControlPhaseEmailData struct {
 	ImeiFileURL                 string
 	MultibandCertificateURL     string
 	OabiCertificateURL          string
-	Year                        int
+	// Closing email only: verdict banner, reason (rejected / partial) and the
+	// "request is closed" notice (rejected).
+	VerdictBanner      string
+	VerdictBannerStyle template.CSS
+	VerdictReason      string
+	ShowClosedNotice   bool
+	Year               int
 }
 
 func RenderShipmentControlPhaseEmailHTML(data ShipmentControlPhaseEmailData, templatePath string) ([]byte, error) {
@@ -641,10 +666,10 @@ type TrackingMoveEmailData struct {
 	MainMessage         string
 	Rows                []TrackingEmailDeviceRow
 	// In-store delivery confirmation (confirm-move-delivery); when true, template shows receiver + signature.
-	HasDeliveryConfirmation bool
-	ReceiverFullName        string
-	ReceiverRUT             string
-	ReceiverDeliveredAt     string
+	HasDeliveryConfirmation  bool
+	ReceiverFullName         string
+	ReceiverRUT              string
+	ReceiverDeliveredAt      string
 	ReceiverSignatureDataURI template.URL
 	// DocumentURL is the public S3 URL of the PDF report when it is already
 	// uploaded; the email template renders a Download button when set.
@@ -848,6 +873,24 @@ func GetFailBodyMessage(subject string, mainMessge string, client string, countr
 
 	return body, nil
 }
+
+// IsTrue reports whether a nullable flag was declared and set to true.
+func IsTrue(v *bool) bool {
+	return v != nil && *v
+}
+
+// FormatOptionalYesNo renders a nullable flag: "Yes"/"No", or "—" when it was
+// never declared (nil) so no value is assumed.
+func FormatOptionalYesNo(v *bool) string {
+	if v == nil {
+		return "—"
+	}
+	if *v {
+		return "Yes"
+	}
+	return "No"
+}
+
 func GetDeviceBodyMessage(subject string, mainMessge string, brand string,
 	deviceRequest request.Device, templatePath string, userName string) (bytes.Buffer, error) {
 
@@ -905,7 +948,8 @@ func GetDeviceBodyMessage(subject string, mainMessge string, brand string,
 		NetworkVolte           string
 		NetworkVowifi          string
 		NetworkVilte           string
-		Network5g              string
+		Network5gNsa           string
+		Network5gSa            string
 		NetworkCarrierAgg      string
 		ImageUrl               string
 		SoftwareCode           string
@@ -941,7 +985,7 @@ func GetDeviceBodyMessage(subject string, mainMessge string, brand string,
 		CommunicationWlan:      strconv.FormatBool(deviceRequest.CommunicationWlan),
 		CommunicationGps:       strconv.FormatBool(deviceRequest.CommunicationGps),
 		CommunicationNfc:       strconv.FormatBool(deviceRequest.CommunicationNfc),
-		CommunicationRadio:     strconv.FormatBool(deviceRequest.CommunicationRadio),
+		CommunicationRadio:     FormatOptionalYesNo(deviceRequest.CommunicationRadio),
 		CommunicationUsb:       deviceRequest.CommunicationUsb,
 		CommunicationBluetooth: strconv.FormatBool(deviceRequest.CommunicationBluetooth),
 		BatteryType:            deviceRequest.BatteryType,
@@ -954,14 +998,15 @@ func GetDeviceBodyMessage(subject string, mainMessge string, brand string,
 		SensorAccelerometer:    strconv.FormatBool(deviceRequest.SensorAccelerometer),
 		SensorGyroscope:        strconv.FormatBool(deviceRequest.SensorGyroscope),
 		SensorHall:             strconv.FormatBool(deviceRequest.SensorHall),
-		NetworkGsm:             strconv.FormatBool(deviceRequest.NetworkGsm),
-		NetworkWcdma:           strconv.FormatBool(deviceRequest.NetworkWcdma),
-		NetworkLte:             strconv.FormatBool(deviceRequest.NetworkLte),
-		NetworkVolte:           strconv.FormatBool(deviceRequest.NetworkVolte),
-		NetworkVowifi:          strconv.FormatBool(deviceRequest.NetworkVowifi),
-		NetworkVilte:           strconv.FormatBool(deviceRequest.NetworkVilte),
-		Network5g:              strconv.FormatBool(deviceRequest.Network5g),
-		NetworkCarrierAgg:      strconv.FormatBool(deviceRequest.NetworkCarrierAgg),
+		NetworkGsm:             FormatOptionalYesNo(deviceRequest.NetworkGsm),
+		NetworkWcdma:           FormatOptionalYesNo(deviceRequest.NetworkWcdma),
+		NetworkLte:             FormatOptionalYesNo(deviceRequest.NetworkLte),
+		NetworkVolte:           FormatOptionalYesNo(deviceRequest.NetworkVolte),
+		NetworkVowifi:          FormatOptionalYesNo(deviceRequest.NetworkVowifi),
+		NetworkVilte:           FormatOptionalYesNo(deviceRequest.NetworkVilte),
+		Network5gNsa:           FormatOptionalYesNo(deviceRequest.Network5gNsa),
+		Network5gSa:            FormatOptionalYesNo(deviceRequest.Network5gSa),
+		NetworkCarrierAgg:      FormatOptionalYesNo(deviceRequest.NetworkCarrierAgg),
 		ImageUrl:               deviceRequest.ImageUrl,
 		SoftwareCode:           deviceRequest.SoftwareCode,
 		HardwareCode:           deviceRequest.HardwareCode,

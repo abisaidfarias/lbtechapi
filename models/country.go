@@ -11,6 +11,15 @@ type Country struct {
 	BandGsm    []string           `bson:"band_gsm"`
 	BandWcdma  []string           `bson:"band_wcdma"`
 	BandLte    []string           `bson:"band_lte"`
-	Band5g     []string           `bson:"band_5g"`
+	Band5gNsa  []string           `bson:"band_5g_nsa"`
+	Band5gSa   []string           `bson:"band_5g_sa"`
 	CarrierAgg []string           `bson:"carrier_agg"`
+	// Active is nil on countries created before the field existed; they
+	// count as active. omitempty keeps tracking-log snapshots unchanged.
+	Active *bool `bson:"active,omitempty"`
+}
+
+// IsCountryActive applies the "missing means active" rule.
+func IsCountryActive(active *bool) bool {
+	return active == nil || *active
 }

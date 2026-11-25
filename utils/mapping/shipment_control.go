@@ -14,6 +14,7 @@ import (
 	"github.com/abisaidfarias/lbtechapi/utils"
 
 	"github.com/abisaidfarias/lbtechapi/utils/enums"
+	"github.com/abisaidfarias/lbtechapi/utils/functions"
 
 	"github.com/abisaidfarias/lbtechapi/viewmodels/request"
 	"github.com/abisaidfarias/lbtechapi/viewmodels/responses"
@@ -313,6 +314,7 @@ func ShipmentControlToNotify(
 		Comment:                 shipment.Comment,
 		SubtelCertificateUrl:    shipment.SubtelCertificateUrl,
 		OabiCertificateUrl:      shipment.OabiCertificateUrl,
+		Verdict:                 functions.EffectiveShipmentControlVerdict(shipment.Verdict, shipment.CurrentPhase),
 	}
 	if multibanda != nil {
 		notify.SubtelCertificateNumber = firstNonEmpty(

@@ -41,6 +41,10 @@ func EnrichMultibandaExpanded(multibanda *responses.MultibandaExpanded) {
 		multibanda.OsVersionView = multibanda.Device.PlatformOs + " " + multibanda.OsVersion
 	}
 	SetMultibandaDatesToNull(multibanda)
+	// Records not migrated yet get their phase states derived on read.
+	if multibanda.PhaseStates == nil {
+		multibanda.PhaseStates = ComputePhaseStates(multibanda.CurrentPhase, nil)
+	}
 }
 
 // ApplyMultibandaPhaseDateRules applies derived milestone dates during phase changes.
@@ -50,16 +54,19 @@ func ApplyMultibandaPhaseDateRules(multibanda *models.Multibanda, existing *resp
 	}
 
 	testEndDate := multibanda.TestEndDate
-	if testEndDate.IsZero() && existing != nil && existing.TestEndDate != nil {
-		testEndDate = *existing.TestEndDate
+	if (testEndDate == nil || testEndDate.IsZero()) && existing != nil && existing.TestEndDate != nil &&
+		!existing.TestEndDate.IsZero() {
+		v := *existing.TestEndDate
+		testEndDate = &v
 	}
 
-	if testEndDate.IsZero() {
+	if testEndDate == nil || testEndDate.IsZero() {
 		return
 	}
 
-	if multibanda.TestEndDate.IsZero() {
+	if multibanda.TestEndDate == nil || multibanda.TestEndDate.IsZero() {
 		multibanda.TestEndDate = testEndDate
 	}
-	multibanda.UnderStartDate = testEndDate
+	v := *testEndDate
+	multibanda.UnderStartDate = &v
 }

@@ -354,7 +354,7 @@ func saeTestApplies(test enums.SAETest, scope MultibandaReportScope) bool {
 	case enums.SAETechLTE:
 		return scope.SupportsLTE
 	case enums.SAETechNR:
-		return scope.Supports5G
+		return scope.Supports5GSA
 	default:
 		return true
 	}

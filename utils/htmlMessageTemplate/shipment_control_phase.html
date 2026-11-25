@@ -61,6 +61,22 @@
             </td>
           </tr>
 
+          {{ if .VerdictBanner }}
+          <tr>
+            <td style="padding:0 32px 24px 32px;">
+              <div style="{{ .VerdictBannerStyle }}">
+                {{ .VerdictBanner }}
+                {{ if .VerdictReason }}
+                <div style="margin-top:8px; font-size:14px; font-weight:normal; white-space:pre-line;"><strong>Reason:</strong> {{ .VerdictReason }}</div>
+                {{ end }}
+                {{ if .ShowClosedNotice }}
+                <div style="margin-top:8px; font-size:14px; font-weight:normal;">This request is closed. To register these devices, please create a new Shipment Control request in the platform.</div>
+                {{ end }}
+              </div>
+            </td>
+          </tr>
+          {{ end }}
+
           <tr>
             <td style="padding:0 32px 24px 32px;">
               <table width="100%" style="border:1px solid #e5e7eb; background:#f9fafb;">

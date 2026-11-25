@@ -27,6 +27,7 @@ type ShipmentControlNotify struct {
 	CompletedDate           time.Time
 	OabiCertificate         string
 	Comment                 string
+	Verdict                 string
 	SubtelCertificateUrl    string
 	OabiCertificateUrl      string
 }

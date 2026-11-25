@@ -26,7 +26,7 @@ type IMultibandaService interface {
 	PatchRequestDelete(string, *request.RequestDeletePatch, string) (*responses.DeleteProcessResult, error)
 	RejectRequestDelete(string, string) (*responses.DeleteProcessResult, error)
 	ExportMultibanda(string) (bytes.Buffer, error)
-	NotifyReportGenerated(primitive.ObjectID, string)
+	NotifyReportGenerated(primitive.ObjectID, string, functions.MultibandaReportEmailDetails)
 }
 
 type multibandaService struct {
@@ -77,7 +77,8 @@ func (s *multibandaService) Create(multibandaRequest *request.Multibanda, userID
 		return "", err
 	}
 
-	if _, err := s.companyRepository.GetById(multibandaRequest.Company); err != nil {
+	company, err := s.companyRepository.GetById(multibandaRequest.Company)
+	if err != nil || company == nil {
 		return "", utils.NewValidationError("company not found")
 	}
 
@@ -87,6 +88,14 @@ func (s *multibandaService) Create(multibandaRequest *request.Multibanda, userID
 
 	if _, err := s.brandRepository.GetById(multibandaRequest.Brand); err != nil {
 		return "", utils.NewValidationError("brand not found")
+	}
+
+	requiresTesting, err := functions.NormalizeRequiresTesting(
+		functions.RequiresTestingApplies(multibandaRequest.Type, multibandaRequest.EvaluationType, company.AllowSmrWithoutTesting),
+		multibandaRequest.RequiresTesting,
+	)
+	if err != nil {
+		return "", err
 	}
 
 	exists, err := s.multibandaRepository.ExistsByCompanyDeviceSoftwareOsVersion(
@@ -111,6 +120,13 @@ func (s *multibandaService) Create(multibandaRequest *request.Multibanda, userID
 	if creatorID, err := primitive.ObjectIDFromHex(userID); err == nil {
 		multibanda.CreatedBy = creatorID
 	}
+	multibanda.RequiresTesting = requiresTesting
+	multibanda.PhaseStates = functions.ComputePhaseStates(multibanda.CurrentPhase, nil)
+	withoutTesting := functions.IsSmrWithoutTesting(requiresTesting)
+	if withoutTesting {
+		multibanda.PhaseStates = functions.SmrWithoutTestingInitialStates()
+		multibanda.SmrValidation = &models.SmrValidation{Status: models.SmrValidationPending}
+	}
 
 	id, err := s.multibandaRepository.Create(multibanda)
 	if err != nil {
@@ -122,6 +138,9 @@ func (s *multibandaService) Create(multibandaRequest *request.Multibanda, userID
 	if multibandaResponse != nil {
 		multibandaNotify := mapping.MultibandaResponseToMultibandaNotify(*multibandaResponse)
 		go s.MultibandaNotification(&multibandaNotify, multibandaResponse.Company.ID, utils.CREATE, userID)
+		if withoutTesting {
+			go s.NotifySmrValidationPending(multibandaResponse)
+		}
 	}
 
 	return id, nil
@@ -193,7 +212,8 @@ func (s *multibandaService) Update(id string, multibandaRequest *request.Multiba
 		return err
 	}
 
-	if _, err := s.companyRepository.GetById(multibandaRequest.Company); err != nil {
+	company, err := s.companyRepository.GetById(multibandaRequest.Company)
+	if err != nil || company == nil {
 		return utils.NewValidationError("company not found")
 	}
 
@@ -207,6 +227,33 @@ func (s *multibandaService) Update(id string, multibandaRequest *request.Multiba
 
 	if err := authorizeMultibandaRecordAccess(user, companyID, brandID); err != nil {
 		return err
+	}
+
+	// SMR without testing: guards and requires_testing.
+	validationStatus := smrValidationStatus(existing)
+	if err := functions.GuardSmrChange(validationStatus, existing.CurrentPhase, existing.Status,
+		multibandaRequest.CurrentPhase, multibandaRequest.Status); err != nil {
+		return err
+	}
+	// On edit, null keeps what is stored (legacy SMRs created before the flag
+	// stay editable); only a sent value is validated.
+	requiresTesting := existing.RequiresTesting
+	if multibandaRequest.RequiresTesting != nil {
+		requiresTesting, err = functions.NormalizeRequiresTesting(
+			functions.RequiresTestingApplies(multibandaRequest.Type, multibandaRequest.EvaluationType, company.AllowSmrWithoutTesting),
+			multibandaRequest.RequiresTesting,
+		)
+		if err != nil {
+			return err
+		}
+	}
+	decided := validationStatus == models.SmrValidationApproved || validationStatus == models.SmrValidationRejected
+	if decided && !sameBoolPtr(requiresTesting, existing.RequiresTesting) {
+		return utils.NewValidationError(functions.SmrErrRequiresTestingLocked)
+	}
+	if functions.IsSmrWithoutTesting(requiresTesting) && !functions.IsSmrWithoutTesting(existing.RequiresTesting) &&
+		existing.CurrentPhase != enums.HomologationPhase_value["PLANNING"] {
+		return utils.NewValidationError(functions.SmrErrOnlyInPlanning)
 	}
 
 	exists, err := s.multibandaRepository.ExistsByCompanyDeviceSoftwareOsVersionExcludingID(
@@ -232,7 +279,53 @@ func (s *multibandaService) Update(id string, multibandaRequest *request.Multiba
 	mapping.PreserveMultibandaTestReportURL(multibanda, existing.TestReportUrl)
 	setMultibandaDashboardPhase(multibanda)
 
-	return s.multibandaRepository.Update(id, multibanda)
+	multibanda.RequiresTesting = requiresTesting
+	wasWithoutTesting := functions.IsSmrWithoutTesting(existing.RequiresTesting)
+	nowWithoutTesting := functions.IsSmrWithoutTesting(requiresTesting)
+	switch {
+	case nowWithoutTesting && !wasWithoutTesting:
+		multibanda.PhaseStates = functions.SmrWithoutTestingInitialStates()
+	case !nowWithoutTesting && wasWithoutTesting:
+		multibanda.PhaseStates = functions.ComputePhaseStates(multibanda.CurrentPhase, nil)
+	default:
+		multibanda.PhaseStates = functions.ComputePhaseStates(multibanda.CurrentPhase, existing.PhaseStates)
+	}
+
+	if err := s.multibandaRepository.Update(id, multibanda); err != nil {
+		return err
+	}
+
+	// Switching requires_testing before a decision starts or drops the
+	// pending validation.
+	switch {
+	case nowWithoutTesting && !wasWithoutTesting:
+		if err := s.multibandaRepository.SetSmrValidation(multibandaID,
+			&models.SmrValidation{Status: models.SmrValidationPending}); err != nil {
+			return err
+		}
+		if updated, _ := s.multibandaRepository.GetByIdExpanded(multibandaID); updated != nil {
+			go s.NotifySmrValidationPending(updated)
+		}
+	case !nowWithoutTesting && wasWithoutTesting:
+		if err := s.multibandaRepository.SetSmrValidation(multibandaID, nil); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func smrValidationStatus(m *responses.MultibandaExpanded) string {
+	if m == nil || m.SmrValidation == nil {
+		return ""
+	}
+	return m.SmrValidation.Status
+}
+
+func sameBoolPtr(a, b *bool) bool {
+	if a == nil || b == nil {
+		return a == nil && b == nil
+	}
+	return *a == *b
 }
 
 func (s *multibandaService) PhaseChange(id string, multibandaRequest *request.MultibandaResume, userID string) error {
@@ -253,10 +346,16 @@ func (s *multibandaService) PhaseChange(id string, multibandaRequest *request.Mu
 		return utils.NewValidationError("multibanda has a pending delete request")
 	}
 
+	if err := functions.GuardSmrChange(smrValidationStatus(existing), existing.CurrentPhase, existing.Status,
+		multibandaRequest.CurrentPhase, multibandaRequest.Status); err != nil {
+		return err
+	}
+
 	multibanda := mapping.MultibandaRequestToMultibandaResume(multibandaRequest)
 	functions.ApplyMultibandaPhaseDateRules(multibanda, existing)
 	mapping.PreserveMultibandaTestReportURL(multibanda, existing.TestReportUrl)
 	setMultibandaDashboardPhase(multibanda)
+	multibanda.PhaseStates = functions.ComputePhaseStates(multibanda.CurrentPhase, existing.PhaseStates)
 
 	if err := s.multibandaRepository.PhaseChange(id, multibanda); err != nil {
 		return err
@@ -276,16 +375,23 @@ func (s *multibandaService) PhaseChange(id string, multibandaRequest *request.Mu
 
 // NotifyReportGenerated tells the internal contacts that the test report can be
 // downloaded. The process is reloaded so the email carries the report URL that
-// Generate has just linked.
-func (s *multibandaService) NotifyReportGenerated(multibandaID primitive.ObjectID, userID string) {
+// Generate has just linked. details are the stored report values (FM Radio,
+// stamp) so the email matches the PDF.
+func (s *multibandaService) NotifyReportGenerated(
+	multibandaID primitive.ObjectID,
+	userID string,
+	details functions.MultibandaReportEmailDetails,
+) {
 	go func() {
-		multibandaResponse, _ := s.multibandaRepository.GetByIdExpanded(multibandaID)
+		multibandaResponse, err := s.multibandaRepository.GetByIdExpanded(multibandaID)
 		if multibandaResponse == nil {
+			log.Printf("multibanda notification (%s) skipped: multibanda %s not loaded: %v",
+				utils.REPORT, multibandaID.Hex(), err)
 			return
 		}
 
 		multibandaNotify := mapping.MultibandaResponseToMultibandaNotify(*multibandaResponse)
-		s.MultibandaNotification(&multibandaNotify, multibandaResponse.Company.ID, utils.REPORT, userID)
+		s.notify(&multibandaNotify, multibandaResponse.Company.ID, utils.REPORT, userID, &details)
 	}()
 }
 
@@ -454,27 +560,43 @@ func (s *multibandaService) MultibandaNotification(
 	key string,
 	userID string,
 ) {
+	s.notify(multibanda, companyID, key, userID, nil)
+}
+
+// notify sends a multibanda email; reportDetails is set only for the report
+// email and adds its FM Radio and Stamp Type rows.
+func (s *multibandaService) notify(
+	multibanda *request.MultibandaNotify,
+	companyID primitive.ObjectID,
+	key string,
+	userID string,
+	reportDetails *functions.MultibandaReportEmailDetails,
+) {
+	// Every early return is logged: a skipped email must be visible.
 	user, err := s.userRepository.GetByID(userID)
 	if err != nil {
+		log.Printf("multibanda notification (%s) skipped: user %s not loaded: %v", key, userID, err)
 		return
 	}
 
 	userName := fmt.Sprintf("%s %s", user.Name, user.LastName)
-	toList, isEmpty := functions.GetNotificationEmails(
-		companyID,
-		functions.MultibandaNotifiesExternalRecipients(key, multibanda.CurrentPhase),
-	)
+	includeExternal := functions.MultibandaNotifiesExternalRecipients(key, multibanda.CurrentPhase)
+	toList, isEmpty := functions.GetNotificationEmails(companyID, includeExternal)
 	if isEmpty {
+		log.Printf("multibanda notification (%s) skipped: no recipients configured for company %s "+
+			"(Notifications; include_company_contacts=%v)", key, companyID.Hex(), includeExternal)
 		return
 	}
 
 	device, err := s.deviceRepository.GetById(multibanda.Device)
 	if err != nil {
+		log.Printf("multibanda notification (%s) skipped: device %s not loaded: %v", key, multibanda.Device, err)
 		return
 	}
 
 	brand, err := s.brandRepository.GetById(multibanda.Brand)
 	if err != nil {
+		log.Printf("multibanda notification (%s) skipped: brand %s not loaded: %v", key, multibanda.Brand, err)
 		return
 	}
 
@@ -526,6 +648,9 @@ func (s *multibandaService) MultibandaNotification(
 		desicion,
 		key,
 	)
+	if key == utils.REPORT && reportDetails != nil {
+		functions.ApplyMultibandaReportEmailDetails(&emailData, *reportDetails)
+	}
 
 	if err := functions.SendMultibandaPhaseEmail(
 		toList,

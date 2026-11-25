@@ -20,6 +20,10 @@ type ICountryRepository interface {
 	GetById(string) (*responses.Country, error)
 	GetByName(string) (*responses.Country, error)
 	GetCountriesById([]primitive.ObjectID) ([]string, error)
+	UpdateFields(primitive.ObjectID, primitive.M) error
+	FindByNameExcluding(name string, exclude primitive.ObjectID) (*responses.Country, error)
+	CountryUsage() (map[primitive.ObjectID][]string, error)
+	UsersCountByCountry() (map[primitive.ObjectID]int, error)
 }
 
 type countryRepository struct {

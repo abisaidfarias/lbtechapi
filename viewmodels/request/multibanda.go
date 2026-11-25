@@ -31,4 +31,7 @@ type Multibanda struct {
 	NeedReflash             bool       `json:"need_reflash"`
 	CommentsReflash         string     `json:"comments_reflash"`
 	IsInternalProject       bool       `json:"is_internal_project"`
+	// RequiresTesting: required (true/false) only for SMR + SAE multibanda
+	// certificate when the company allows SMR without testing; null otherwise.
+	RequiresTesting *bool `json:"requires_testing"`
 }

@@ -87,13 +87,27 @@ var ReportPreferredNetworkOptions = []string{
 const (
 	ReportFMRadioSupported    = "Supported"
 	ReportFMRadioNotSupported = "Not Supported"
-	ReportFMRadioNA           = "N/A"
+	// ReportFMRadioNA is legacy: it is no longer offered, but reports generated
+	// before FM Radio came from the device may still hold it.
+	ReportFMRadioNA = "N/A"
 )
 
 var ReportFMRadioOptions = []string{
 	ReportFMRadioSupported,
 	ReportFMRadioNotSupported,
-	ReportFMRadioNA,
+}
+
+// ReportFMRadioFromDevice maps device.communication_radio to the report value;
+// an undeclared (nil) radio yields "".
+func ReportFMRadioFromDevice(radio *bool) string {
+	switch {
+	case radio == nil:
+		return ""
+	case *radio:
+		return ReportFMRadioSupported
+	default:
+		return ReportFMRadioNotSupported
+	}
 }
 
 func IsValidPreferredNetwork(v string) bool {
@@ -105,7 +119,12 @@ func IsValidPreferredNetwork(v string) bool {
 	return false
 }
 
+// IsValidFMRadioOption also accepts the legacy N/A so an already generated
+// report holding it can still be saved and regenerated unchanged.
 func IsValidFMRadioOption(v string) bool {
+	if v == ReportFMRadioNA {
+		return true
+	}
 	for _, o := range ReportFMRadioOptions {
 		if o == v {
 			return true
@@ -298,7 +317,7 @@ var ReportSAETests = []SAETest{
 	{ID: "001SAE", Name: "GSM Technology", RequiresTechnology: SAETechGSM},
 	{ID: "002SAE", Name: "UMTS Technology", RequiresTechnology: SAETechUMTS},
 	{ID: "003SAE", Name: "LTE Technology", RequiresTechnology: SAETechLTE},
-	{ID: "004SAE", Name: "5G Technology", RequiresTechnology: SAETechNR},
+	{ID: "004SAE", Name: "5G SA Technology", RequiresTechnology: SAETechNR},
 	{ID: "005SAE", Name: "Pop-Up Notification"},
 	{ID: "006SAE", Name: "Sound Alert"},
 	{ID: "007SAE", Name: "Vibration"},

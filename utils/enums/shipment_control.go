@@ -18,8 +18,23 @@ var ShipmentControlPhaseLabels = map[int]string{
 	ShipmentControlPhasePlanning:      "Planning",
 	ShipmentControlPhaseValidation:    "Validation",
 	ShipmentControlPhaseUnderRevision: "Under Revision",
-	ShipmentControlPhaseCompleted:     "Completed",
+	// Phase 3 closes the control with a verdict (approved / rejected).
+	ShipmentControlPhaseCompleted: "Decision",
 }
+
+// Verdict of a closed (phase 3) shipment control. It is computed on the
+// server from registered_imei_count vs imei_quantity; "partial" is not stored
+// but derived as approved && registered < requested.
+const (
+	ShipmentControlVerdictApproved = "approved"
+	ShipmentControlVerdictRejected = "rejected"
+)
+
+const (
+	ShipmentControlStatusViewApproved        = "Approved"
+	ShipmentControlStatusViewApprovedPartial = "Approved (partial)"
+	ShipmentControlStatusViewRejected        = "Rejected"
+)
 
 var ShipmentControlStatusLabels = map[int]string{
 	ShipmentControlStatusInProgress: "Ongoing",
